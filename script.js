@@ -454,71 +454,27 @@ function showToast(m) {
 render();
 
 // --- PWA install support ---
-// On-screen diagnostic box (so you can see blockers without DevTools)
-var pwaDebugEl = document.getElementById('pwaDebug');
-var pwaDebugWasError = false;
-function pwaLog(msg, isError) {
-  console.log('[PWA]', msg);
-  if (pwaDebugEl) {
-    if (isError) { pwaDebugEl.style.color = '#fca5a5'; pwaDebugWasError = true; }
-    pwaDebugEl.textContent += (pwaDebugEl.textContent ? '\n' : '') + msg;
-    pwaDebugEl.style.display = 'block';
-  }
-}
-console.log('[PWA] userAgent:', navigator.userAgent);
 
 // 1) Register service worker (relative path so it works in any subfolder / HTTPS host)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () {
-    navigator.serviceWorker.register('sw.js')
-      .then(function (reg) { return navigator.serviceWorker.ready; })
-      .then(function (reg) {
-        pwaLog('Service worker: ACTIVE (' + reg.scope + ')');
-      })
-      .catch(function (err) { pwaLog('Service worker FAILED: ' + err, true); });
-  });
-} else {
-  pwaLog('This browser has NO service worker support — install impossible.', true);
-}
-
-// 2) Self-diagnostic: confirm the manifest has icons and the icon FILES actually load (no 404s)
-function runPwaDiagnostics() {
-  fetch('manifest.json').then(function (r) { return r.json(); }).then(function (m) {
-    var icons = (m.icons || []).filter(function (i) { return (i.purpose || 'any').indexOf('any') !== -1; });
-    pwaLog('Manifest: "' + m.name + '" display=' + m.display);
-    pwaLog('Installable "any" icons: ' + icons.length);
-    if (!icons.length) { pwaLog('NO icons in manifest -> install will FAIL', true); return; }
-    Promise.all(icons.map(function (i) {
-      return fetch(i.src, { method: 'HEAD' }).then(function (r) {
-        if (r.ok) { pwaLog('icon OK: ' + i.src); return true; }
-        pwaLog('icon 404 (missing): ' + i.src, true); return false;
-      }).catch(function () { pwaLog('icon fetch ERROR: ' + i.src, true); return false; });
-    })).then(function (res) {
-      var ok = res.filter(Boolean).length;
-      if (ok === icons.length) pwaLog('All ' + ok + ' icons loaded OK');
-      else pwaLog(ok + '/' + icons.length + ' icons loaded', true);
+    navigator.serviceWorker.register('sw.js').catch(function (err) {
+      console.warn('[PWA] Service worker registration failed:', err);
     });
-  }).catch(function (e) { pwaLog('manifest.json NOT found / unreadable: ' + e, true); });
+  });
 }
-runPwaDiagnostics();
 
-// 3) Capture the install prompt so we can show our own Install button reliably
+// 2) Capture the install prompt so we can show our own Install button reliably
 var deferredPrompt = null;
 var installBtn = document.getElementById('installBtn');
 window.addEventListener('beforeinstallprompt', function (e) {
   e.preventDefault();
   deferredPrompt = e;
   if (installBtn) installBtn.style.display = '';
-  pwaLog('Install prompt AVAILABLE');
 });
 window.addEventListener('appinstalled', function () {
-  pwaLog('App INSTALLED');
   if (installBtn) installBtn.style.display = 'none';
-  if (pwaDebugEl) pwaDebugEl.style.display = 'none';
 });
-if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
-  pwaLog('Already running as installed app');
-}
 
 if (installBtn) {
   installBtn.addEventListener('click', function () {
@@ -527,8 +483,7 @@ if (installBtn) {
       return;
     }
     deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(function (choice) {
-      pwaLog('Install choice: ' + choice.outcome);
+    deferredPrompt.userChoice.then(function () {
       deferredPrompt = null;
       installBtn.style.display = 'none';
     });
