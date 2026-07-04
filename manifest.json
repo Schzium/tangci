@@ -1,7 +1,7 @@
 {
-  "name": "Cinema Venue Map",
-  "short_name": "Cinema Map",
-  "description": "Interactive cinema seat reservation map with dual POV (Operator & Podium)",
+  "name": "TangCi",
+  "short_name": "TangCi",
+  "description": "All about TangCi",
   "start_url": "./",
   "display": "standalone",
   "orientation": "portrait",
