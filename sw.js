@@ -1,5 +1,5 @@
 // Service worker for Cinema Venue Map PWA (relative paths so it works in any subfolder / HTTPS host)
-const CACHE = 'cinema-map-v2';
+const CACHE = 'cinema-map-v3';
 const ASSETS = [
   './',
   './index.html',
