@@ -1,4 +1,4 @@
-// Service worker for Cinema Venue Map PWA (relative paths so it works in any subfolder)
+// Service worker for Cinema Venue Map PWA (relative paths so it works in any subfolder / HTTPS host)
 const CACHE = 'cinema-map-v2';
 const ASSETS = [
   './',
@@ -13,7 +13,14 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // Cache assets individually so ONE missing file can't abort the whole install
+  e.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    await Promise.allSettled(ASSETS.map((u) =>
+      cache.add(u).catch((err) => console.warn('[SW] cache add failed (ignored):', u, err))
+    ));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', (e) => {
