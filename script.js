@@ -454,40 +454,51 @@ function showToast(m) {
 render();
 
 // --- PWA install support ---
+// On-screen diagnostic box (so you can see blockers without DevTools)
+var pwaDebugEl = document.getElementById('pwaDebug');
+var pwaDebugWasError = false;
+function pwaLog(msg, isError) {
+  console.log('[PWA]', msg);
+  if (pwaDebugEl) {
+    if (isError) { pwaDebugEl.style.color = '#fca5a5'; pwaDebugWasError = true; }
+    pwaDebugEl.textContent += (pwaDebugEl.textContent ? '\n' : '') + msg;
+    pwaDebugEl.style.display = 'block';
+  }
+}
 console.log('[PWA] userAgent:', navigator.userAgent);
 
 // 1) Register service worker (relative path so it works in any subfolder / HTTPS host)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () {
     navigator.serviceWorker.register('sw.js')
+      .then(function (reg) { return navigator.serviceWorker.ready; })
       .then(function (reg) {
-        console.log('[PWA] Service worker registered, scope:', reg.scope, '| state:', reg.active ? reg.active.state : reg.installing.state);
-        return navigator.serviceWorker.ready;
+        pwaLog('Service worker: ACTIVE (' + reg.scope + ')');
       })
-      .then(function (reg) { console.log('[PWA] Service worker ACTIVE, controlling scope:', reg.scope); })
-      .catch(function (err) { console.error('[PWA] Service worker FAILED:', err); });
+      .catch(function (err) { pwaLog('Service worker FAILED: ' + err, true); });
   });
 } else {
-  console.warn('[PWA] This browser does not support service workers (no install possible).');
+  pwaLog('This browser has NO service worker support — install impossible.', true);
 }
 
 // 2) Self-diagnostic: confirm the manifest has icons and the icon FILES actually load (no 404s)
 function runPwaDiagnostics() {
   fetch('manifest.json').then(function (r) { return r.json(); }).then(function (m) {
     var icons = (m.icons || []).filter(function (i) { return (i.purpose || 'any').indexOf('any') !== -1; });
-    console.log('[PWA] Manifest name:', m.name, '| start_url:', m.start_url, '| display:', m.display);
-    console.log('[PWA] "any" icons in manifest:', icons.length);
-    if (!icons.length) { console.error('[PWA] NO installable icons in manifest — install will fail.'); showToast('PWA: manifest has no icons'); return; }
+    pwaLog('Manifest: "' + m.name + '" display=' + m.display);
+    pwaLog('Installable "any" icons: ' + icons.length);
+    if (!icons.length) { pwaLog('NO icons in manifest -> install will FAIL', true); return; }
     Promise.all(icons.map(function (i) {
       return fetch(i.src, { method: 'HEAD' }).then(function (r) {
-        console.log('[PWA] icon', i.src, '->', r.status, r.ok ? 'OK' : 'MISSING(404)');
-        return r.ok;
-      }).catch(function () { console.error('[PWA] icon', i.src, '-> FETCH ERROR (blocked / wrong path)'); return false; });
+        if (r.ok) { pwaLog('icon OK: ' + i.src); return true; }
+        pwaLog('icon 404 (missing): ' + i.src, true); return false;
+      }).catch(function () { pwaLog('icon fetch ERROR: ' + i.src, true); return false; });
     })).then(function (res) {
-      if (res.indexOf(false) !== -1) showToast('PWA: some icon files are missing (404)');
-      else console.log('[PWA] All manifest icons loaded successfully.');
+      var ok = res.filter(Boolean).length;
+      if (ok === icons.length) pwaLog('All ' + ok + ' icons loaded OK');
+      else pwaLog(ok + '/' + icons.length + ' icons loaded', true);
     });
-  }).catch(function (e) { console.error('[PWA] Could not read manifest.json:', e); showToast('PWA: manifest.json not found'); });
+  }).catch(function (e) { pwaLog('manifest.json NOT found / unreadable: ' + e, true); });
 }
 runPwaDiagnostics();
 
@@ -498,25 +509,26 @@ window.addEventListener('beforeinstallprompt', function (e) {
   e.preventDefault();
   deferredPrompt = e;
   if (installBtn) installBtn.style.display = '';
-  console.log('[PWA] Install prompt is available — Install button shown.');
+  pwaLog('Install prompt AVAILABLE');
 });
 window.addEventListener('appinstalled', function () {
-  console.log('[PWA] App installed successfully.');
+  pwaLog('App INSTALLED');
   if (installBtn) installBtn.style.display = 'none';
+  if (pwaDebugEl) pwaDebugEl.style.display = 'none';
 });
 if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
-  console.log('[PWA] Already running as installed app.');
+  pwaLog('Already running as installed app');
 }
 
 if (installBtn) {
   installBtn.addEventListener('click', function () {
     if (!deferredPrompt) {
-      alert('Install prompt not available yet.\n\n• Stay on the page and interact for ~30s (Chrome requires engagement).\n• If you already dismissed it, Chrome hides it for a while.\n• Make sure you are in Chrome, not an in-app browser (WhatsApp/Instagram/etc.).\n\nManual install: Chrome menu (⋮) → "Install app" / "Add to Home screen".');
+      alert('Install prompt not available yet.\n\n• Stay on the page and interact for ~30s (Chrome requires engagement).\n• If you already dismissed it, Chrome hides it for a while.\n• Make sure you are in Chrome, not an in-app browser (WhatsApp/Instagram/etc.).\n\nManual install: Chrome menu (⋮) -> "Install app" / "Add to Home screen".');
       return;
     }
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(function (choice) {
-      console.log('[PWA] User choice:', choice.outcome);
+      pwaLog('Install choice: ' + choice.outcome);
       deferredPrompt = null;
       installBtn.style.display = 'none';
     });
