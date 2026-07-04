@@ -452,3 +452,12 @@ function showToast(m) {
 }
 
 render();
+
+// Register service worker (required for the "Install app" prompt on Android/Chrome)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js').catch(function (err) {
+      console.warn('SW registration failed:', err);
+    });
+  });
+}
