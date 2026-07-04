@@ -1,15 +1,15 @@
-// Service worker for Cinema Venue Map PWA
-const CACHE = 'cinema-map-v1';
+// Service worker for Cinema Venue Map PWA (relative paths so it works in any subfolder)
+const CACHE = 'cinema-map-v2';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/style.css',
-  '/script.js',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/icon-maskable-192.png',
-  '/icon-maskable-512.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './style.css',
+  './script.js',
+  './icon-192.png',
+  './icon-512.png',
+  './icon-maskable-192.png',
+  './icon-maskable-512.png'
 ];
 
 self.addEventListener('install', (e) => {
@@ -24,12 +24,11 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-// Network-first for navigation, cache-first for static assets
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
   if (req.mode === 'navigate') {
-    e.respondWith(fetch(req).catch(() => caches.match('/index.html')));
+    e.respondWith(fetch(req).catch(() => caches.match('./index.html')));
     return;
   }
   e.respondWith(

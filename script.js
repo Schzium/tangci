@@ -453,11 +453,40 @@ function showToast(m) {
 
 render();
 
-// Register service worker (required for the "Install app" prompt on Android/Chrome)
+// --- PWA install support ---
+// 1) Register service worker (relative path so it works in any subfolder / HTTPS host)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () {
-    navigator.serviceWorker.register('/sw.js').catch(function (err) {
-      console.warn('SW registration failed:', err);
+    navigator.serviceWorker.register('sw.js')
+      .then(function (reg) { console.log('[PWA] Service worker registered, scope:', reg.scope); })
+      .catch(function (err) { console.error('[PWA] Service worker FAILED:', err); });
+  });
+} else {
+  console.warn('[PWA] This browser does not support service workers (no install possible).');
+}
+
+// 2) Capture the install prompt so we can show our own Install button reliably
+var deferredPrompt = null;
+var installBtn = document.getElementById('installBtn');
+window.addEventListener('beforeinstallprompt', function (e) {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (installBtn) installBtn.style.display = '';
+  console.log('[PWA] Install prompt is available — Install button shown.');
+});
+window.addEventListener('appinstalled', function () {
+  console.log('[PWA] App installed successfully.');
+  if (installBtn) installBtn.style.display = 'none';
+});
+
+if (installBtn) {
+  installBtn.addEventListener('click', function () {
+    if (!deferredPrompt) { alert('Install prompt not available yet.\n\nOn iPhone: use Share → Add to Home Screen.\nOn Android: open the menu (⋮) → Install app / Add to Home Screen.'); return; }
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function (choice) {
+      console.log('[PWA] User choice:', choice.outcome);
+      deferredPrompt = null;
+      installBtn.style.display = 'none';
     });
   });
 }
