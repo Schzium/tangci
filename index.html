@@ -40,8 +40,21 @@ const ADMIN_EMAIL = "calvinsoean@gmail.com";
 <title>Cinema Venue Map v15</title>
 </head>
 <script>
-  // Redirect langsung ke login
-  window.location.replace('login.html');
+  // Cek login sebelum redirect
+  if (typeof firebase !== 'undefined' && firebase.auth) {
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        // Sudah login, lanjutkan
+        sessionStorage.setItem('tangci_logged_in', '1');
+      } else {
+        // Belum login, pindah ke login
+        sessionStorage.removeItem('tangci_logged_in');
+        if (window.location.pathname.indexOf('index') !== -1) {
+          window.location.replace('login.html');
+        }
+      }
+    });
+  }
 </script>
 <body>
 <div class="container">
@@ -117,5 +130,5 @@ const ADMIN_EMAIL = "calvinsoean@gmail.com";
 </div>
 
 <script src="script.js"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1cf7274689a6cf0',t:'MTc4NDM1NjMyNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1cf949c6a328093',t:'MTc4NDM1NzcyMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
