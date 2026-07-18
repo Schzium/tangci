@@ -471,22 +471,17 @@ var fitted = false;
 document.getElementById('fitBtn').onclick = function() {
   fitted = !fitted;
   var board = document.getElementById('board');
-  var body = document.body;
   var w = floorEl.scrollWidth;
   if (fitted) {
-    // Scroll board to center first, then scale
-    board.scrollLeft = (board.scrollWidth - board.clientWidth) / 2;
     var scale = Math.min(1, (board.clientWidth - 32) / w);
-    floorEl.style.transform = 'scale(' + scale + ')';
-    floorEl.style.transformOrigin = 'top center';
+    floorEl.style.zoom = scale;
     board.style.overflow = 'hidden';
-    body.style.overflowX = 'hidden';
+    document.body.style.overflowX = 'hidden';
     this.textContent = '100%';
   } else {
-    floorEl.style.transform = '';
-    floorEl.style.transformOrigin = '';
+    floorEl.style.zoom = '';
     board.style.overflow = '';
-    body.style.overflowX = '';
+    document.body.style.overflowX = '';
     this.textContent = 'Fit to screen';
   }
 };
