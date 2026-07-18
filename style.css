@@ -117,3 +117,14 @@ header p{color:var(--muted);font-size:.82rem;margin-top:4px}
   .seat .nm{ font-size:.5rem;}
   .board{ padding:10px 8px;}
 }
+
+/* Auto-rotate / landscape support */
+@media (orientation: landscape) and (max-height: 520px) {
+  body { padding: 10px 10px 88px; }
+  .legend-bar { margin: 6px 0 10px; font-size: .75rem; }
+  .board { padding: 10px 6px; }
+  .pov-title { padding: 4px 0; font-size: .8rem; margin-bottom: 6px; }
+  .cell { height: 32px; }
+  .bottom-nav { padding: 6px 14px calc(6px + env(safe-area-inset-bottom)); }
+  .nav-btn { padding: 6px 16px; font-size: .78rem; }
+}
