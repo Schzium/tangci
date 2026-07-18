@@ -43,9 +43,6 @@ header p{color:var(--muted);font-size:.82rem;margin-top:4px}
 
 .pov-section{margin-bottom:24px}
 .pov-wrap{width:max-content;margin:0 auto}
-.pov-title{text-align:center;font-size:.88rem;font-weight:800;letter-spacing:.06em;margin-bottom:10px;padding:7px 0;border-radius:8px;min-width:100%}
-.pov-title.av{color:#8fc8ff;background:#0e1a2e;border:1px solid #1c3a5c}
-.pov-title.podium{color:#f5a9d0;background:#2a1426;border:1px solid #5c2850}
 
 .floor{
   display: grid;

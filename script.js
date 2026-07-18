@@ -84,7 +84,6 @@ var LABEL_COLS = [3, 10];
 var currentPOV = 'av';
 var currentSeat = null;
 var floorEl = document.getElementById('floor');
-var povTitle = document.getElementById('povTitle');
 var navAvBtn = document.getElementById('navAvPov');
 var navPodiumBtn = document.getElementById('navPodiumPov');
 var modalOverlay = document.getElementById('modalOverlay');
@@ -98,8 +97,6 @@ function switchPOV(pov) {
   var resetBtn = document.getElementById('resetBtn');
   var rowVisBtn = document.getElementById('rowVisBtn');
   if (pov === 'av') {
-    povTitle.textContent = ' AV';
-    povTitle.className = 'pov-title av';
     navAvBtn.style.background = '#1c2d48';
     navAvBtn.style.color = '#8fc8ff';
     navAvBtn.style.borderColor = '#2c4a78';
@@ -109,8 +106,6 @@ function switchPOV(pov) {
     resetBtn.style.display = '';
     rowVisBtn.style.display = '';
   } else {
-    povTitle.textContent = ' PODIUM';
-    povTitle.className = 'pov-title podium';
     navPodiumBtn.style.background = '#3b2336';
     navPodiumBtn.style.color = '#f5a9d0';
     navPodiumBtn.style.borderColor = '#5c3050';
@@ -473,16 +468,20 @@ var fitted = false;
 document.getElementById('fitBtn').onclick = function() {
   fitted = !fitted;
   var board = document.getElementById('board');
+  var body = document.body;
   var w = floorEl.scrollWidth;
   if (fitted) {
     var scale = Math.min(1, (board.clientWidth - 32) / w);
     floorEl.style.transform = 'scale(' + scale + ')';
     floorEl.style.transformOrigin = 'top center';
-    board.style.overflowX = 'hidden';
+    board.style.overflow = 'hidden';
+    body.style.overflowX = 'hidden';
     this.textContent = '100%';
   } else {
     floorEl.style.transform = '';
-    board.style.overflowX = '';
+    floorEl.style.transformOrigin = '';
+    board.style.overflow = '';
+    body.style.overflowX = '';
     this.textContent = 'Fit to screen';
   }
 };
