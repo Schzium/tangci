@@ -23,7 +23,7 @@ header p{color:var(--muted);font-size:.82rem;margin-top:4px}
 /* Row visibility dropdown */
 .row-vis-wrap{position:relative;display:inline-block}
 .row-vis-dropdown{
-  position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);
+  position:absolute;top:calc(100% + 6px);right:0;
   background:#171c27;border:1px solid #2b3245;border-radius:10px;padding:12px;
   min-width:180px;box-shadow:0 10px 30px rgba(0,0,0,.5);z-index:100;display:none;
 }

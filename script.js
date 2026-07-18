@@ -395,7 +395,7 @@ function render() {
     }
     displayR++;
   }
-  document.getElementById('stats').textContent = reserved + ' BK';
+  document.getElementById('stats').textContent = reserved + ' Hadirin';
 }
 
 function openModal(id) {
@@ -481,7 +481,7 @@ document.getElementById('fitBtn').onclick = function() {
     floorEl.style.zoom = '';
     board.style.overflow = '';
     document.body.style.overflowX = '';
-    this.textContent = 'Fit to screen';
+    this.textContent = 'Fit';
   }
 };
 
