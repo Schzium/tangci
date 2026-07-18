@@ -478,9 +478,11 @@ document.getElementById('fitBtn').onclick = function() {
     var scale = Math.min(1, (board.clientWidth - 32) / w);
     floorEl.style.transform = 'scale(' + scale + ')';
     floorEl.style.transformOrigin = 'top center';
+    board.style.overflowX = 'hidden';
     this.textContent = '100%';
   } else {
     floorEl.style.transform = '';
+    board.style.overflowX = '';
     this.textContent = 'Fit to screen';
   }
 };
