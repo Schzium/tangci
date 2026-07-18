@@ -12,6 +12,25 @@
 <!-- iOS "Add to Home Screen" icon (without this, iOS uses a screenshot of the page) -->
 <link rel="apple-touch-icon" href="icon-192-3d.png">
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512-3d.png">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+// =========== GANTI DENGAN CONFIG FIREBASE KAMU ===========
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBr8O17DKvHN1YnukjOkyus_Dsz3J2rLiA",
+  authDomain: "tangci.firebaseapp.com",
+  projectId: "tangci",
+  storageBucket: "tangci.firebasestorage.app",
+  messagingSenderId: "70249432757",
+  appId: "1:70249432757:web:081a59a124e71ad501e0fc",
+  measurementId: "G-4GJELW4XG5"
+};
+// ==========================================================
+
+if (FIREBASE_CONFIG.apiKey === "PASTE_API_KEY") {
+  console.warn("Firebase config belum diisi. Data akan tetap pakai localStorage sementara.");
+}
+</script>
 <link rel="stylesheet" href="style.css">
 <title>Cinema Venue Map v15</title>
 </head>

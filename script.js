@@ -30,6 +30,36 @@ var STORAGE_KEY = 'cinema_venue_v14';
 var reservations = {};
 try { reservations = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) {}
 
+// Firebase sync setup (optional - requires config in index.html)
+var db = null;
+var stateDocRef = null;
+var usingFirebase = false;
+
+try {
+  if (typeof firebase !== 'undefined' && typeof firebase.firestore !== 'undefined' && typeof FIREBASE_CONFIG !== 'undefined' && FIREBASE_CONFIG.apiKey !== "PASTE_API_KEY") {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
+    db = firebase.firestore();
+    stateDocRef = db.collection('tangci').doc('state');
+    usingFirebase = true;
+  }
+} catch(e) { console.warn('[Firebase] Not configured, using localStorage only.', e); }
+
+// Load initial state (Firebase async or localStorage sync)
+if (usingFirebase && stateDocRef) {
+  stateDocRef.onSnapshot(function(doc) {
+    if (doc.exists) {
+      var data = doc.data();
+      reservations = data.reservations || {};
+      if (data.hiddenRows) {
+        hiddenRows = new Set(data.hiddenRows);
+      }
+      render();
+    }
+  });
+}
+
 // Row visibility – A-L (map rows 3-14). hiddenRows is a Set of letters to HIDE.
 var ALL_ROW_LETTERS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
 var HIDDEN_KEY = 'cinema_hidden_rows_v14';
@@ -225,10 +255,21 @@ function renderRowVisList() {
   });
 }
 
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(reservations)); } catch(e) {}
+  try { localStorage.setItem(HIDDEN_KEY, JSON.stringify(Array.from(hiddenRows))); } catch(ex) {}
+  if (usingFirebase && stateDocRef) {
+    stateDocRef.set({
+      reservations: reservations,
+      hiddenRows: Array.from(hiddenRows)
+    }).catch(function(err) { console.warn('[Firebase] Save error:', err); });
+  }
+}
+
 function applyRowVis(e) {
   if (e) e.stopPropagation();
   hiddenRows = new Set(tempHidden);
-  try { localStorage.setItem(HIDDEN_KEY, JSON.stringify(Array.from(hiddenRows))); } catch(ex) {}
+  saveState();
   document.getElementById('rowVisDropdown').classList.remove('open');
   render();
   showToast('Rows updated');
@@ -377,7 +418,7 @@ function doSave() {
   } else {
     delete reservations[sid];
   }
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(reservations)); } catch(e) {}
+  saveState();
   modalOverlay.style.display = 'none';
   currentSeat = null;
   render();
@@ -402,7 +443,7 @@ function closeNamePopup() {
 function doClear() {
   if (currentSeat) {
     delete reservations[currentSeat];
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(reservations)); } catch(e) {}
+    saveState();
     modalOverlay.style.display = 'none';
     currentSeat = null;
     render();
@@ -416,7 +457,8 @@ function doReset() {
 
 function confirmReset() {
   reservations = {};
-  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+  hiddenRows = new Set();
+  saveState();
   document.getElementById('resetConfirm').style.display = 'none';
   render();
   showToast('All cleared');
