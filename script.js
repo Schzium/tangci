@@ -496,9 +496,7 @@ function showToast(m) {
 
 render();
 
-// --- PWA install support ---
-
-// 1) Register service worker (relative path so it works in any subfolder / HTTPS host)
+// Service worker for PWA caching
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () {
     navigator.serviceWorker.register('sw.js').catch(function (err) {
@@ -507,28 +505,3 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// 2) Capture the install prompt so we can show our own Install button reliably
-var deferredPrompt = null;
-var installBtn = document.getElementById('installBtn');
-window.addEventListener('beforeinstallprompt', function (e) {
-  e.preventDefault();
-  deferredPrompt = e;
-  if (installBtn) installBtn.style.display = '';
-});
-window.addEventListener('appinstalled', function () {
-  if (installBtn) installBtn.style.display = 'none';
-});
-
-if (installBtn) {
-  installBtn.addEventListener('click', function () {
-    if (!deferredPrompt) {
-      alert('Install prompt not available yet.\n\n• Stay on the page and interact for ~30s (Chrome requires engagement).\n• If you already dismissed it, Chrome hides it for a while.\n• Make sure you are in Chrome, not an in-app browser (WhatsApp/Instagram/etc.).\n\nManual install: Chrome menu (⋮) -> "Install app" / "Add to Home screen".');
-      return;
-    }
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(function () {
-      deferredPrompt = null;
-      installBtn.style.display = 'none';
-    });
-  });
-}
