@@ -61,6 +61,20 @@ if (usingFirebase && stateDocRef) {
 }
 
 
+// ---- Podium popup sync: klik seat hijau di satu device → muncul popup kuning di semua device ----
+var podiumPopupRef = null;
+if (usingFirebase && db) {
+  podiumPopupRef = db.collection('tangci').doc('podiumPopup');
+  podiumPopupRef.onSnapshot(function(doc) {
+    if (doc.exists && currentPOV === 'podium') {
+      var d = doc.data();
+      if (d && d.seatId && d.name) {
+        showNamePopup(d.seatId, d.name);
+      }
+    }
+  });
+}
+
 // Row visibility – A-L (map rows 3-14). hiddenRows is a Set of letters to HIDE.
 var ALL_ROW_LETTERS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
 var HIDDEN_KEY = 'cinema_hidden_rows_v14';
@@ -356,6 +370,10 @@ function render() {
               cell.style.cursor = 'pointer';
               cell.onclick = function(e) {
                 e.stopPropagation();
+                // Sync ke Firestore: semua device podium view dapat popup
+                if (podiumPopupRef) {
+                  podiumPopupRef.set({ seatId: sid, name: name, ts: Date.now() }).catch(function(){});
+                }
                 showNamePopup(sid, name);
               };
             })(info.id, nm);
