@@ -477,7 +477,6 @@ function confirmReset() {
   saveState();
   document.getElementById('resetConfirm').style.display = 'none';
   render();
-  showToast('All cleared');
 }
 
 function cancelReset() {
