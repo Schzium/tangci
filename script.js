@@ -84,6 +84,7 @@ var LABEL_COLS = [3, 10];
 var currentPOV = 'av';
 var currentSeat = null;
 var floorEl = document.getElementById('floor');
+var povTitle = document.getElementById('povTitle');
 var navAvBtn = document.getElementById('navAvPov');
 var navPodiumBtn = document.getElementById('navPodiumPov');
 var modalOverlay = document.getElementById('modalOverlay');
@@ -97,6 +98,7 @@ function switchPOV(pov) {
   var resetBtn = document.getElementById('resetBtn');
   var rowVisBtn = document.getElementById('rowVisBtn');
   if (pov === 'av') {
+    povTitle.textContent = 'AV';
     navAvBtn.style.background = '#1c2d48';
     navAvBtn.style.color = '#8fc8ff';
     navAvBtn.style.borderColor = '#2c4a78';
@@ -106,6 +108,7 @@ function switchPOV(pov) {
     resetBtn.style.display = '';
     rowVisBtn.style.display = '';
   } else {
+    povTitle.textContent = 'PODIUM';
     navPodiumBtn.style.background = '#3b2336';
     navPodiumBtn.style.color = '#f5a9d0';
     navPodiumBtn.style.borderColor = '#5c3050';
@@ -471,6 +474,8 @@ document.getElementById('fitBtn').onclick = function() {
   var body = document.body;
   var w = floorEl.scrollWidth;
   if (fitted) {
+    // Scroll board to center first, then scale
+    board.scrollLeft = (board.scrollWidth - board.clientWidth) / 2;
     var scale = Math.min(1, (board.clientWidth - 32) / w);
     floorEl.style.transform = 'scale(' + scale + ')';
     floorEl.style.transformOrigin = 'top center';
