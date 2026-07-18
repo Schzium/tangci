@@ -14,6 +14,7 @@
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512-3d.png">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script>
 // =========== GANTI DENGAN CONFIG FIREBASE KAMU ===========
 const FIREBASE_CONFIG = {
@@ -30,6 +31,10 @@ const FIREBASE_CONFIG = {
 if (FIREBASE_CONFIG.apiKey === "PASTE_API_KEY") {
   console.warn("Firebase config belum diisi. Data akan tetap pakai localStorage sementara.");
 }
+
+// =========== ADMIN EMAIL ===========
+const ADMIN_EMAIL = "calvinsoean@gmail.com";
+// ====================================
 </script>
 <link rel="stylesheet" href="style.css">
 <title>Cinema Venue Map v15</title>
@@ -108,5 +113,5 @@ if (FIREBASE_CONFIG.apiKey === "PASTE_API_KEY") {
 </div>
 
 <script src="script.js"></script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1cf067bacfde782',t:'MTc4NDM1MTkwMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
