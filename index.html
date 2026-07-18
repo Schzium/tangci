@@ -9,14 +9,11 @@
 <meta name="apple-mobile-web-app-title" content="Cinema Map">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json">
-<!-- iOS "Add to Home Screen" icon (without this, iOS uses a screenshot of the page) -->
 <link rel="apple-touch-icon" href="icon-192-3d.png">
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512-3d.png">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script>
-// =========== GANTI DENGAN CONFIG FIREBASE KAMU ===========
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyBr8O17DKvHN1YnukjOkyus_Dsz3J2rLiA",
   authDomain: "tangci.firebaseapp.com",
@@ -26,39 +23,12 @@ const FIREBASE_CONFIG = {
   appId: "1:70249432757:web:081a59a124e71ad501e0fc",
   measurementId: "G-4GJELW4XG5"
 };
-// ==========================================================
-
-if (FIREBASE_CONFIG.apiKey === "PASTE_API_KEY") {
-  console.warn("Firebase config belum diisi. Data akan tetap pakai localStorage sementara.");
-}
-
-// =========== ADMIN EMAIL ===========
-const ADMIN_EMAIL = "calvinsoean@gmail.com";
-// ====================================
 </script>
 <link rel="stylesheet" href="style.css">
 <title>Cinema Venue Map v15</title>
 </head>
-<script>
-  // Cek login sebelum redirect
-  if (typeof firebase !== 'undefined' && firebase.auth) {
-    firebase.auth().onAuthStateChanged(function(user) {
-      if (user) {
-        // Sudah login, lanjutkan
-        sessionStorage.setItem('tangci_logged_in', '1');
-      } else {
-        // Belum login, pindah ke login
-        sessionStorage.removeItem('tangci_logged_in');
-        if (window.location.pathname.indexOf('index') !== -1) {
-          window.location.replace('login.html');
-        }
-      }
-    });
-  }
-</script>
 <body>
 <div class="container">
-
   <div class="legend-bar">
     <span><span class="dot" style="background:var(--seat-empty)"></span> Empty</span>
     <span><span class="dot" style="background:var(--seat-filled)"></span> Reserved</span>
@@ -80,46 +50,36 @@ const ADMIN_EMAIL = "calvinsoean@gmail.com";
       </div>
     </div>
   </div>
-
   <div id="resetConfirm" style="display:none;text-align:center;margin:10px 0;padding:12px;background:#7f1d1d;border:1px solid #991b1b;border-radius:10px;color:#fca5a5;font-size:.82rem;">
     <p style="margin-bottom:10px;">Are you sure you want to clear ALL reservations?</p>
     <button class="btn" type="button" onclick="cancelReset()" style="margin-right:8px;">No, Cancel</button>
     <button class="btn" type="button" onclick="confirmReset()" style="background:#22c55e;border-color:#22c55e;color:#05210f;font-weight:600;">Yes, Clear All</button>
   </div>
-
   <div class="board" id="board">
     <div class="pov-section" id="povView">
       <div class="pov-wrap">
-        <div class="pov-title av" id="povTitle">🎥 AV</div>
+        <div class="pov-title av" id="povTitle"> AV</div>
         <div class="floor" id="floor"></div>
       </div>
     </div>
   </div>
-
 </div>
-
 <nav class="bottom-nav">
-  <button class="nav-btn" id="navAvPov" type="button" style="background:#1c2d48;color:#8fc8ff;border-color:#2c4a78" onclick="switchPOV('av')">🎥 Operator</button>
+  <button class="nav-btn" id="navAvPov" type="button" style="background:#1c2d48;color:#8fc8ff;border-color:#2c4a78" onclick="switchPOV('av')"> Operator</button>
   <button class="nav-btn" id="navPodiumPov" type="button" onclick="switchPOV('podium')"> Podium</button>
-  <button class="nav-btn" id="installBtn" type="button" style="display:none;background:#22c55e;color:#05210f;border-color:#22c55e;font-weight:700">⬇ Install</button>
+  <button class="nav-btn" id="installBtn" type="button" style="display:none;background:#22c55e;color:#05210f;border-color:#22c55e;font-weight:700"> Install</button>
 </nav>
-
 <div class="toast" id="toast"></div>
-
-<!-- On-screen PWA diagnostic (shows install blockers without DevTools) -->
-
-<!-- Yellow name popup for podium view -->
 <div class="name-popup-overlay" id="namePopupOverlay" onclick="closeNamePopup()">
   <div class="name-popup" onclick="event.stopPropagation()">
     <div class="name-text" id="namePopupText"></div>
     <div class="seat-id" id="namePopupSeatId"></div>
   </div>
 </div>
-
 <div id="modalOverlay" style="position:fixed;inset:0;background:rgba(5,7,12,.7);display:none;align-items:flex-start;justify-content:center;z-index:9999;padding-top:12vh;" onclick="if(event.target===this)doCancel()">
   <div id="modalBox" style="background:#171c27;border:1px solid #2b3245;border-radius:14px;padding:20px;width:min(92vw,370px);box-shadow:0 30px 80px rgba(0,0,0,.55);">
     <h3 id="modalTitle" style="font-size:1.03rem;margin-bottom:4px;color:#e5e7eb">Reserve</h3>
-    <p style="color:#9ca3af;font-size:.82rem;margin-bottom:12px">Enter name – it will appear on the seat.</p>
+    <p style="color:#9ca3af;font-size:.82rem;margin-bottom:12px">Enter name - it will appear on the seat.</p>
     <input id="nameInput" type="text" maxlength="32" placeholder="Name" style="width:100%;background:#10141d;border:1px solid #2f374c;color:#e5e7eb;border-radius:9px;padding:11px 12px;font-size:.95rem;outline:none;box-sizing:border-box;text-transform:lowercase;" oninput="this.value=this.value.toLowerCase()" onkeydown="if(event.key==='Enter'){event.preventDefault();doSave()}if(event.key==='Escape'){event.preventDefault();doCancel()}">
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:13px;">
       <button id="clearBtn" type="button" onclick="doClear()" style="margin-right:auto;display:none;background:#7f1d1d;border:1px solid #991b1b;color:#fca5a5;padding:7px 13px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:700">Clear</button>
@@ -128,7 +88,6 @@ const ADMIN_EMAIL = "calvinsoean@gmail.com";
     </div>
   </div>
 </div>
-
-<script src="script.js"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1cf949c6a328093',t:'MTc4NDM1NzcyMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script src="script-clean.js"></script>
+</body>
 </html>
