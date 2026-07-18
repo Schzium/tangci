@@ -87,6 +87,12 @@ header p{color:var(--muted);font-size:.82rem;margin-top:4px}
 .merge { z-index: 2; }
 
 .stats{font-variant-numeric:tabular-nums}
+.legend-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+
+/* Dropdown opens upward from bottom nav */
+.row-vis-dropdown-up{
+  top:auto;bottom:calc(100% + 8px);
+}
 
 .bottom-nav{position:fixed;left:0;right:0;bottom:0;background:rgba(17,20,29,.96);border-top:1px solid #262d3d;display:flex;justify-content:center;gap:10px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));z-index:200}
 .nav-btn{background:#1d2331;color:#b9c2d5;border:1px solid #2c3448;padding:9px 22px;border-radius:999px;font-weight:700;font-size:.84rem;cursor:pointer}
@@ -121,7 +127,7 @@ header p{color:var(--muted);font-size:.82rem;margin-top:4px}
   body { padding: 10px 10px 88px; }
   .legend-bar { margin: 6px 0 10px; font-size: .75rem; }
   .board { padding: 10px 6px; }
-  .pov-title { padding: 4px 0; font-size: .8rem; margin-bottom: 6px; }
+  .pov-label { font-size: .78rem; margin-bottom: 4px; }
   .cell { height: 32px; }
   .bottom-nav { padding: 6px 14px calc(6px + env(safe-area-inset-bottom)); }
   .nav-btn { padding: 6px 16px; font-size: .78rem; }

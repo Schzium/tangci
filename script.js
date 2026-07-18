@@ -95,28 +95,28 @@ var clearBtnEl = document.getElementById('clearBtn');
 
 function switchPOV(pov) {
   currentPOV = pov;
-  var resetBtn = document.getElementById('resetBtn');
-  var rowVisBtn = document.getElementById('rowVisBtn');
+  var navResetBtn = document.getElementById('navResetBtn');
+  var rowVisWrap = document.getElementById('rowVisWrap');
   if (pov === 'av') {
-    povTitle.textContent = 'AV';
+    povTitle.textContent = 'AV View';
     navAvBtn.style.background = '#1c2d48';
     navAvBtn.style.color = '#8fc8ff';
     navAvBtn.style.borderColor = '#2c4a78';
     navPodiumBtn.style.background = '#1d2331';
     navPodiumBtn.style.color = '#b9c2d5';
     navPodiumBtn.style.borderColor = '#2c3448';
-    resetBtn.style.display = '';
-    rowVisBtn.style.display = '';
+    if (navResetBtn) navResetBtn.style.display = '';
+    if (rowVisWrap) rowVisWrap.style.display = '';
   } else {
-    povTitle.textContent = 'PODIUM';
+    povTitle.textContent = 'Podium View';
     navPodiumBtn.style.background = '#3b2336';
     navPodiumBtn.style.color = '#f5a9d0';
     navPodiumBtn.style.borderColor = '#5c3050';
     navAvBtn.style.background = '#1d2331';
     navAvBtn.style.color = '#b9c2d5';
     navAvBtn.style.borderColor = '#2c3448';
-    resetBtn.style.display = 'none';
-    rowVisBtn.style.display = 'none';
+    if (navResetBtn) navResetBtn.style.display = 'none';
+    if (rowVisWrap) rowVisWrap.style.display = 'none';
   }
   render();
 }
@@ -271,14 +271,13 @@ function applyRowVis(e) {
   saveState();
   document.getElementById('rowVisDropdown').classList.remove('open');
   render();
-  showToast('Rows updated');
 }
 
 // Close dropdown when clicking outside
 document.addEventListener('click', function(e) {
   var wrap = document.getElementById('rowVisBtn');
   var dd = document.getElementById('rowVisDropdown');
-  if (dd.classList.contains('open') && !dd.contains(e.target) && e.target !== wrap) {
+  if (dd && dd.classList.contains('open') && !dd.contains(e.target) && e.target !== wrap && !wrap.contains(e.target)) {
     dd.classList.remove('open');
   }
 });
@@ -396,7 +395,7 @@ function render() {
     }
     displayR++;
   }
-  document.getElementById('stats').textContent = reserved + ' / ' + clickable + ' reserved';
+  document.getElementById('stats').textContent = reserved + ' BK';
 }
 
 function openModal(id) {

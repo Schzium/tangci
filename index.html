@@ -30,52 +30,69 @@ const FIREBASE_CONFIG = {
 </head>
 <body>
 <div class="container">
+
+  <!-- Legend bar -->
   <div class="legend-bar">
     <span><span class="dot" style="background:var(--seat-empty)"></span> Empty</span>
     <span><span class="dot" style="background:var(--seat-filled)"></span> Reserved</span>
-    <span class="stats" id="stats">0 reserved</span>
-    <button class="btn" id="resetBtn" type="button" onclick="doReset()">Reset all</button>
-    <button class="btn btn-primary" id="fitBtn" type="button">Fit to screen</button>
-    <div class="row-vis-wrap">
-      <button class="btn" id="rowVisBtn" type="button" onclick="toggleRowVis()">Rows</button>
-      <div class="row-vis-dropdown" id="rowVisDropdown">
-        <div class="row-vis-header">
-          <span>Select visible rows</span>
-          <button class="btn btn-small" onclick="selectAllRows(event)" style="font-size:.62rem;padding:3px 8px">All</button>
-        </div>
-        <div class="row-vis-list" id="rowVisList"></div>
-        <div class="row-vis-actions">
-          <button class="btn btn-small" onclick="closeRowVis(event)">Cancel</button>
-          <button class="btn btn-primary btn-small" onclick="applyRowVis(event)">Apply</button>
-        </div>
-      </div>
+    <div class="legend-right">
+      <span class="stats" id="stats">0 BK</span>
+      <button class="btn" id="fitBtn" type="button">Zoom</button>
     </div>
   </div>
+
+  <!-- Reset confirm -->
   <div id="resetConfirm" style="display:none;text-align:center;margin:10px 0;padding:12px;background:#7f1d1d;border:1px solid #991b1b;border-radius:10px;color:#fca5a5;font-size:.82rem;">
     <p style="margin-bottom:10px;">Are you sure you want to clear ALL reservations?</p>
     <button class="btn" type="button" onclick="cancelReset()" style="margin-right:8px;">No, Cancel</button>
     <button class="btn" type="button" onclick="confirmReset()" style="background:#22c55e;border-color:#22c55e;color:#05210f;font-weight:600;">Yes, Clear All</button>
   </div>
+
+  <!-- Board -->
   <div class="board" id="board">
     <div class="pov-section" id="povView">
       <div class="pov-wrap">
-        <div class="pov-label" id="povTitle">AV</div>
+        <div class="pov-label" id="povTitle">AV View</div>
         <div class="floor" id="floor"></div>
       </div>
     </div>
   </div>
+
 </div>
+
+<!-- Bottom nav -->
 <nav class="bottom-nav">
-  <button class="nav-btn" id="navAvPov" type="button" style="background:#1c2d48;color:#8fc8ff;border-color:#2c4a78" onclick="switchPOV('av')"> Operator</button>
-  <button class="nav-btn" id="navPodiumPov" type="button" onclick="switchPOV('podium')"> Podium</button>
+  <button class="nav-btn" id="navResetBtn" type="button" onclick="doReset()">Reset</button>
+  <button class="nav-btn" id="navAvPov" type="button" style="background:#1c2d48;color:#8fc8ff;border-color:#2c4a78" onclick="switchPOV('av')">AV</button>
+  <button class="nav-btn" id="navPodiumPov" type="button" onclick="switchPOV('podium')">Podium</button>
+  <div class="row-vis-wrap" id="rowVisWrap">
+    <button class="nav-btn" id="rowVisBtn" type="button" onclick="toggleRowVis()">Rows</button>
+    <div class="row-vis-dropdown row-vis-dropdown-up" id="rowVisDropdown">
+      <div class="row-vis-header">
+        <span>Select visible rows</span>
+        <button class="btn btn-small" onclick="selectAllRows(event)" style="font-size:.62rem;padding:3px 8px">All</button>
+      </div>
+      <div class="row-vis-list" id="rowVisList"></div>
+      <div class="row-vis-actions">
+        <button class="btn btn-small" onclick="closeRowVis(event)">Cancel</button>
+        <button class="btn btn-primary btn-small" onclick="applyRowVis(event)">Apply</button>
+      </div>
+    </div>
+  </div>
 </nav>
+
+<!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<!-- Name popup -->
 <div class="name-popup-overlay" id="namePopupOverlay" onclick="closeNamePopup()">
   <div class="name-popup" onclick="event.stopPropagation()">
     <div class="name-text" id="namePopupText"></div>
     <div class="seat-id" id="namePopupSeatId"></div>
   </div>
 </div>
+
+<!-- Reserve modal -->
 <div id="modalOverlay" style="position:fixed;inset:0;background:rgba(5,7,12,.7);display:none;align-items:flex-start;justify-content:center;z-index:9999;padding-top:12vh;" onclick="if(event.target===this)doCancel()">
   <div id="modalBox" style="background:#171c27;border:1px solid #2b3245;border-radius:14px;padding:20px;width:min(92vw,370px);box-shadow:0 30px 80px rgba(0,0,0,.55);">
     <h3 id="modalTitle" style="font-size:1.03rem;margin-bottom:4px;color:#e5e7eb">Reserve</h3>
@@ -88,6 +105,7 @@ const FIREBASE_CONFIG = {
     </div>
   </div>
 </div>
+
 <script src="script.js"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1cffe79bc1aea89',t:'MTc4NDM2MjA1OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1d0e43dab6b03d4',t:'MTc4NDM3MTQ3MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
