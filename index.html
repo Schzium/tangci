@@ -580,7 +580,7 @@
   }
   .ed-kepala-kolom{
     display: grid;
-    grid-template-columns: 1fr 40pt 22pt 20pt 15pt;
+    grid-template-columns: 1fr 36pt 19pt 24pt 18pt 13pt;
     gap: 4pt;
     padding: 0 2pt 3pt;
     font-size: 7.5pt; font-weight: 700; letter-spacing: .05em;
@@ -611,12 +611,12 @@
   }
   .ed-baris{
     display: grid;
-    grid-template-columns: 1fr 40pt 22pt 20pt 15pt;
+    grid-template-columns: 1fr 36pt 19pt 24pt 18pt 13pt;
     gap: 4pt; align-items: center;
     margin-bottom: 3pt;
   }
   .ed-baris .ed-ini, .ed-tambah .baru-ini{ text-align: center; text-transform: uppercase; }
-  .ed-g, .ed-r{
+  .ed-g, .ed-r, .ed-k{
     height: 15pt; line-height: 1;
     border: .75pt solid #ccd2d6; border-radius: 2pt;
     background: #fff; color: #555;
@@ -627,6 +627,9 @@
   .ed-g.g-P{ background: #fdeef4; border-color: #e0b3c8; color: #8a2b52; }
   .ed-g.g-x{ color: #b0413e; border-color: #e3b7b5; background: #fdf4f4; }
   .ed-r{ color: #2f7a4f; }
+  .ed-k{ color: #8a9095; font-weight: 700; }
+  .ed-k.k-p{ background: #e8f1f8; border-color: #a9c6dc; color: #14526e; }
+  .ed-k.k-hp{ background: #f3ecf7; border-color: #cfb9de; color: #6b3f86; }
   .ed-r.mati{ color: #a2a8ac; border-color: #e0e3e5; background: #f7f8f9; }
   .ed-hapus{
     flex: 0 0 auto;
@@ -658,6 +661,10 @@
   .hadirin td{ padding: 3pt 4pt; border-bottom: .5pt solid #eef1f3; }
   .hadirin td.no{ width: 20pt; color: #a3a9ad; }
   .hadirin td.ini{ width: 42pt; font-weight: 700; }
+  .hadirin .tag.kat{
+    margin-left: 4pt; background: #eef1f3; color: #5b6368;
+    font-size: 6.5pt; letter-spacing: .04em;
+  }
   .hadirin td.tg{ width: 40pt; text-align: center; font-weight: 700; color: #0d5c7a; }
   .hadirin td.st{ width: 104pt; }
   .hadirin .ket{ display: block; font-size: 7pt; color: #a3a9ad; margin-top: 1pt; }
@@ -1413,10 +1420,11 @@ function daftarSiswa(){
             n: String(x.n || ""),
             i: String(x.i || bikinInisial(x.n)),
             g: (x.g === "L" || x.g === "P") ? x.g : "",
-            r: x.r === 0 ? 0 : 1
+            r: x.r === 0 ? 0 : 1,
+            k: (x.k === "P" || x.k === "HP") ? x.k : ""
           };
         }
-        return { n: String(x), i: bikinInisial(x), g: "", r: 1 };
+        return { n: String(x), i: bikinInisial(x), g: "", r: 1, k: "" };
       }).filter((o) => o.n).map(perbaruiOrang);
     }
   } catch (e) {}
@@ -1431,7 +1439,7 @@ function perbaruiOrang(o){
   const k = normNama(o.n);
   const p = PERBARUI_ORANG.find((x) => x.lama === k);
   const g = (x) => (x && (x.g === "L" || x.g === "P")) ? x.g : "";
-  return p ? { n: p.baru.n, i: p.baru.i, g: g(p.baru) || g(o), r: o.r === 0 ? 0 : 1 } : o;
+  return p ? { n: p.baru.n, i: p.baru.i, g: g(p.baru) || g(o), r: o.r === 0 ? 0 : 1, k: o.k || "" } : o;
 }
 function simpanDaftarSiswa(arr){
   try { localStorage.setItem(KUNCI_DAFTAR, JSON.stringify(arr)); } catch (e) {}
@@ -1816,6 +1824,7 @@ function dataHadirin(){
 /* nilai antre: makin besar = makin lama tidak dapat tugas (dipakai untuk sortir) */
 function nilaiAntre(it, o){
   if (o && o.r === 0) return -30000;                  // dikecualikan → paling bawah
+  if (o && (o.k === "P" || o.k === "HP")) return -25000;   // P/HP: bukan calon siswa/asisten
   if (!it || it.terakhir == null) return 10000;       // belum pernah → paling atas
   if (it.terakhir > pekanAktif) return -10000 - (it.terakhir - pekanAktif);  // terjadwal → bawah
   return pekanAktif - it.terakhir;                    // makin lama makin besar
@@ -1849,6 +1858,8 @@ function bukaHadirin(){
     let status;
     if (keluarRotasi){
       status = '<span class="tag mati">dikecualikan</span>';
+    } else if (o.k === "P" || o.k === "HP"){
+      status = '<span class="tag kat">khusus ' + esc(o.k) + "</span>";
     } else if (it.terakhir === null){
       status = '<span class="tag siap">belum pernah</span>';
     } else if (it.terakhir > pekanAktif){
@@ -1865,6 +1876,7 @@ function bukaHadirin(){
     return '<tr' + (keluarRotasi ? ' class="mati"' : "") + '>'
       + '<td class="no">' + (i + 1) + "</td>"
       + '<td class="nm ' + kelasG + '">' + esc(o.n)
+      + ((o.k === "P" || o.k === "HP") ? '<span class="tag kat">' + esc(o.k) + "</span>" : "")
       + (o.liar ? '<span class="ket">belum di daftar</span>' : "") + "</td>"
       + '<td class="ini">' + esc(o.i) + "</td>"
       + '<td class="tg">' + (it.tugas || "&ndash;") + "</td>"
@@ -1969,7 +1981,7 @@ function bukaPin(){
 
 /* ---------- bagi tugas siswa/asisten untuk seluruh periode ---------- */
 function bagiTugas(){
-  const orang = daftarSiswa().filter((o) => o.r !== 0);
+  const orang = daftarSiswa().filter((o) => o.r !== 0 && o.k !== "P" && o.k !== "HP");
   if (!orang.length){ alert("Daftar nama masih kosong."); return; }
 
   const kunci = (o) => normNama(o.n);
@@ -2124,6 +2136,11 @@ function bagiTugas(){
   }
 
   let urutOpsi = { kolom: "nama", arah: 1 };
+  let modeSemi = false;      /* true = dropdown siswa/asisten (P & HP tidak ikut) */
+  const khusus = (nama) => {
+    const org = cariOrang(nama);
+    return !!(org && (org.k === "P" || org.k === "HP"));
+  };
 
   function daftarOpsi(){
     const info = petaTugas();
@@ -2145,6 +2162,7 @@ function bagiTugas(){
     let no = 0;
     let jumlahSiap = 0;
     arr.forEach((o) => {
+      if (modeSemi && khusus(o.n)) return;      // P / HP hanya untuk tugas selain siswa/asisten
       const org = cariOrang(o.n);
       const g = org && org.g ? org.g : "";
       const st = statusOrang(info.get(normNama(o.n)));
@@ -2174,6 +2192,7 @@ function bagiTugas(){
   }
 
   function gambar(trig, awal){
+    modeSemi = trig.dataset.semi === "1";
     pop.innerHTML =
       '<div class="pn-kepala"><span class="pn-judul">Pilih nama</span>'
       + '<span class="pn-saring">'
@@ -2330,10 +2349,12 @@ function bagiTugas(){
     const isi = arr.map((o, i) => {
       const g = (o.g === "L" || o.g === "P") ? o.g : "";
       const rotasi = o.r !== 0;
+      const kategori = (o.k === "P" || o.k === "HP") ? o.k : "";
       return `<div class="ed-baris${o.baru ? " baru" : ""}" data-i="${i}"${o.baru ? ' title="Dari jadwal, belum ada di daftar"' : ""}>`
       + `<input class="ed-input ed-nama" type="text" value="${esc(o.n)}" placeholder="Nama" aria-label="Nama ${i + 1}">`
       + `<input class="ed-input ed-ini" type="text" value="${esc(o.i)}" placeholder="Ini" aria-label="Inisial ${i + 1}">`
       + `<button type="button" class="ed-g g-${g || "x"}" title="Jenis kelamin (klik untuk ganti): ${g === "L" ? "Laki-laki" : g === "P" ? "Perempuan" : "belum diisi"}">${g || "?"}</button>`
+      + `<button type="button" class="ed-k${kategori ? " k-" + kategori.toLowerCase() : ""}" title="Kategori (klik untuk ganti): ${kategori === "P" ? "Perintis — hanya untuk tugas selain siswa/asisten" : kategori === "HP" ? "Hamba Pelayanan — hanya untuk tugas selain siswa/asisten" : "Penyiar — boleh jadi siswa/asisten"}">${kategori || "&ndash;"}</button>`
       + `<button type="button" class="ed-r${rotasi ? "" : " mati"}" title="${rotasi ? "Ikut rotasi siswa/asisten" : "Tidak ikut rotasi"}">${rotasi ? "&#10003;" : "&ndash;"}</button>`
       + `<button type="button" class="ed-hapus" title="Hapus nama">&times;</button></div>`;
     }).join("");
@@ -2347,7 +2368,7 @@ function bagiTugas(){
     const hanyaInisial = belum.filter((v) => !/[a-z]/.test(v));
     let kerja = perluNama
       .map((v) => ({ n: v, i: bikinInisial(v), g: "", r: 1, baru: true }))
-      .concat(daftarSiswa().map((o) => ({ n: o.n, i: o.i, g: o.g || "", r: o.r === 0 ? 0 : 1 })));
+      .concat(daftarSiswa().map((o) => ({ n: o.n, i: o.i, g: o.g || "", r: o.r === 0 ? 0 : 1, k: (o.k === "P" || o.k === "HP") ? o.k : "" })));
     const tirai = document.createElement("div");
     tirai.className = "modal-tirai";
     tirai.innerHTML = '<div class="modal-kotak" role="dialog" aria-modal="true" aria-label="Kelola daftar nama">'
@@ -2359,7 +2380,7 @@ function bagiTugas(){
       + '<input class="ed-input baru-ini" type="text" placeholder="Ini" aria-label="Inisial baru">'
       + '<button type="button" class="ed-tambah-btn">Tambah</button></div>'
       + '<div class="ed-legenda" hidden></div>'
-      + '<div class="ed-kepala-kolom"><span>Nama</span><span>Inisial</span><span>L/P</span><span>Rot</span><span></span></div>'
+      + '<div class="ed-kepala-kolom"><span>Nama</span><span>Inisial</span><span>L/P</span><span>Kat</span><span>Rot</span><span></span></div>'
       + '<div class="ed-daftar"></div></div>'
       + '<div class="modal-kaki"><button type="button" class="ed-reset">Kembalikan daftar awal</button>'
       + '<span class="kaki-kanan">'
@@ -2401,6 +2422,16 @@ function bagiTugas(){
         kotak.scrollTop = pos;
         return;
       }
+      const gantiK = ev.target.closest(".ed-k");
+      if (gantiK){
+        const i = Number(gantiK.closest(".ed-baris").dataset.i);
+        const siklus = ["", "P", "HP"];
+        kerja[i].k = siklus[(siklus.indexOf(kerja[i].k || "") + 1) % 3];
+        const pos = kotak.scrollTop;
+        segarkan();
+        kotak.scrollTop = pos;
+        return;
+      }
       const gantiR = ev.target.closest(".ed-r");
       if (gantiR){
         const i = Number(gantiR.closest(".ed-baris").dataset.i);
@@ -2421,7 +2452,7 @@ function bagiTugas(){
         const inI = tirai.querySelector(".baru-ini");
         const n = inN.value.trim();
         if (!n) { inN.focus(); return; }
-        kerja.push({ n: n, i: (inI.value.trim() || bikinInisial(n)).toUpperCase(), g: "", r: 1 });
+        kerja.push({ n: n, i: (inI.value.trim() || bikinInisial(n)).toUpperCase(), g: "", r: 1, k: "" });
         inN.value = ""; inI.value = "";
         segarkan();
         kotak.scrollTop = kotak.scrollHeight;
@@ -2429,7 +2460,7 @@ function bagiTugas(){
         return;
       }
       if (ev.target.closest(".ed-reset")){
-        kerja = DAFTAR_SISWA_BAWAAN.map((o) => ({ n: o.n, i: o.i, g: o.g || "", r: o.r === 0 ? 0 : 1 }));
+        kerja = DAFTAR_SISWA_BAWAAN.map((o) => ({ n: o.n, i: o.i, g: o.g || "", r: o.r === 0 ? 0 : 1, k: o.k || "" }));
         segarkan();
         return;
       }
@@ -2439,10 +2470,11 @@ function bagiTugas(){
             n: String(o.n || "").trim(),
             i: String(o.i || "").trim().toUpperCase(),
             g: (o.g === "L" || o.g === "P") ? o.g : "",
-            r: o.r === 0 ? 0 : 1
+            r: o.r === 0 ? 0 : 1,
+            k: (o.k === "P" || o.k === "HP") ? o.k : ""
           }))
           .filter((o) => o.n)
-          .map((o) => ({ n: o.n, i: o.i || bikinInisial(o.n), g: o.g, r: o.r }));
+          .map((o) => ({ n: o.n, i: o.i || bikinInisial(o.n), g: o.g, r: o.r, k: o.k }));
         simpanDaftarSiswa(bersih);
         tirai.remove();
         if (typeof tampilkanPekan === "function" && typeof pekanAktif === "number") tampilkanPekan(pekanAktif, false);
