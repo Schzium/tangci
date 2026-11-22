@@ -3127,78 +3127,115 @@ return { doReset: doReset, confirmReset: confirmReset, cancelReset: cancelReset,
   var refTugas  = db.collection('jhtp').doc('tugas');
   var refDaftar = db.collection('jhtp').doc('daftar');
   var PREFIX = 'jhtp-nama:';
-  var diam = false, timer = null, siap = false;
+  var menunggu = Object.create(null);      // slot yang sedang dikirim dari HP ini
+  var tungguDaftar = 0;
 
-  function kumpulkanTugas(){
+  function bacaLokal(){
     var map = {};
     try {
       for (var i = 0; i < localStorage.length; i++){
         var k = localStorage.key(i);
-        if (k && k.indexOf(PREFIX) === 0) map[k.slice(PREFIX.length)] = localStorage.getItem(k);
+        if (k && k.indexOf(PREFIX) === 0){
+          var v = localStorage.getItem(k);
+          if (v) map[k.slice(PREFIX.length)] = v;
+        }
       }
     } catch(e){}
     return map;
   }
-  function terapkanTugas(map){
-    diam = true;
-    try {
-      Object.keys(localStorage).filter(function(k){ return k.indexOf(PREFIX) === 0; })
-        .forEach(function(k){ localStorage.removeItem(k); });
-      Object.keys(map || {}).forEach(function(k){
-        if (map[k]) localStorage.setItem(PREFIX + k, map[k]);
-      });
-    } catch(e){}
-    diam = false;
-    if (typeof tampilkanPekan === 'function') {
-      try { tampilkanPekan(pekanAktif, false); } catch(e){}
-    }
-  }
-  function kirimTugas(){
-    if (!siap || diam) return;
-    clearTimeout(timer);
-    timer = setTimeout(function(){
-      refTugas.set({ data: kumpulkanTugas(), ts: Date.now() })
-        .catch(function(err){ console.warn('[jhtp] gagal simpan tugas', err); });
-    }, 500);
+
+  /* satu slot = satu field, jadi dua HP menyimpan slot berbeda tidak saling menimpa */
+  function kirimSatu(key, nilai){
+    menunggu[key] = Date.now();
+    var jalur = 'data.' + key;
+    var isi = {};
+    isi[jalur] = nilai ? String(nilai) : firebase.firestore.FieldValue.delete();
+    refTugas.update(isi).catch(function(){
+      var obj = {};
+      if (nilai) obj[key] = String(nilai);
+      refTugas.set({ data: obj, ts: Date.now() }, { merge: true })
+        .catch(function(e){ console.warn('[jhtp] gagal simpan', e); });
+    });
+    setTimeout(function(){ delete menunggu[key]; }, 3000);
   }
 
-  /* sisipkan pengait pada fungsi simpan milik aplikasi jadwal */
   if (typeof simpanNama === 'function'){
     var simpanNamaAsli = simpanNama;
     window.simpanNama = function(w, no, slot, nilai){
       simpanNamaAsli(w, no, slot, nilai);
-      kirimTugas();
+      kirimSatu(w + ':' + no + ':' + slot, nilai);
     };
   }
   if (typeof simpanDaftarSiswa === 'function'){
     var simpanDaftarAsli = simpanDaftarSiswa;
     window.simpanDaftarSiswa = function(arr){
       simpanDaftarAsli(arr);
-      if (siap) refDaftar.set({ arr: arr, ts: Date.now() })
+      tungguDaftar = Date.now();
+      refDaftar.set({ arr: arr, ts: Date.now() })
         .catch(function(err){ console.warn('[jhtp] gagal simpan daftar', err); });
     };
   }
 
+  function gambarUlang(){
+    if (typeof tampilkanPekan === 'function'){
+      try { tampilkanPekan(pekanAktif, false); } catch(e){}
+    }
+  }
+
   refTugas.onSnapshot(function(doc){
-    siap = true;
     kabar('Cloud aktif \u00b7 data tersinkron', true);
-    if (!doc.exists || diam) return;
     var d = doc.data() || {};
-    terapkanTugas(d.data || {});
+    var map = d.data || {};
+    if (!doc.exists){
+      var lokal = bacaLokal();                 // cloud masih kosong → unggah data HP ini
+      if (Object.keys(lokal).length) refTugas.set({ data: lokal, ts: Date.now() }, { merge: true }).catch(function(){});
+      return;
+    }
+    var lokal0 = bacaLokal();
+    if (!Object.keys(map).length && Object.keys(lokal0).length){
+      refTugas.set({ data: lokal0, ts: Date.now() }, { merge: true }).catch(function(){});
+      return;
+    }
+    var ubah = false;
+    Object.keys(map).forEach(function(k){
+      if (menunggu[k]) return;
+      var v = map[k];
+      try {
+        if (localStorage.getItem(PREFIX + k) !== v){ localStorage.setItem(PREFIX + k, v); ubah = true; }
+      } catch(e){}
+    });
+    try {
+      Object.keys(localStorage).filter(function(k){ return k.indexOf(PREFIX) === 0; })
+        .forEach(function(k){
+          var key = k.slice(PREFIX.length);
+          if (menunggu[key]) return;
+          if (!(key in map)){ localStorage.removeItem(k); ubah = true; }
+        });
+    } catch(e){}
+    if (ubah) gambarUlang();
   }, function(err){
     console.warn('[jhtp] tugas offline', err);
     kabar('Cloud terkunci \u00b7 jalan dari data HP', false);
   });
 
   refDaftar.onSnapshot(function(doc){
-    if (!doc.exists || diam) return;
+    if (!doc.exists) return;
+    if (Date.now() - tungguDaftar < 3000) return;      // baru saja kita kirim sendiri
     var d = doc.data() || {};
-    if (!Array.isArray(d.arr) || !d.arr.length) return;
-    try { var lokal = localStorage.getItem('jhtp-daftar-siswa'); } catch(e){ return; }
-    if (lokal === JSON.stringify(d.arr)) return;
-    try { localStorage.setItem('jhtp-daftar-siswa', JSON.stringify(d.arr)); } catch(e){}
-    if (typeof tampilkanPekan === 'function') { try { tampilkanPekan(pekanAktif, false); } catch(e){} }
-  });
+    if (!Array.isArray(d.arr) || !d.arr.length){
+      var lokalArr = null;
+      try { lokalArr = JSON.parse(localStorage.getItem('jhtp-daftar-siswa') || 'null'); } catch(e){}
+      if (Array.isArray(lokalArr) && lokalArr.length){
+        refDaftar.set({ arr: lokalArr, ts: Date.now() }).catch(function(){});
+      }
+      return;
+    }
+    try {
+      if (localStorage.getItem('jhtp-daftar-siswa') === JSON.stringify(d.arr)) return;
+      localStorage.setItem('jhtp-daftar-siswa', JSON.stringify(d.arr));
+    } catch(e){ return; }
+    gambarUlang();
+  }, function(err){ console.warn('[jhtp] daftar offline', err); });
 })();
 </script>
 </body>
