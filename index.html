@@ -664,6 +664,7 @@
   }
   .ed-daftar{ overflow-y: auto; min-height: 0; padding-right: 2pt; }
   .ed-baris.baru{ background: #fff6e0; border-radius: 3pt; }
+  .ed-petunjuk{margin:-2px 0 10px;font-size:12.5px;line-height:1.4;color:#575A5D;font-style:italic}
   .ed-legenda{
     font: 8pt Calibri, "Segoe UI", sans-serif;
     color: #6b4e00; background: #fff9ea;
@@ -1644,6 +1645,89 @@ function simpanNama(w, no, slot, nilai){
   try { localStorage.setItem(KUNCI_NAMA + w + ":" + no + ":" + slot, nilai); } catch (e) {}
 }
 
+/* Ganti nama orang di SEMUA tempat sekaligus: data jadwal, dan pilihan yang
+   sudah tersimpan per slot (termasuk yang sudah ada di cloud lewat simpanNama).
+   Dipakai waktu nama di daftar penyiar diubah. */
+function gantiNamaMenyeluruh(pasangan){
+  const hasil = { jadwal: 0, slot: 0 };
+  if (!pasangan || !pasangan.length) return hasil;
+  const rapi = (t) => String(t == null ? "" : t).replace(/\s+/g, " ").trim();
+  /* nama bisa tertulis dalam 3 bentuk: lengkap, semi ("Agus P"), atau inisial ("AP").
+     Semua bentuk itu ikut diganti, dan bentuknya dipertahankan. */
+  const petaNama = new Map();
+  const petaIni = new Map();
+  const semi = (n, i) => {
+    const t = rapi(n);
+    if (!t) return "";
+    const k = t.split(" ");
+    return k.length === 1 ? k[0] : k[0] + " " + k[k.length - 1][0].toUpperCase();
+  };
+  pasangan.forEach((p) => {
+    const lamaN = rapi(p.lama);
+    const baruN = rapi(p.baru);
+    if (!lamaN || !baruN) return;
+    petaNama.set(normNama(lamaN), baruN);                       /* bentuk lengkap */
+    petaNama.set(normNama(semi(lamaN, p.lamaIni)), semi(baruN, p.baruIni));   /* bentuk semi */
+    const li = rapi(p.lamaIni).toUpperCase();
+    const bi = rapi(p.baruIni).toUpperCase() || bikinInisial(baruN);
+    if (li) petaIni.set(li, bi);                                /* bentuk inisial */
+  });
+  if (!petaNama.size && !petaIni.size) return hasil;
+
+  /* satu teks bisa berisi dua nama: "A / B" */
+  const gantiSatu = (teks) => {
+    const asli = String(teks == null ? "" : teks);
+    if (!asli.trim()) return { teks: asli, ubah: false };
+    let ubah = false;
+    const baru = asli.split("/").map((bagian) => {
+      const cocok = bagian.match(/^(\s*)(.*?)(\s*)$/);
+      const isi = cocok[2];
+      if (!isi) return bagian;
+      if (petaNama.has(normNama(isi))){
+        ubah = true;
+        return cocok[1] + petaNama.get(normNama(isi)) + cocok[3];
+      }
+      if (petaIni.has(isi.toUpperCase())){
+        ubah = true;
+        return cocok[1] + petaIni.get(isi.toUpperCase()) + cocok[3];
+      }
+      return bagian;
+    }).join("/");
+    return { teks: ubah ? baru : asli, ubah: ubah };
+  };
+
+  /* 1) data jadwal bawaan */
+  JADWAL.forEach((d) => {
+    const k = gantiSatu(d.ketua);
+    if (k.ubah){ d.ketua = k.teks; hasil.jadwal += 1; }
+    (d.baris || []).forEach((b) => {
+      const n = gantiSatu(b.nilai);
+      if (n.ubah){ b.nilai = n.teks; hasil.jadwal += 1; }
+      const o = gantiSatu(b.doa);
+      if (o.ubah){ b.doa = o.teks; hasil.jadwal += 1; }
+    });
+  });
+
+  /* 2) pilihan yang sudah tersimpan per slot (HP + cloud) */
+  const kunciUbah = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++){
+      const k = localStorage.key(i);
+      if (!k || k.indexOf(KUNCI_NAMA) !== 0) continue;
+      const v = localStorage.getItem(k);
+      const g = gantiSatu(v);
+      if (g.ubah) kunciUbah.push([k.slice(KUNCI_NAMA.length), g.teks]);
+    }
+  } catch (e) {}
+  kunciUbah.forEach(([kunci, nilai]) => {
+    const bagian = kunci.split(":");
+    if (bagian.length !== 3) return;
+    simpanNama(bagian[0], bagian[1], bagian[2], nilai);   /* ikut mengirim ke cloud */
+    hasil.slot += 1;
+  });
+  return hasil;
+}
+
 /* =========================================================================
    ISI LEMBAR PELAJARAN (wol.jw.org) — tema tiap sesi + referensi
    ========================================================================= */
@@ -2493,8 +2577,12 @@ function bagiTugas(){
     const perluNama = belum.filter((v) => /[a-z]/.test(v));
     const hanyaInisial = belum.filter((v) => !/[a-z]/.test(v));
     let kerja = perluNama
-      .map((v) => ({ n: v, i: bikinInisial(v), g: "", r: 1, baru: true }))
-      .concat(daftarSiswa().map((o) => ({ n: o.n, i: o.i, g: o.g || "", r: o.r === 0 ? 0 : 1, k: (o.k === "P" || o.k === "HP") ? o.k : "" })));
+      .map((v) => ({ n: v, i: bikinInisial(v), g: "", r: 1, baru: true, _asli: "", _asliIni: "" }))
+      .concat(daftarSiswa().map((o) => ({
+        n: o.n, i: o.i, g: o.g || "", r: o.r === 0 ? 0 : 1,
+        k: (o.k === "P" || o.k === "HP") ? o.k : "",
+        _asli: o.n, _asliIni: o.i
+      })));
     const tirai = document.createElement("div");
     tirai.className = "modal-tirai";
     tirai.innerHTML = '<div class="modal-kotak" role="dialog" aria-modal="true" aria-label="Penyiar dan data tugas">'
@@ -2511,6 +2599,7 @@ function bagiTugas(){
       + '<input class="ed-input baru-nama" type="text" placeholder="Nama lengkap&hellip;" aria-label="Nama baru">'
       + '<input class="ed-input baru-ini" type="text" placeholder="Ini" aria-label="Inisial baru">'
       + '<button type="button" class="ed-tambah-btn">Tambah</button></div>'
+      + '<p class="ed-petunjuk">Ubah nama di sini &mdash; semua jadwal yang memakai nama itu ikut berubah begitu Simpan ditekan.</p>'
       + '<div class="ed-legenda" hidden></div>'
       + '<div class="ed-kepala-kolom"><span>Nama</span><span>Inisial</span><span>L/P</span><span>Kat</span><span>Rot</span><span></span></div>'
       + '<div class="ed-daftar"></div></div>'
@@ -2525,8 +2614,8 @@ function bagiTugas(){
     const legenda = tirai.querySelector(".ed-legenda");
     let pesan = "";
     if (perluNama.length){
-      pesan += "Baris kuning berasal dari jadwal dan belum ada di daftar. "
-        + "Lengkapi nama lengkapnya, lalu tekan Simpan.";
+      pesan += "Baris kuning = nama ini tertulis di jadwal tapi belum ada di daftar penyiar. "
+        + "Lengkapi namanya lalu tekan Simpan (sekaligus bisa dijadikan nama baru).";
     }
     if (hanyaInisial.length){
       pesan += (pesan ? " " : "") + "Masih berupa inisial, belum ada nama lengkapnya: "
@@ -2639,7 +2728,7 @@ function bagiTugas(){
         return;
       }
       if (ev.target.closest(".ed-kembalikan")){
-        kerja = DAFTAR_SISWA_BAWAAN.map((o) => ({ n: o.n, i: o.i, g: o.g || "", r: o.r === 0 ? 0 : 1, k: o.k || "" }));
+        kerja = DAFTAR_SISWA_BAWAAN.map((o) => ({ n: o.n, i: o.i, g: o.g || "", r: o.r === 0 ? 0 : 1, k: o.k || "", _asli: "", _asliIni: "" }));
         segarkan();
         return;
       }
@@ -2654,9 +2743,32 @@ function bagiTugas(){
           }))
           .filter((o) => o.n)
           .map((o) => ({ n: o.n, i: o.i || bikinInisial(o.n), g: o.g, r: o.r, k: o.k }));
+        const pasangan = kerja
+          .filter((o) => o._asli && String(o.n || "").trim() && normNama(o._asli) !== normNama(o.n))
+          .map((o) => ({
+            lama: String(o._asli).trim(),
+            baru: String(o.n).trim(),
+            lamaIni: String(o._asliIni || "").trim(),
+            baruIni: String(o.i || "").trim()
+          }));
         simpanDaftarSiswa(bersih);
+        const jejak = pasangan.length ? gantiNamaMenyeluruh(pasangan) : { jadwal: 0, slot: 0, nama: [] };
         tirai.remove();
         if (typeof tampilkanPekan === "function" && typeof pekanAktif === "number") tampilkanPekan(pekanAktif, false);
+        if (pasangan.length){
+          const daftarUbah = pasangan.map((p) => p.lama + " → " + p.baru).join("\n");
+          const keterangan = [];
+          if (jejak.jadwal) keterangan.push(jejak.jadwal + " baris jadwal");
+          if (jejak.slot) keterangan.push(jejak.slot + " penugasan tersimpan");
+          pesanKotak({
+            judul: "Nama sudah diperbarui",
+            isi: daftarUbah + "\n\n"
+              + (keterangan.length
+                ? "Ikut diperbarui di " + keterangan.join(" dan ") + "."
+                : "Belum ada jadwal atau penugasan yang memakai nama itu."),
+            ok: "Selesai"
+          });
+        }
         return;
       }
       if (ev.target.closest(".ed-batal") || ev.target.closest(".modal-x") || ev.target === tirai){
