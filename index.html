@@ -671,11 +671,32 @@
     padding: 4pt 5pt; margin-bottom: 5pt;
   }
   .ed-baris{
+    display: block;
+    margin-bottom: 3pt;
+    padding-bottom: 3pt;
+    border-bottom: .5pt dotted #eceff1;
+  }
+  .ed-atas{
     display: grid;
     grid-template-columns: 1fr 36pt 19pt 24pt 18pt 13pt;
     gap: 4pt; align-items: center;
-    margin-bottom: 3pt;
   }
+  .ed-info{
+    display: flex; flex-wrap: wrap; gap: 8pt;
+    font-size: 7.5pt; color: #7b8287;
+    padding: 2.5pt 2pt 0;
+  }
+  .ed-info .info-siap{ color: #2f7a4f; font-weight: 700; }
+  .ed-info .info-kat{ color: #6b3f86; font-weight: 700; }
+  .ed-info .info-mati{ color: #a33; }
+  .ed-ringkas{ font-size: 8pt; color: #6b7176; margin-bottom: 5pt; }
+  .ed-urut{ display: flex; align-items: center; gap: 3pt; margin-bottom: 5pt; font-size: 8pt; color: #8a9095; }
+  .ed-urut button{
+    font: inherit; font-size: 8pt; padding: 2pt 6pt;
+    border: .75pt solid #ccd2d6; border-radius: 2pt;
+    background: #fff; color: #46505a; cursor: pointer;
+  }
+  .ed-urut button.aktif{ background: #0d5c7a; border-color: #0d5c7a; color: #fff; }
   .ed-baris .ed-ini, .ed-tambah .baru-ini{ text-align: center; text-transform: uppercase; }
   .ed-g, .ed-r, .ed-k{
     height: 15pt; line-height: 1;
@@ -1877,8 +1898,7 @@ function perbaruiTombol(){
   if (!wadah) return;
   if (modeAdmin()){
     wadah.innerHTML =
-      `<button type="button" class="btn-daftar" id="btnHadirin" title="Daftar penyiar & data tugas">Hadirin</button>`
-      + `<button type="button" class="btn-daftar" id="btnDaftar" title="Kelola daftar nama">&#9998; Daftar nama</button>`
+      `<button type="button" class="btn-daftar" id="btnHadirin" title="Daftar penyiar, data tugas, dan daftar nama">&#9998; Penyiar &amp; hadirin</button>`
       + `<button type="button" class="btn-daftar" id="btnTugas" title="Isi otomatis slot siswa/asisten yang masih kosong">&#8635; Bagi tugas</button>`
       + `<button type="button" class="btn-daftar btn-keluar" id="btnKeluar" title="Keluar dari mode admin">Keluar</button>`;
   } else {
@@ -2005,114 +2025,6 @@ function nilaiAntre(it, o){
 }
 
 let urutHadirin = { kolom: "no", arah: 1 };   /* pilihan sortir tabel hadirin, tetap tersimpan selama aplikasi terbuka */
-
-function bukaHadirin(){
-  const tirai = document.createElement("div");
-  tirai.className = "modal-tirai";
-  tirai.innerHTML = '<div class="modal-kotak hadirin-kotak" role="dialog" aria-modal="true" aria-label="Daftar penyiar dan data tugas">'
-    + '<div class="modal-kepala"><span>Daftar penyiar &amp; data tugas</span>'
-    + '<button type="button" class="modal-x" title="Tutup">&times;</button></div>'
-    + '<div class="modal-isi"><p class="hadirin-ringkas"></p><div class="hadirin"></div></div>'
-    + '<div class="modal-kaki"><button type="button" class="ed-reset" id="gantiPin">Ganti PIN</button>'
-    + '<span class="kaki-kanan"><button type="button" class="ed-simpan tutup-hadirin">Tutup</button></span></div></div>';
-  document.body.appendChild(tirai);
-
-  const isi = tirai.querySelector(".hadirin");
-  const ringkas = tirai.querySelector(".hadirin-ringkas");
-  const data = dataHadirin();
-  const aktif = JADWAL[pekanAktif] ? JADWAL[pekanAktif].label : "";
-  const totalSlot = data.reduce((a, c) => a + c.tugas, 0);
-  ringkas.textContent = data.length + " penyiar di daftar · " + totalSlot + " tugas siswa/asisten terisi"
-    + " · dihitung dari pekan aktif: " + aktif + " · jeda " + JEDA_PEKAN + " pekan";
-
-  const barisUntuk = (it, i) => {
-    const o = it.o;
-    const keluarRotasi = o.r === 0;
-    const labelPekan = (wi) => (JADWAL[wi] ? JADWAL[wi].label : "?");
-    let status;
-    if (keluarRotasi){
-      status = '<span class="tag mati">dikecualikan</span>';
-    } else if (o.k === "P" || o.k === "HP"){
-      status = '<span class="tag kat">khusus ' + esc(o.k) + "</span>";
-    } else if (it.terakhir === null){
-      status = '<span class="tag siap">belum pernah</span>';
-    } else if (it.terakhir > pekanAktif){
-      status = '<span class="tag tunggu">terjadwal</span>'
-        + '<span class="ket">pekan ' + labelPekan(it.terakhir) + "</span>";
-    } else {
-      const sisa = JEDA_PEKAN - (pekanAktif - it.terakhir);
-      status = (sisa > 0
-        ? '<span class="tag tunggu">sisa ' + sisa + ' pekan</span>'
-        : '<span class="tag siap">lewat ' + (-sisa) + ' pekan</span>')
-        + '<span class="ket">pekan ' + labelPekan(it.terakhir) + "</span>";
-    }
-    const kelasG = o.g === "L" ? "gL" : (o.g === "P" ? "gP" : "gX");
-    return '<tr' + (keluarRotasi ? ' class="mati"' : "") + '>'
-      + '<td class="no">' + (i + 1) + "</td>"
-      + '<td class="nm ' + kelasG + '">' + esc(o.n)
-      + ((o.k === "P" || o.k === "HP") ? '<span class="tag kat">' + esc(o.k) + "</span>" : "")
-      + (o.liar ? '<span class="ket">belum di daftar</span>' : "") + "</td>"
-      + '<td class="ini">' + esc(o.i) + "</td>"
-      + '<td class="tg">' + (it.tugas || "&ndash;") + "</td>"
-      + '<td class="st">' + status + "</td></tr>";
-  };
-
-  const nilaiKolom = (it, i) => {
-    if (urutHadirin.kolom === "nama") return String(it.o.n || "").toLowerCase();
-    if (urutHadirin.kolom === "ini") return String(it.o.i || "").toLowerCase();
-    if (urutHadirin.kolom === "tugas") return it.tugas;
-    if (urutHadirin.kolom === "status") return nilaiAntre(it, it.o);
-    return i;
-  };
-
-  function gambarTabel(){
-    const daftar = data.map((it, i) => ({ it: it, i: i }));
-    if (urutHadirin.kolom !== "no"){
-      daftar.sort((a, b) => {
-        const x = nilaiKolom(a.it, a.i);
-        const y = nilaiKolom(b.it, b.i);
-        if (typeof x === "string" || typeof y === "string"){
-          return String(x).localeCompare(String(y), "id") * urutHadirin.arah
-            || String(a.it.o.n).localeCompare(String(b.it.o.n), "id");
-        }
-        return (x - y) * urutHadirin.arah || String(a.it.o.n).localeCompare(String(b.it.o.n), "id");
-      });
-    }
-    const panah = (k) => urutHadirin.kolom === k ? '<span class="panah">' + (urutHadirin.arah > 0 ? "\u25B2" : "\u25BC") + "</span>" : '<span class="panah"></span>';
-    const th = (k, label) => '<th class="th-urut' + (urutHadirin.kolom === k ? " on" : "") + '" data-urut="' + k + '">' + label + panah(k) + "</th>";
-    isi.innerHTML = "<table><thead><tr>"
-      + th("no", "No") + th("nama", "Nama") + th("ini", "Inisial")
-      + th("tugas", "Tugas") + th("status", "Status (" + JEDA_PEKAN + " pekan)")
-      + "</tr></thead><tbody>"
-      + daftar.map((d, n) => barisUntuk(d.it, n)).join("")
-      + "</tbody></table>";
-  }
-  gambarTabel();
-
-  isi.addEventListener("click", (ev) => {
-    const h = ev.target.closest ? ev.target.closest("th[data-urut]") : null;
-    if (!h) return;
-    const k = h.dataset.urut;
-    if (urutHadirin.kolom === k) urutHadirin.arah *= -1;
-    else urutHadirin = { kolom: k, arah: (k === "status" || k === "tugas") ? -1 : 1 };
-    gambarTabel();
-  });
-
-  tirai.addEventListener("click", (ev) => {
-    if (ev.target.closest(".modal-x") || ev.target.closest(".tutup-hadirin") || ev.target === tirai){
-      tirai.remove();
-      return;
-    }
-    if (ev.target.closest("#gantiPin")){
-      const baru = prompt("PIN baru (6 angka):", "");
-      if (baru === null) return;
-      const bersih = String(baru).trim();
-      if (!/^\d{6}$/.test(bersih)){ alert("PIN harus 6 angka."); return; }
-      simpanPin(bersih).then(() => alert("PIN sudah diganti."));
-    }
-  });
-  tirai.addEventListener("keydown", (ev) => { if (ev.key === "Escape") tirai.remove(); });
-}
 
 function bukaPin(){
   const tirai = document.createElement("div");
@@ -2527,20 +2439,52 @@ function bagiTugas(){
   }, true);
 
   /* ---------- kelola daftar nama ---------- */
-  function renderEditor(kotak, arr){
+  function renderEditor(kotak, arr, info){
     const isi = arr.map((o, i) => {
       const g = (o.g === "L" || o.g === "P") ? o.g : "";
       const rotasi = o.r !== 0;
       const kategori = (o.k === "P" || o.k === "HP") ? o.k : "";
+      const ket = info ? info(o) : "";
       return `<div class="ed-baris${o.baru ? " baru" : ""}" data-i="${i}"${o.baru ? ' title="Dari jadwal, belum ada di daftar"' : ""}>`
+      + `<div class="ed-atas">`
       + `<input class="ed-input ed-nama" type="text" value="${esc(o.n)}" placeholder="Nama" aria-label="Nama ${i + 1}">`
       + `<input class="ed-input ed-ini" type="text" value="${esc(o.i)}" placeholder="Ini" aria-label="Inisial ${i + 1}">`
       + `<button type="button" class="ed-g g-${g || "x"}" title="Jenis kelamin (klik untuk ganti): ${g === "L" ? "Laki-laki" : g === "P" ? "Perempuan" : "belum diisi"}">${g || "?"}</button>`
       + `<button type="button" class="ed-k${kategori ? " k-" + kategori.toLowerCase() : ""}" title="Kategori (klik untuk ganti): ${kategori === "P" ? "Perintis — hanya untuk tugas selain siswa/asisten" : kategori === "HP" ? "Hamba Pelayanan — hanya untuk tugas selain siswa/asisten" : "Penyiar — boleh jadi siswa/asisten"}">${kategori || "&ndash;"}</button>`
       + `<button type="button" class="ed-r${rotasi ? "" : " mati"}" title="${rotasi ? "Ikut rotasi siswa/asisten" : "Tidak ikut rotasi"}">${rotasi ? "&#10003;" : "&ndash;"}</button>`
-      + `<button type="button" class="ed-hapus" title="Hapus nama">&times;</button></div>`;
+      + `<button type="button" class="ed-hapus" title="Hapus nama">&times;</button>`
+      + `</div><div class="ed-info">${ket}</div></div>`;
     }).join("");
     kotak.innerHTML = isi || '<div class="ed-kosong">Daftar masih kosong.</div>';
+  }
+
+  /* keterangan tugas + status tiap penyiar (dulu ada di panel "Hadirin" terpisah) */
+  function infoPenyiar(){
+    const peta = new Map();
+    try { dataHadirin().forEach((it) => peta.set(normNama(it.o.n), it)); } catch (e) {}
+    const labelPekan = (wi) => (JADWAL[wi] ? JADWAL[wi].label : "?");
+    return (o) => {
+      const it = peta.get(normNama(o.n));
+      if (!it) return '<span class="info-mati">belum masuk hitungan tugas</span>';
+      const tugas = it.tugas || 0;
+      let status;
+      if (it.o.r === 0){
+        status = '<span class="info-mati">tidak ikut rotasi</span>';
+      } else if (it.o.k === "P" || it.o.k === "HP"){
+        status = '<span class="info-kat">khusus ' + esc(it.o.k) + ' &middot; tidak untuk siswa/asisten</span>';
+      } else if (it.terakhir === null){
+        status = '<span class="info-siap">belum pernah dapat tugas</span>';
+      } else if (it.terakhir > pekanAktif){
+        status = '<span>terjadwal di pekan ' + esc(labelPekan(it.terakhir)) + '</span>';
+      } else {
+        const sisa = JEDA_PEKAN - (pekanAktif - it.terakhir);
+        status = (sisa > 0
+          ? '<span>sisa ' + sisa + ' pekan lagi</span>'
+          : '<span class="info-siap">siap ditugaskan</span>')
+          + '<span>' + esc(labelPekan(it.terakhir)) + '</span>';
+      }
+      return '<span>' + tugas + ' tugas</span>' + status;
+    };
   }
 
   function bukaEditor(){
@@ -2553,10 +2497,16 @@ function bagiTugas(){
       .concat(daftarSiswa().map((o) => ({ n: o.n, i: o.i, g: o.g || "", r: o.r === 0 ? 0 : 1, k: (o.k === "P" || o.k === "HP") ? o.k : "" })));
     const tirai = document.createElement("div");
     tirai.className = "modal-tirai";
-    tirai.innerHTML = '<div class="modal-kotak" role="dialog" aria-modal="true" aria-label="Kelola daftar nama">'
-      + '<div class="modal-kepala"><span>Daftar nama &amp; inisial</span>'
+    tirai.innerHTML = '<div class="modal-kotak" role="dialog" aria-modal="true" aria-label="Penyiar dan data tugas">'
+      + '<div class="modal-kepala"><span>Penyiar &amp; data tugas</span>'
       + '<button type="button" class="modal-x" title="Tutup">&times;</button></div>'
       + '<div class="modal-isi">'
+      + '<p class="ed-ringkas"></p>'
+      + '<div class="ed-urut"><span>Urutkan:</span>'
+      + '<button type="button" class="ed-urut-btn" data-urut="">Daftar</button>'
+      + '<button type="button" class="ed-urut-btn" data-urut="nama">Nama</button>'
+      + '<button type="button" class="ed-urut-btn" data-urut="tugas">Tugas</button>'
+      + '<button type="button" class="ed-urut-btn" data-urut="status">Status</button></div>'
       + '<div class="ed-tambah">'
       + '<input class="ed-input baru-nama" type="text" placeholder="Nama lengkap&hellip;" aria-label="Nama baru">'
       + '<input class="ed-input baru-ini" type="text" placeholder="Ini" aria-label="Inisial baru">'
@@ -2564,7 +2514,9 @@ function bagiTugas(){
       + '<div class="ed-legenda" hidden></div>'
       + '<div class="ed-kepala-kolom"><span>Nama</span><span>Inisial</span><span>L/P</span><span>Kat</span><span>Rot</span><span></span></div>'
       + '<div class="ed-daftar"></div></div>'
-      + '<div class="modal-kaki"><button type="button" class="ed-reset">Kembalikan daftar awal</button>'
+      + '<div class="modal-kaki">'
+      + '<button type="button" class="ed-reset" id="gantiPin" title="Ganti PIN mode admin">Ganti PIN</button>'
+      + '<button type="button" class="ed-reset ed-kembalikan" title="Kembalikan daftar nama ke bawaan">Daftar awal</button>'
       + '<span class="kaki-kanan">'
       + '<button type="button" class="ed-batal">Batal</button>'
       + '<button type="button" class="ed-simpan">Simpan</button></span></div></div>';
@@ -2581,8 +2533,53 @@ function bagiTugas(){
         + hanyaInisial.join(", ") + ".";
     }
     if (pesan){ legenda.textContent = pesan; legenda.hidden = false; }
-    const segarkan = () => renderEditor(kotak, kerja);
+    const info = infoPenyiar();
+    const ringkas = tirai.querySelector(".ed-ringkas");
+    let urut = "";
+    const isiRingkas = () => {
+      const data = dataHadirin();
+      const totalSlot = data.reduce((a, c) => a + c.tugas, 0);
+      const acuan = Math.max(0, JADWAL.length - 1);
+      const siap = data.filter((it) => it.o.r !== 0 && it.o.k !== "P" && it.o.k !== "HP"
+        && it.terakhir !== null && (acuan - it.terakhir) >= JEDA_PEKAN).length;
+      const belum = data.filter((it) => it.o.r !== 0 && it.terakhir === null).length;
+      ringkas.textContent = kerja.filter((o) => String(o.n || "").trim()).length + " penyiar · "
+        + totalSlot + " tugas terisi s.d. " + (JADWAL[acuan] ? JADWAL[acuan].label : "-")
+        + " · " + siap + " siap ditugaskan · " + belum + " belum pernah dapat tugas"
+        + " · jeda " + JEDA_PEKAN + " pekan";
+    };
+    const segarkan = () => {
+      if (urut === "nama"){
+        kerja.sort((a, b) => String(a.n || "").localeCompare(String(b.n || ""), "id"));
+      } else if (urut === "tugas" || urut === "status"){
+        const skor = (o) => {
+          const it = dataHadirinCache.get(normNama(o.n));
+          if (!it) return urut === "tugas" ? -1 : -1e9;
+          if (urut === "tugas") return it.tugas || 0;
+          return nilaiAntre(it, it.o);
+        };
+        kerja.sort((a, b) => skor(b) - skor(a));
+      }
+      renderEditor(kotak, kerja, info);
+      if (ringkas) isiRingkas();
+      tirai.querySelectorAll(".ed-urut-btn").forEach((b) => {
+        b.classList.toggle("aktif", b.dataset.urut === urut);
+      });
+    };
+    const dataHadirinCache = (() => {
+      const m = new Map();
+      try { dataHadirin().forEach((it) => m.set(normNama(it.o.n), it)); } catch (e) {}
+      return m;
+    })();
     segarkan();
+
+    tirai.addEventListener("click", (ev) => {
+      const ub = ev.target.closest(".ed-urut-btn");
+      if (!ub) return;
+      const mau = ub.dataset.urut || "";
+      urut = (urut === mau) ? "" : mau;
+      segarkan();
+    });
 
     // setiap ketikan masuk ke salinan kerja (belum disimpan)
     tirai.addEventListener("input", (ev) => {
@@ -2641,7 +2638,7 @@ function bagiTugas(){
         inN.focus();
         return;
       }
-      if (ev.target.closest(".ed-reset")){
+      if (ev.target.closest(".ed-kembalikan")){
         kerja = DAFTAR_SISWA_BAWAAN.map((o) => ({ n: o.n, i: o.i, g: o.g || "", r: o.r === 0 ? 0 : 1, k: o.k || "" }));
         segarkan();
         return;
@@ -2693,17 +2690,13 @@ document.addEventListener("click", (ev) => {
   }
   if (ev.target.closest && ev.target.closest("#btnHadirin")){
     ev.preventDefault();
-    if (typeof bukaHadirin === "function") bukaHadirin();
+    if (window.bukaDaftarNama) window.bukaDaftarNama();
     return;
   }
   if (ev.target.closest && ev.target.closest("#btnTugas")){
     ev.preventDefault();
     if (typeof bagiTugas === "function") bagiTugas();
     return;
-  }
-  if (ev.target.closest && ev.target.closest("#btnDaftar")){
-    ev.preventDefault();
-    if (window.bukaDaftarNama) window.bukaDaftarNama();
   }
 });
 </script>
@@ -3439,8 +3432,22 @@ var MAP = [
 ];
 var ROWS = MAP.length, COLS = 14;
 var STORAGE_KEY = 'cinema_venue_v14';
+var PENDING_KEY = 'cinema_venue_pending';
 var reservations = {};
 try { reservations = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) {}
+/* perubahan yang belum terkonfirmasi di cloud: { id: nama }; null berarti dihapus */
+var pendingKursi = {};
+try { pendingKursi = JSON.parse(localStorage.getItem(PENDING_KEY) || '{}') || {}; } catch(e) { pendingKursi = {}; }
+Object.keys(pendingKursi).forEach(function(k){
+  if (pendingKursi[k] === null) delete reservations[k]; else reservations[k] = pendingKursi[k];
+});
+function simpanPending(){
+  try { localStorage.setItem(PENDING_KEY, JSON.stringify(pendingKursi)); } catch(e) {}
+}
+function tandaiUbah(id, nilai){
+  pendingKursi[id] = (nilai === undefined) ? null : nilai;
+  simpanPending();
+}
 
 // Firebase sync setup (optional - requires config in index.html)
 var db = null;
@@ -3463,7 +3470,14 @@ if (usingFirebase && stateDocRef) {
   stateDocRef.onSnapshot(function(doc) {
     if (doc.exists) {
       var data = doc.data();
-      reservations = data.reservations || {};
+      var awan = data.reservations || {};
+      var gab = {};
+      Object.keys(awan).forEach(function(k){ gab[k] = awan[k]; });
+      Object.keys(pendingKursi).forEach(function(k){
+        if (pendingKursi[k] === null) delete gab[k]; else gab[k] = pendingKursi[k];
+      });
+      reservations = gab;
+      if (Object.keys(pendingKursi).length) tulisAwan();   /* kirim ulang yang belum tersimpan */
       if (data.hiddenRows) {
         hiddenRows = new Set(data.hiddenRows);
       }
@@ -3683,12 +3697,35 @@ function renderRowVisList() {
 function saveState() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(reservations)); } catch(e) {}
   try { localStorage.setItem(HIDDEN_KEY, JSON.stringify(Array.from(hiddenRows))); } catch(ex) {}
-  if (usingFirebase && stateDocRef) {
-    stateDocRef.set({
-      reservations: reservations,
-      hiddenRows: Array.from(hiddenRows)
-    }).catch(function(err) { console.warn('[Firebase] Save error:', err); });
-  }
+  simpanPending();
+  tulisAwan();
+}
+
+/* Kirim HANYA kursi yang berubah (dot-path), supaya perubahan dari HP lain
+   tidak tertimpa. Kalau dokumen belum ada, pakai set-merge sebagai cadangan. */
+function tulisAwan() {
+  if (!usingFirebase || !stateDocRef) return;
+  var id = Object.keys(pendingKursi);
+  if (!id.length) return;
+  var ubah = {};
+  id.forEach(function(s){
+    ubah['reservations.' + s] = (pendingKursi[s] === null)
+      ? firebase.firestore.FieldValue.delete()
+      : pendingKursi[s];
+  });
+  ubah.hiddenRows = Array.from(hiddenRows);
+  stateDocRef.update(ubah).then(function(){
+    id.forEach(function(s){
+      var kini = reservations[s], kirim = pendingKursi[s];
+      if (kirim === null ? kini === undefined : kini === kirim) delete pendingKursi[s];
+    });
+    simpanPending();
+  }).catch(function(err){
+    console.warn('[Firebase] update kursi gagal:', err && err.code);
+    stateDocRef.set({ reservations: reservations, hiddenRows: Array.from(hiddenRows) }, { merge: true })
+      .then(function(){ pendingKursi = {}; simpanPending(); })
+      .catch(function(e2){ console.warn('[Firebase] simpan cadangan gagal:', e2 && e2.code); });
+  });
 }
 
 function applyRowVis(e) {
@@ -3843,8 +3880,10 @@ function doSave() {
   var v = nameInput.value.trim();
   if (v) {
     reservations[sid] = v;
+    tandaiUbah(sid, v);
   } else {
     delete reservations[sid];
+    tandaiUbah(sid, undefined);
   }
   saveState();
   modalOverlay.style.display = 'none';
@@ -3871,6 +3910,7 @@ function closeNamePopup() {
 function doClear() {
   if (currentSeat) {
     delete reservations[currentSeat];
+    tandaiUbah(currentSeat, undefined);
     saveState();
     modalOverlay.style.display = 'none';
     currentSeat = null;
@@ -3884,6 +3924,7 @@ function doReset() {
 }
 
 function confirmReset() {
+  Object.keys(reservations).forEach(function(s){ tandaiUbah(s, undefined); });
   reservations = {};
   hiddenRows = new Set();
   saveState();
