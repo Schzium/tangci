@@ -89,6 +89,67 @@
     line-height: 1.2;
   }
   .pilih-pekan a:hover, .pilih-pekan button:hover{ background:#f2f2f2; }
+  .pilih-pekan .pk-wadah{ position: relative; display: inline-block; }
+  .pilih-pekan button.pk-tombol{
+    display: inline-flex;
+    align-items: center;
+    gap: 4pt;
+    font-weight: 700;
+    background: var(--abu);
+    border-color: var(--abu);
+    color: #fff;
+    min-width: 64pt;
+    justify-content: space-between;
+  }
+  .pilih-pekan button.pk-tombol:hover{ background:#4b4e51; }
+  .pilih-pekan .pk-caret{ font-size: 7pt; opacity: .85; }
+  .pilih-pekan .pk-panel{
+    position: absolute;
+    top: calc(100% + 3pt);
+    left: 0;
+    z-index: 40;
+    min-width: 190pt;
+    max-height: 62vh;
+    overflow: auto;
+    padding: 3px;
+    background: #fff;
+    border: 1pt solid #cfcfcf;
+    border-radius: 3pt;
+    box-shadow: 0 8px 24px rgba(0,0,0,.20);
+  }
+  .pilih-pekan .pk-item{
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10pt;
+    width: 100%;
+    text-align: left;
+    padding: 4pt 7pt;
+    border: 0;
+    border-radius: 2pt;
+    background: #fff;
+    font: inherit;
+    font-size: 9pt;
+    color: #333;
+    cursor: pointer;
+  }
+  .pilih-pekan .pk-item:hover{ background: #f2f2f2; }
+  .pilih-pekan .pk-item.aktif{ background: var(--abu); color: #fff; }
+  .pilih-pekan .pk-item .pk-label{ font-weight: 700; white-space: nowrap; }
+  .pilih-pekan .pk-item .pk-ket{
+    margin-left: auto;
+    font-size: 8pt;
+    opacity: .72;
+    white-space: nowrap;
+    text-align: right;
+  }
+  .pilih-pekan button.btn-sync{
+    border-style: dashed;
+    color: #7E0024;
+    font-weight: 700;
+  }
+  .pilih-pekan button.btn-sync:hover{ background: #fdf2f5; }
+  .pilih-pekan button.btn-sync.sibuk{ opacity: .6; cursor: progress; }
   .pilih-pekan a.aktif, .pilih-pekan button.aktif{
     background: var(--abu); border-color: var(--abu); color:#fff;
   }
@@ -1705,7 +1766,9 @@ function renderPekan(d, index){
 let pekanAktif = 0;
 
 function tandaAktif(){
-  document.querySelectorAll(".tab-pekan").forEach((b) => {
+  const teks = document.getElementById("pkTeks");
+  if (teks && JADWAL[pekanAktif]) teks.textContent = JADWAL[pekanAktif].label;
+  document.querySelectorAll(".pk-item").forEach((b) => {
     const on = Number(b.dataset.i) === pekanAktif;
     b.classList.toggle("aktif", on);
     b.setAttribute("aria-selected", on ? "true" : "false");
@@ -1768,21 +1831,76 @@ function perbaruiTombol(){
   }
 }
 
+function bukaPanelPekan(){
+  const panel = document.getElementById("pkPanel");
+  const tombol = document.getElementById("btnPekan");
+  if (!panel) return;
+  panel.hidden = false;
+  if (tombol) tombol.setAttribute("aria-expanded", "true");
+  const aktif = panel.querySelector(".pk-item.aktif");
+  if (aktif) aktif.scrollIntoView({ block: "nearest" });
+}
+function tutupPanelPekan(){
+  const panel = document.getElementById("pkPanel");
+  const tombol = document.getElementById("btnPekan");
+  if (!panel || panel.hidden) return;
+  panel.hidden = true;
+  if (tombol) tombol.setAttribute("aria-expanded", "false");
+}
+function isiPanelPekan(){
+  const panel = document.getElementById("pkPanel");
+  const teks = document.getElementById("pkTeks");
+  const d = JADWAL[pekanAktif];
+  if (teks && d) teks.textContent = d.label;
+  if (!panel) return;
+  panel.innerHTML = JADWAL.map((x, i) =>
+    `<button type="button" class="pk-item${i === pekanAktif ? " aktif" : ""}" data-i="${i}" role="option"`
+    + ` aria-selected="${i === pekanAktif ? "true" : "false"}">`
+    + `<span class="pk-label">${esc(x.label)}</span>`
+    + `<span class="pk-ket">${esc(x.kitab || x.tanggal)}</span>`
+    + `</button>`).join("");
+}
+
 function susun(){
   const nav = document.getElementById("pilihPekan");
-  nav.innerHTML = `<span class="judul-pilih">Pekan:</span>` +
-    JADWAL.map((d, i) => `<button type="button" class="tab-pekan" data-i="${i}"`
-      + ` role="tab" aria-selected="false">${esc(d.label)}</button>`).join("")
-    + `<span class="tombol-kanan" id="tombolKanan"></span>`;
+  nav.innerHTML = `<span class="judul-pilih">Pekan:</span>`
+    + `<span class="pk-wadah">`
+    + `<button type="button" class="pk-tombol" id="btnPekan" aria-haspopup="listbox" aria-expanded="false"`
+    + ` title="Ganti pekan">`
+    + `<span id="pkTeks">${esc((JADWAL[pekanAktif] || JADWAL[0] || {}).label || "")}</span>`
+    + `<span class="pk-caret" aria-hidden="true">&#9662;</span></button>`
+    + `<div class="pk-panel" id="pkPanel" role="listbox" aria-label="Pilih pekan" hidden></div>`
+    + `</span>`
+    + `<span class="tombol-kanan" id="tombolKanan"></span>`
+    + `<button type="button" class="btn-sync" id="btnSync"`
+    + ` title="Periksa apakah jadwal baru sudah terbit di wol.jw.org">&#8635; Sync</button>`;
 
-  nav.addEventListener("click", (ev) => {
-    const b = ev.target.closest(".tab-pekan");
-    if (b) tampilkanPekan(Number(b.dataset.i));
-  });
+  if (!nav.dataset.siap){
+    nav.dataset.siap = "1";
+    nav.addEventListener("click", (ev) => {
+      const s2 = ev.target.closest("#btnSync");
+      if (s2){ syncWol(); return; }
+      const it = ev.target.closest(".pk-item");
+      if (it){ tutupPanelPekan(); tampilkanPekan(Number(it.dataset.i)); return; }
+      const tb = ev.target.closest("#btnPekan");
+      if (tb){
+        const panel = document.getElementById("pkPanel");
+        if (panel && panel.hidden) bukaPanelPekan(); else tutupPanelPekan();
+        return;
+      }
+    });
+    document.addEventListener("click", (ev) => {
+      if (!ev.target.closest(".pk-wadah")) tutupPanelPekan();
+    });
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape") tutupPanelPekan();
+    });
+  }
 
+  isiPanelPekan();
   perbaruiTombol();
   const dariHash = JADWAL.findIndex((d) => d.kunci === location.hash.replace("#", ""));
-  tampilkanPekan(dariHash >= 0 ? dariHash : 0, false);
+  tampilkanPekan(dariHash >= 0 ? dariHash : pekanAktif, false);
   window.addEventListener("resize", skalaHalaman);
 }
 
@@ -2566,13 +2684,20 @@ document.addEventListener("click", (ev) => {
   function isiRef(rid){
     const r = WOL.ref[rid];
     if (!r) return `<p>Isi referensi tidak tersedia.</p>`;
+    const tautan = r.url
+      ? `<p class="tautan-sumber"><a href="${e(r.url)}" target="_blank" rel="noopener">Buka di wol.jw.org &rarr;</a></p>`
+      : "";
+    if (!r.isi || !r.isi.length){
+      return `<div class="judul-spoiler">${e(r.sub || r.jd)}</div>`
+        + `<p>Isi lengkapnya belum tersimpan di aplikasi.</p>${tautan}`;
+    }
     if (r.j === "a"){
       return `<div class="judul-spoiler">${e(r.sub || r.jd)}</div>` +
-        r.isi.map(([n, t]) => `<p class="ayat"><b>${n}</b> ${e(t)}</p>`).join("");
+        r.isi.map(([n, t]) => `<p class="ayat"><b>${n}</b> ${e(t)}</p>`).join("") + tautan;
     }
     const judul = e(r.jd) + (r.sub ? ` <span style="font-weight:400">— ${e(r.sub)}</span>` : "");
     return `<div class="judul-spoiler">${judul}</div>` +
-      r.isi.map(([k, t]) => k === "h" ? `<p><strong>${e(t)}</strong></p>` : `<p>${e(t)}</p>`).join("");
+      r.isi.map(([k, t]) => k === "h" ? `<p><strong>${e(t)}</strong></p>` : `<p>${e(t)}</p>`).join("") + tautan;
   }
 
   function bukaTema(tombol){
@@ -2638,6 +2763,516 @@ document.addEventListener("click", (ev) => {
     if (t){ ev.preventDefault(); t.click(); }
   });
 })();
+
+/* ====== IMPOR: parser halaman WOL + penggabung ====== */
+/* ====== parser halaman WOL (lembar pelajaran) ====== */
+(function(global){
+  const BERSIH = (t) => String(t || "")
+    .replace(/\u200b/g, "")
+    .replace(/\u00a0/g, " ")
+    .replace(/[\s\u200b]+/g, " ")
+    .trim();
+
+  function segmenDari(node, urls, counter){
+    const out = [];
+    const push = (t) => {
+      const teks = t.replace(/\u200b/g, "");
+      if (!teks) return;
+      const akhir = out[out.length - 1];
+      if (akhir && akhir.t !== undefined) akhir.t += teks;
+      else out.push({ t: teks });
+    };
+    const jalan = (el) => {
+      el.childNodes.forEach((n) => {
+        if (n.nodeType === 3){ push(n.nodeValue); return; }
+        if (n.nodeType !== 1) return;
+        const tag = n.tagName.toLowerCase();
+        if (tag === "a"){
+          const href = n.getAttribute("href") || "";
+          const teks = BERSIH_A(n.textContent);
+          if (!href || !teks){ jalan(n); return; }
+          const id = "r" + (counter.n++);
+          const url = href.startsWith("http") ? href : "https://wol.jw.org" + href;
+          urls[id] = url;
+          out.push({ l: teks, r: id });
+          return;
+        }
+        if (tag === "textarea" || tag === "input" || tag === "button") return;
+        if (tag === "em" || tag === "i" || tag === "strong" || tag === "b" || tag === "span" || tag === "sup" || tag === "sub" || tag === "small"){
+          jalan(n); return;
+        }
+        // elemen lain (mis. div) tetap ditelusuri
+        jalan(n);
+      });
+    };
+    jalan(node);
+    return rapikan(out);
+  }
+  function BERSIH_A(t){
+    return String(t || "").replace(/\u200b/g, "").replace(/\u00a0/g, " ").replace(/\s+/g, " ");
+  }
+  function rapikan(out){
+    if (!out.length) return out;
+    const p = out[0], a = out[out.length - 1];
+    if (p.t !== undefined) p.t = p.t.replace(/^\s+/, ""); else p.l = p.l.replace(/^\s+/, "");
+    if (a.t !== undefined) a.t = a.t.replace(/\s+$/, ""); else a.l = a.l.replace(/\s+$/, "");
+    return out.filter((s) => (s.t === undefined || s.t !== "") && (s.l === undefined || s.l !== ""));
+  }
+
+  function parse(html, kode){
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const art = doc.querySelector("#article") || doc.body;
+    const urls = {};
+    const counter = { n: 1 };
+
+    const h1 = art.querySelector("h1");
+    const pekan = BERSIH(h1 ? h1.textContent : "");
+
+    // pembacaan Alkitab: h2 pertama yang punya <a>
+    let alkitab = "", alkitabUrl = "";
+    const h2s = Array.from(art.querySelectorAll("h2"));
+    const h2alkitab = h2s.find((h) => h.querySelector("a.b") || (h.querySelector("a") && !h.textContent.match(/^(HARTA|BERSEMANGATLAH|KEHIDUPAN)/i)));
+    if (h2alkitab){
+      const a = h2alkitab.querySelector("a");
+      alkitab = judulKasus(BERSIH(a ? a.textContent : h2alkitab.textContent));
+      const href = a ? a.getAttribute("href") : "";
+      if (href) alkitabUrl = href.startsWith("http") ? href : "https://wol.jw.org" + href;
+    }
+
+    const bagian = {};
+    const baris = [];
+    const semua = Array.from(art.querySelectorAll("h1,h2,h3,p,li,div.gen-field"));
+    const sudah = new Set();
+    let nomor = 0, item = null, seksi = null;
+
+    const iniH3Item = (t) => /^\s*(\d{1,2})\.\s*/.test(t);
+    const iniH3Lagu = (t) => /^\s*Nyanyian\s+\d+/i.test(t) || /^Bagian (Pembuka|Penutup)/i.test(t);
+
+    semua.forEach((el) => {
+      if (sudah.has(el)) return;
+      const tag = el.tagName.toLowerCase();
+      if (tag === "h1"){ return; }
+      if (tag === "h2"){
+        const t = BERSIH(el.textContent).toUpperCase();
+        if (/^(HARTA DALAM FIRMAN ALLAH|BERSEMANGATLAH DALAM PELAYANAN|KEHIDUPAN KRISTEN)/.test(t)){
+          seksi = t;
+          item = null;
+          baris.push({ jenis: "seksi", judul: t });
+        }
+        return;
+      }
+      if (tag === "h3"){
+        const mentah = BERSIH(el.textContent);
+        if (iniH3Lagu(mentah)){
+          const m = mentah.match(/^(.*?)(?:\s*\((\d+)\s*men\.\))?$/);
+          const mNy = mentah.match(/Nyanyian\s+(\d+)/i);
+          const menit = (mentah.match(/\((\d+)\s*men\.\)/) || [])[1] || "";
+          if (mNy) baris.push({ jenis: "lagu", teks: "Nyanyian " + mNy[1] });
+          if (/Bagian Pembuka/i.test(mentah)) baris.push({ jenis: "lagu", teks: "Bagian Pembuka", menit: menit || "1" });
+          if (/Bagian Penutup/i.test(mentah)) baris.push({ jenis: "lagu", teks: "Bagian Penutup", menit: menit || "3" });
+          item = null;
+          return;
+        }
+        if (iniH3Item(mentah)){
+          const m = mentah.match(/^(\d{1,2})\.\s*(.+)$/);
+          nomor = parseInt(m[1], 10);
+          const judul = BERSIH(m[2]);
+          item = { jd: judul, m: "", isi: [] };
+          bagian[String(nomor)] = item;
+          baris.push({ jenis: "bagian", nomor: nomor + ".", teks: judul, menit: "" });
+          return;
+        }
+        return;
+      }
+      if (!item) return;
+      if (tag === "div" && el.classList.contains("gen-field")){
+        item.isi.push({ t: "jwb" });
+        return;
+      }
+      if (tag === "li"){
+        const p = el.querySelector("p");
+        if (p){ sudah.add(p);
+          item.isi.push({ t: "li", s: segmenDari(p, urls, counter) });
+        }
+        el.querySelectorAll("div.gen-field").forEach((g) => sudah.add(g));
+        item.isi.push({ t: "jwb" });
+        return;
+      }
+      if (tag === "p"){
+        if (el.closest("li")) return;
+        if (el.closest(".gen-field")) return;
+        const teks = BERSIH(el.textContent);
+        if (/^\(\d+\s*men\.\)$/.test(teks) || /^\(\d+\s*men\.\)\s*$/.test(teks)){
+          if (item){ item.m = (teks.match(/\d+/) || [""])[0]; baris[baris.length - 1].menit = item.m; }
+          return;
+        }
+        const m = teks.match(/^\((\d+)\s*men\.\)\s*(.*)$/);
+        if (m && item && !item.m){
+          item.m = m[1];
+          baris[baris.length - 1].menit = m[1];
+          let sisa = segmenDari(el, urls, counter);
+          if (sisa.length && sisa[0].t !== undefined){
+            sisa[0].t = sisa[0].t.replace(/^\(\d+\s*men\.\)\s*/, "");
+          }
+          sisa = sisa.filter((x) => (x.t === undefined || x.t !== ""));
+          if (sisa.length) item.isi.push({ t: "p", s: rapikan(sisa) });
+          return;
+        }
+        item.isi.push({ t: "p", s: segmenDari(el, urls, counter) });
+        return;
+      }
+    });
+
+    return { pekan, alkitab, alkitabUrl, bagian, urls, baris };
+  }
+  function judulKasus(t){
+    return String(t || "").toLowerCase().replace(/\b([a-z])/g, (m) => m.toUpperCase()).replace(/\b(Dan|Di|Ke|Dari|Yang|Untuk)\b/g, (m) => m.toLowerCase());
+  }
+  global.parsePekanWol = parse;
+})(window);
+
+/* =========================================================================
+   JADWAL DARI WOL — tombol "⟳ Sync" memeriksa sendiri ke wol.jw.org apakah
+   edisi berikutnya sudah terbit, lalu mengambil & menambah pekan barunya.
+   wol.json (di sebelah index.html) menyimpan isi ayat + lirik nyanyian.
+   Pekan lama TIDAK diubah dan TIDAK digeser; pekan baru ditambahkan di ujung.
+   ========================================================================= */
+const BULAN_IMPOR = ["Januari","Februari","Maret","April","Mei","Juni",
+                     "Juli","Agustus","September","Oktober","November","Desember"];
+const KUNCI_IMPOR = "jhtp-wol-impor";
+
+function msTanggalPekan(t){
+  const m = String(t == null ? "" : t).match(/(\d{1,2})\s+([A-Za-z]+)/);
+  if (!m) return NaN;
+  const b = BULAN_IMPOR.findIndex((x) => x.toLowerCase().startsWith(m[2].slice(0, 3).toLowerCase()));
+  if (b < 0) return NaN;
+  const kini = Date.now();
+  let th = new Date().getFullYear();
+  if (Date.UTC(th, b, 1) < kini - 200 * 864e5) th += 1;
+  return Date.UTC(th, b, parseInt(m[1], 10));
+}
+
+/* ubah baris mentah dari WOL -> bentuk yang dipakai tabel jadwal
+   (waktu, warna seksi, label siswa, slot kosong siap diisi) */
+const WARNA_SEKSI = {
+  "HARTA DALAM FIRMAN ALLAH": "abu",
+  "BERSEMANGATLAH DALAM PELAYANAN": "emas",
+  "KEHIDUPAN KRISTEN": "marun"
+};
+const JUDUL_DUA_SLOT = /^(Memulai Percakapan|Melakukan Kunjungan Kembali|Menjadikan Murid|Menjelaskan Kepercayaan|Berbicara di Depan Umum|Apa yang Akan Saudara Katakan|Mengabar|Memuridkan|Mempersiapkan Presentasi)/i;
+
+function lengkapiBaris(p){
+  const rows = (p && p.baris) || [];
+  const jamTeks = (m) => String(Math.floor(m / 60)).padStart(2, "0") + "." + String(m % 60).padStart(2, "0");
+  const akhirBagian = new Set();
+  rows.forEach((b, i) => {
+    if (b.jenis === "bagian" && (!rows[i + 1] || rows[i + 1].jenis === "seksi")) akhirBagian.add(i);
+  });
+  const hasil = [];
+  let seksi = "", sudahBuka = false;
+  rows.forEach((b, i) => {
+    if (b.jenis === "seksi"){
+      hasil.push({
+        jenis: "seksi", judul: b.judul,
+        warna: WARNA_SEKSI[String(b.judul).toUpperCase()] || "abu",
+        ruang: "Ruang Utama",
+        jarak: hasil.length > 0
+      });
+      seksi = String(b.judul).toUpperCase();
+      return;
+    }
+    const teks = String(b.teks || "");
+    if (b.jenis === "lagu"){
+      const nyanyian = /^Nyanyian\s+\d+$/i.test(teks.trim());
+      const adaBagianLagi = rows.slice(i + 1).some((x) => x.jenis === "bagian");
+      if (/bagian pembuka/i.test(teks)){
+        hasil.push({ jenis: "lagu", teks: teks, menit: String(parseInt(b.menit || "1", 10) || 1) });
+      } else if (/bagian penutup/i.test(teks)){
+        hasil.push({ jenis: "lagu", teks: teks, menit: String(parseInt(b.menit || "3", 10) || 3), nilai: " " });
+      } else if (nyanyian && !sudahBuka){
+        hasil.push({ jenis: "lagu", teks: teks, doa: "" });
+        sudahBuka = true;
+      } else if (nyanyian && !adaBagianLagi){
+        hasil.push({ jenis: "lagu", teks: teks, doa: " " });
+      } else {
+        hasil.push({ jenis: "lagu", teks: teks });
+      }
+      return;
+    }
+    const menit = parseInt(b.menit || "0", 10) || 0;
+    const row = { jenis: "bagian", nomor: b.nomor, teks: teks, menit: String(menit), nilai: " " };
+    if (/^Pembacaan Alkitab$/i.test(teks)) row.siswa = "Siswa:";
+    else if (JUDUL_DUA_SLOT.test(teks)) row.siswa = "Siswa/Asisten:";
+    const lanjut = rows[i + 1];
+    row._jeda = !!(lanjut && (lanjut.jenis === "seksi"
+      || (seksi === "BERSEMANGATLAH DALAM PELAYANAN" && lanjut.jenis === "bagian")));
+    hasil.push(row);
+  });
+  /* "Bagian Penutup" selalu sebelum nyanyian terakhir */
+  let iLagu = -1;
+  hasil.forEach((r, i) => { if (/^Nyanyian\s+\d+$/i.test(String(r.teks || "").trim())) iLagu = i; });
+  const iP = hasil.findIndex((r) => /bagian penutup/i.test(r.teks || ""));
+  if (iP >= 0 && iLagu >= 0 && iLagu !== iP + 1){
+    const lagu = hasil.splice(iLagu, 1)[0];                    /* ambil nyanyian terakhir */
+    const iP2 = hasil.findIndex((r) => /bagian penutup/i.test(r.teks || ""));
+    hasil.splice(iP2 + 1, 0, lagu);                            /* taruh sesudah Bagian Penutup */
+  }
+  /* waktu mulai 19.00 */
+  let jam = 19 * 60;
+  hasil.forEach((r) => {
+    if (r.jenis === "seksi") return;
+    r.waktu = jamTeks(jam);
+    if (r.jenis === "bagian"){
+      jam += (parseInt(r.menit, 10) || 0) + (r._jeda ? 1 : 0);
+      delete r._jeda;
+      return;
+    }
+    delete r._jeda;
+    const m = parseInt(r.menit || "0", 10) || 0;
+    if (r.doa === "") jam += 5;                        /* nyanyian pembuka */
+    else if (/bagian pembuka/i.test(r.teks)) jam += m || 1;
+    else if (/bagian penutup/i.test(r.teks)) jam += m || 3;
+    else if (r.doa === undefined) jam += 3;            /* nyanyian di tengah */
+  });
+  return hasil;
+}
+
+/* "2-8 November" / "30 November-6 Desember" / "28 Desember 2026-3 Januari 2027"
+   -> tanggal perhimpunan (hari ke-3 rentang) */
+function tanggalDariRentang(t){
+  const R = String(t || "").replace(/[\u2013\u2014]/g, "-").trim();
+  const bulan = (x) => BULAN_IMPOR.findIndex((b) => b.toUpperCase().startsWith(String(x).slice(0, 3).toUpperCase()));
+  let m = R.match(/^(\d{1,2})\s+([A-Za-z]+)(?:\s+(\d{4}))?\s*-\s*(\d{1,2})\s+([A-Za-z]+)(?:\s+(\d{4}))?$/);
+  let mulai = 0, bAwal = -1, th = 0;
+  if (m){ mulai = +m[1]; bAwal = bulan(m[2]); th = +(m[3] || m[6] || 0); }
+  else {
+    m = R.match(/^(\d{1,2})\s*-\s*(\d{1,2})\s+([A-Za-z]+)(?:\s+(\d{4}))?$/);
+    if (m){ mulai = +m[1]; bAwal = bulan(m[3]); th = +(m[4] || 0); }
+  }
+  if (bAwal < 0) return { tanggal: "", label: "" };
+  if (!th){
+    th = new Date().getFullYear();
+    if (Date.UTC(th, bAwal, mulai) < Date.now() - 200 * 864e5) th += 1;
+  }
+  const d = new Date(Date.UTC(th, bAwal, mulai + 2));
+  const tanggal = d.getUTCDate() + " " + BULAN_IMPOR[d.getUTCMonth()];
+  return { tanggal: tanggal, label: d.getUTCDate() + " " + BULAN_IMPOR[d.getUTCMonth()].slice(0, 3) };
+}
+
+/* id referensi dari halaman yang diunduh dimulai ulang dari r1 di tiap halaman,
+   jadi diganti nama per pekan supaya tidak bertabrakan dengan pekan lain.
+   Isinya belum diambil (perlu internet) -> tautan "buka di wol.jw.org". */
+function refDariHalaman(p, w){
+  w = p.kode || w;
+  const baru = {};
+  const urls = p.urls || {};
+  Object.keys(urls).forEach((k) => {
+    baru[w + "_" + k] = {
+      j: "v",
+      jd: urls[k].teks || k,
+      sub: urls[k].teks || "",
+      url: urls[k].url || "",
+      isi: []
+    };
+  });
+  Object.keys(p.bagian || {}).forEach((no) => {
+    (p.bagian[no].isi || []).forEach((it) => {
+      (it.s || []).forEach((seg) => {
+        if (seg && typeof seg.r === "string" && !/^w\d+_/.test(seg.r)) seg.r = w + "_" + seg.r;
+      });
+    });
+  });
+  return baru;
+}
+
+/* gabungkan isi wol.json ke aplikasi; kembalikan ringkasan perubahan */
+function gabungWol(data){
+  const hasil = { tambah: 0, perbarui: 0, lewat: 0, pekan: [] };
+  if (!data) return hasil;
+  if (data.edisi) kodeEdisi = String(data.edisi);
+  if (!Array.isArray(data.pekan) || !data.pekan.length) return hasil;
+
+  Object.keys(data.ref || {}).forEach((k) => { WOL.ref[k] = data.ref[k]; });        // tautan biru
+  Object.keys(data.lagu || {}).forEach((k) => { LAGU[k] = data.lagu[k]; });         // lirik nyanyian
+
+  const terakhir = JADWAL.length ? msTanggalPekan(JADWAL[JADWAL.length - 1].tanggal) : NaN;
+  data.pekan.forEach((p) => {
+    const dari = (p.tanggal || p.label) ? null : tanggalDariRentang(p.pekan || "");
+    const tglPekan = p.tanggal || (dari && dari.tanggal) || "";
+    const lblPekan = p.label || (dari && dari.label) || tglPekan;
+    const ms = msTanggalPekan(tglPekan);
+    if (isNaN(ms)){ hasil.lewat += 1; return; }
+    const sama = JADWAL.findIndex((j) => msTanggalPekan(j.tanggal) === ms);
+    if (sama >= 0){                                     // pekan yang sudah ada: jangan ditimpa isi yang lebih miskin
+      const lama = WOL.pekan["w" + (sama + 1)];
+      const kaya = (data.ref && Object.keys(data.ref).length > 0)
+        || !lama || !lama.bagian || !Object.keys(lama.bagian).length;
+      if (kaya){
+        WOL.pekan["w" + (sama + 1)] = { pekan: p.pekan, alkitab: p.alkitab, bagian: p.bagian || {} };
+        hasil.perbarui += 1;
+      } else {
+        hasil.lewat += 1;
+      }
+      return;
+    }
+    if (!isNaN(terakhir) && ms < terakhir){ hasil.lewat += 1; return; }              // jangan selipkan pekan yang sudah lewat
+    const w = "w" + (JADWAL.length + 1);
+    if (p.urls) Object.assign(WOL.ref, refDariHalaman(p, w));
+    WOL.pekan[w] = { pekan: p.pekan, alkitab: p.alkitab, bagian: p.bagian || {} };
+    JADWAL.push({
+      kunci: String(lblPekan).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+      label: lblPekan,
+      tanggal: tglPekan,
+      kitab: p.alkitab || "",
+      catatan: null,
+      ketua: "",
+      baris: lengkapiBaris(p)
+    });
+    hasil.tambah += 1;
+    hasil.pekan.push(lblPekan);
+  });
+  return hasil;
+}
+
+/* --- simpan hasil impor di HP agar tetap ada setelah aplikasi ditutup --- */
+function simpanImpor(data){
+  try {
+    localStorage.setItem(KUNCI_IMPOR, JSON.stringify({
+      pekan: data.pekan || [], ref: data.ref || {}, lagu: data.lagu || {}, edisi: data.edisi || ""
+    }));
+  } catch (e) { /* penyimpanan penuh: tidak apa-apa */ }
+}
+function ambilImpor(){
+  try {
+    const t = localStorage.getItem(KUNCI_IMPOR);
+    return t ? JSON.parse(t) : null;
+  } catch (e) { return null; }
+}
+
+function susunUlang(setelah){
+  const i = (setelah != null) ? setelah : pekanAktif;
+  susun();
+  tampilkanPekan(Math.min(i, JADWAL.length - 1), false);
+}
+
+function terapkanImpor(data, asal){
+  const r = gabungWol(data);
+  if (r.tambah || r.perbarui){
+    simpanImpor(data);
+    susunUlang(r.tambah ? JADWAL.length - 1 : undefined);
+  }
+  const pesan = [];
+  if (r.tambah) pesan.push(r.tambah + " pekan baru ditambahkan (" + r.pekan.join(", ") + ")");
+  if (r.perbarui) pesan.push(r.perbarui + " pekan diperbarui isinya");
+  if (r.lewat) pesan.push(r.lewat + " pekan dilewati (sudah ada / sudah lewat)");
+  alert((asal ? asal + "\n\n" : "") + (pesan.length ? pesan.join("\n") : "Tidak ada pekan yang bisa diimpor."));
+  return r;
+}
+
+/* ---- SYNC: periksa apakah jadwal baru sudah terbit di wol.jw.org ----
+   wol.jw.org tidak mengizinkan permintaan langsung dari browser (CORS), jadi
+   halaman diambil lewat r.jina.ai yang meneruskan HTML aslinya. */
+const JINA = "https://r.jina.ai/";
+const DASAR_WOL_PELAJARAN = "https://wol.jw.org/id/wol/d/r25/lp-in/";
+let kodeEdisi = "";
+
+function kodeBerikut(kode){
+  const n = String(kode || "").replace(/\D/g, "");
+  if (n.length < 5) return [];
+  const awalan = n.slice(0, n.length - 3);
+  const nomor = parseInt(n.slice(-3), 10);
+  if (!isFinite(nomor)) return [];
+  return [awalan + String(nomor + 1), awalan + String(nomor + 2)];
+}
+
+async function ambilHalamanWol(kode){
+  const r = await fetch(JINA + DASAR_WOL_PELAJARAN + kode, { headers: { "x-return-format": "html" } });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return await r.text();
+}
+
+let syncJalan = false;
+async function syncWol(){
+  if (syncJalan) return;
+  const tombol = document.getElementById("btnSync");
+  const setel = (t) => { if (tombol) tombol.innerHTML = t; };
+  syncJalan = true;
+  if (tombol) tombol.classList.add("sibuk");
+  setel("&#8635; Memeriksa…");
+  try {
+    const kandidat = kodeEdisi ? kodeBerikut(kodeEdisi) : [];
+    if (!kandidat.length) throw new Error("kode edisi terakhir belum diketahui");
+    const akhir = JADWAL.length ? msTanggalPekan(JADWAL[JADWAL.length - 1].tanggal) : NaN;
+    let ketemu = "", pekanPertama = null;
+    for (const kode of kandidat){
+      setel("&#8635; Periksa " + kode + "…");
+      let html = "";
+      try { html = await ambilHalamanWol(kode + "01"); } catch (e) { continue; }
+      if (!/HARTA DALAM FIRMAN ALLAH/i.test(html)) continue;       /* halaman belum ada */
+      let p = null;
+      try { p = parsePekanWol(html); } catch (e) { p = null; }
+      if (!p || !p.pekan) continue;
+      const ms = msTanggalPekan(tanggalDariRentang(p.pekan).tanggal);
+      if (isNaN(ms)) continue;
+      if (!isNaN(akhir) && ms <= akhir) continue;                  /* bukan edisi berikutnya */
+      ketemu = kode; pekanPertama = p; break;
+    }
+    if (!ketemu){
+      alert("Jadwal baru belum terbit.\n\n"
+        + "Jadwal terakhir yang ada: " + (JADWAL.length ? JADWAL[JADWAL.length - 1].tanggal : "—") + "\n"
+        + "Sudah diperiksa: " + kandidat.join(", "));
+      return;
+    }
+    const tgl = tanggalDariRentang(pekanPertama.pekan);
+    if (!confirm("Jadwal baru sudah terbit!\n\n" + pekanPertama.pekan + " — " + pekanPertama.alkitab
+      + "\nPerhimpunan pertama: " + tgl.tanggal + "\n\n"
+      + "Ambil sekarang? Pekan baru hanya ditambahkan di ujung; pekan dan nama yang sudah ada tidak diubah.")) return;
+
+    const pekan = [];
+    for (let n = 1; n <= 9; n++){
+      const kode = ketemu + String(n).padStart(2, "0");
+      setel("&#8635; " + n + "/9…");
+      let html = "";
+      try { html = await ambilHalamanWol(kode); } catch (e) { html = ""; }
+      if (!/HARTA DALAM FIRMAN ALLAH/i.test(html)) continue;
+      let p = null;
+      try { p = parsePekanWol(html); } catch (e) { p = null; }
+      if (p && p.pekan){ p.kode = kode; pekan.push(p); }
+      await new Promise((z) => setTimeout(z, 250));
+    }
+    if (!pekan.length) throw new Error("halaman jadwal tidak terbaca");
+    const data = { pekan: pekan, ref: {}, lagu: {}, edisi: ketemu };
+    kodeEdisi = ketemu;
+    const hasil = gabungWol(data);
+    simpanImpor(data);
+    susunUlang(hasil.tambah ? JADWAL.length - 1 : undefined);
+    alert(hasil.tambah
+      ? hasil.tambah + " pekan baru ditambahkan (" + hasil.pekan.join(", ") + ")."
+      : "Semua pekan di edisi ini sudah ada.");
+  } catch (e) {
+    alert("Gagal memeriksa jadwal: " + e.message + "\n\nCoba lagi saat ada internet.");
+  } finally {
+    syncJalan = false;
+    if (tombol){ tombol.classList.remove("sibuk"); tombol.innerHTML = "&#8635; Sync"; }
+  }
+}
+
+/* muat data: wol.json di sebelah index.html + hasil sync yang tersimpan di HP */
+(async function muatWolOtomatis(){
+  let data = null;
+  if (/^https?:$/.test(location.protocol)){
+    try {
+      const r = await fetch("wol.json", { cache: "no-store" });
+      if (r.ok) data = await r.json();
+    } catch (e) { /* sedang offline: pakai simpanan di HP */ }
+  }
+  let ubah = 0;
+  if (data){ const h = gabungWol(data); ubah += h.tambah + h.perbarui; }
+  const simpanan = ambilImpor();
+  if (simpanan){ const h = gabungWol(simpanan); ubah += h.tambah + h.perbarui; }
+  if (ubah) susunUlang();
+})();
+
 
 </script>
 
