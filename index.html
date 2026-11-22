@@ -486,6 +486,16 @@
     color: #8a9095;
   }
   .pn-pop .pn-cek{ font-size: 9pt; color: #0d5c7a; text-align: right; }
+  .pn-pop .pn-thb{
+    font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit;
+    background: none; border: 0; padding: 0; margin: 0;
+    display: inline-flex; align-items: center; gap: 3pt;
+    text-align: left; cursor: pointer;
+  }
+  .pn-pop .pn-thb:hover{ color: #0d5c7a; }
+  .pn-pop .pn-thb.on{ color: #0d5c7a; }
+  .pn-pop .pn-panah{ font-size: 6.5pt; color: #b9bfc4; }
+  .pn-pop .pn-thb.on .pn-panah{ color: #0d5c7a; }
   .pn-pop .pn-opsi.terpilih{ background: #f2f8fa; font-weight: 700; }
   .pn-pop .pn-opsi.terpilih .pn-ini{ color: #0d5c7a; }
   .pn-pop .pn-opsi.terpilih .pn-cek::before{ content: "\2713"; }
@@ -640,6 +650,11 @@
     font-size: 7.5pt; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
     color: #8a9095; padding: 4pt; border-bottom: .75pt solid #e2e6e9;
   }
+  .hadirin th.th-urut{ cursor: pointer; user-select: none; }
+  .hadirin th.th-urut:hover{ color: #0d5c7a; }
+  .hadirin th.th-urut.on{ color: #0d5c7a; }
+  .hadirin th .panah{ margin-left: 2pt; font-size: 7pt; color: #b9bfc4; }
+  .hadirin th.th-urut.on .panah{ color: #0d5c7a; }
   .hadirin td{ padding: 3pt 4pt; border-bottom: .5pt solid #eef1f3; }
   .hadirin td.no{ width: 20pt; color: #a3a9ad; }
   .hadirin td.ini{ width: 42pt; font-weight: 700; }
@@ -1798,6 +1813,16 @@ function dataHadirin(){
   return Array.from(peta.values());
 }
 
+/* nilai antre: makin besar = makin lama tidak dapat tugas (dipakai untuk sortir) */
+function nilaiAntre(it, o){
+  if (o && o.r === 0) return -30000;                  // dikecualikan → paling bawah
+  if (!it || it.terakhir == null) return 10000;       // belum pernah → paling atas
+  if (it.terakhir > pekanAktif) return -10000 - (it.terakhir - pekanAktif);  // terjadwal → bawah
+  return pekanAktif - it.terakhir;                    // makin lama makin besar
+}
+
+let urutHadirin = { kolom: "no", arah: 1 };   /* pilihan sortir tabel hadirin, tetap tersimpan selama aplikasi terbuka */
+
 function bukaHadirin(){
   const tirai = document.createElement("div");
   tirai.className = "modal-tirai";
@@ -1817,7 +1842,7 @@ function bukaHadirin(){
   ringkas.textContent = data.length + " penyiar di daftar · " + totalSlot + " tugas siswa/asisten terisi"
     + " · dihitung dari pekan aktif: " + aktif + " · jeda " + JEDA_PEKAN + " pekan";
 
-  const baris = data.map((it, i) => {
+  const barisUntuk = (it, i) => {
     const o = it.o;
     const keluarRotasi = o.r === 0;
     const labelPekan = (wi) => (JADWAL[wi] ? JADWAL[wi].label : "?");
@@ -1844,11 +1869,48 @@ function bukaHadirin(){
       + '<td class="ini">' + esc(o.i) + "</td>"
       + '<td class="tg">' + (it.tugas || "&ndash;") + "</td>"
       + '<td class="st">' + status + "</td></tr>";
-  }).join("");
+  };
 
-  isi.innerHTML = "<table><thead><tr><th>No</th><th>Nama</th><th>Inisial</th>"
-    + "<th>Tugas</th><th>Status (" + JEDA_PEKAN + " pekan)</th></tr></thead><tbody>"
-    + baris + "</tbody></table>";
+  const nilaiKolom = (it, i) => {
+    if (urutHadirin.kolom === "nama") return String(it.o.n || "").toLowerCase();
+    if (urutHadirin.kolom === "ini") return String(it.o.i || "").toLowerCase();
+    if (urutHadirin.kolom === "tugas") return it.tugas;
+    if (urutHadirin.kolom === "status") return nilaiAntre(it, it.o);
+    return i;
+  };
+
+  function gambarTabel(){
+    const daftar = data.map((it, i) => ({ it: it, i: i }));
+    if (urutHadirin.kolom !== "no"){
+      daftar.sort((a, b) => {
+        const x = nilaiKolom(a.it, a.i);
+        const y = nilaiKolom(b.it, b.i);
+        if (typeof x === "string" || typeof y === "string"){
+          return String(x).localeCompare(String(y), "id") * urutHadirin.arah
+            || String(a.it.o.n).localeCompare(String(b.it.o.n), "id");
+        }
+        return (x - y) * urutHadirin.arah || String(a.it.o.n).localeCompare(String(b.it.o.n), "id");
+      });
+    }
+    const panah = (k) => urutHadirin.kolom === k ? '<span class="panah">' + (urutHadirin.arah > 0 ? "\u25B2" : "\u25BC") + "</span>" : '<span class="panah"></span>';
+    const th = (k, label) => '<th class="th-urut' + (urutHadirin.kolom === k ? " on" : "") + '" data-urut="' + k + '">' + label + panah(k) + "</th>";
+    isi.innerHTML = "<table><thead><tr>"
+      + th("no", "No") + th("nama", "Nama") + th("ini", "Inisial")
+      + th("tugas", "Tugas") + th("status", "Status (" + JEDA_PEKAN + " pekan)")
+      + "</tr></thead><tbody>"
+      + daftar.map((d, n) => barisUntuk(d.it, n)).join("")
+      + "</tbody></table>";
+  }
+  gambarTabel();
+
+  isi.addEventListener("click", (ev) => {
+    const h = ev.target.closest ? ev.target.closest("th[data-urut]") : null;
+    if (!h) return;
+    const k = h.dataset.urut;
+    if (urutHadirin.kolom === k) urutHadirin.arah *= -1;
+    else urutHadirin = { kolom: k, arah: (k === "status" || k === "tugas") ? -1 : 1 };
+    gambarTabel();
+  });
 
   tirai.addEventListener("click", (ev) => {
     if (ev.target.closest(".modal-x") || ev.target.closest(".tutup-hadirin") || ev.target === tirai){
@@ -2061,10 +2123,24 @@ function bagiTugas(){
       : { teks: "siap", kelas: "siap", siap: true };
   }
 
+  let urutOpsi = { kolom: "nama", arah: 1 };
+
   function daftarOpsi(){
     const info = petaTugas();
     const arr = daftarNama().slice();
-    arr.sort((a, b) => a.n.localeCompare(b.n, "id"));
+    const nilaiO = (o) => {
+      if (urutOpsi.kolom === "ini") return String(o.i || "").toLowerCase();
+      if (urutOpsi.kolom === "status") return nilaiAntre(info.get(normNama(o.n)), cariOrang(o.n));
+      return String(o.n || "").toLowerCase();
+    };
+    arr.sort((a, b) => {
+      const x = nilaiO(a), y = nilaiO(b);
+      if (typeof x === "string" || typeof y === "string"){
+        return String(x).localeCompare(String(y), "id") * urutOpsi.arah
+          || a.n.localeCompare(b.n, "id");
+      }
+      return (x - y) * urutOpsi.arah || a.n.localeCompare(b.n, "id");
+    });
     let html = "";
     let no = 0;
     let jumlahSiap = 0;
@@ -2084,8 +2160,14 @@ function bagiTugas(){
         + `</button>`;
     });
     daftarOpsi.jumlahSiap = jumlahSiap;
-    const kepala = '<div class="pn-th"><span>No</span><span>Nama</span><span>Ini</span>'
-      + '<span>Status</span><span></span></div>';
+    const panah = (k) => urutOpsi.kolom === k
+      ? '<span class="pn-panah">' + (urutOpsi.arah > 0 ? "\u25B2" : "\u25BC") + "</span>"
+      : '<span class="pn-panah"></span>';
+    const thb = (k, label) => '<button type="button" class="pn-thb'
+      + (urutOpsi.kolom === k ? " on" : "") + '" data-urut="' + k + '">'
+      + label + panah(k) + "</button>";
+    const kepala = '<div class="pn-th"><span>No</span>' + thb("nama", "Nama")
+      + thb("ini", "Ini") + thb("status", "Status") + '<span></span></div>';
     return jumlahSiap || !saringSiap
       ? kepala + html
       : kepala + '<div class="pn-kosong2">Tidak ada yang siap di pekan ini.</div>';
@@ -2127,6 +2209,16 @@ function bagiTugas(){
       terpilih.scrollIntoView({ block: "center" });
     }
     daftar.addEventListener("click", (ev) => {
+      const h = ev.target.closest(".pn-thb");
+      if (h){
+        ev.stopPropagation();
+        const k = h.dataset.urut;
+        if (urutOpsi.kolom === k) urutOpsi.arah *= -1;
+        else urutOpsi = { kolom: k, arah: (k === "status") ? -1 : 1 };
+        daftar.innerHTML = daftarOpsi();
+        daftar.scrollTop = 0;
+        return;
+      }
       const b = ev.target.closest(".pn-opsi");
       if (!b) return;
       pakai(trig, decodeURIComponent(b.dataset.n));
