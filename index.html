@@ -1805,17 +1805,73 @@ function setAdmin(nilai){
   } catch (e) {}
   perbaruiTombol();
 }
+/* ---- PIN admin disimpan sebagai hash (PBKDF2-SHA-256 + garam), bukan teks biasa ---- */
 const PIN_BAWAAN = "000000";
-function pinTersimpan(){
+const ITERASI_PIN = 120000;
+const KUNCI_PIN = "jhtp-pin-v2";
+const KUNCI_PIN_LAMA = "jhtp-pin";
+const PIN_LAMA_DIKENAL = "246810";          // nilai lama yang berarti "belum pernah diganti"
+
+const hexDari = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+function hexKeBytes(hex){
+  const out = new Uint8Array(Math.floor(hex.length / 2));
+  for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.substr(i * 2, 2), 16);
+  return out;
+}
+function acakHex(n){
+  const b = new Uint8Array(n);
+  try { crypto.getRandomValues(b); }
+  catch (e) { for (let i = 0; i < n; i++) b[i] = Math.floor(Math.random() * 256); }
+  return hexDari(b);
+}
+async function hashPin(pin, garamHex, iterasi){
+  const teks = garamHex + "|" + String(pin);
+  if (!(window.crypto && crypto.subtle && crypto.subtle.deriveBits)){
+    let h = 5381;                                   /* browser sangat lama: cadangan sederhana */
+    for (let i = 0; i < teks.length; i++) h = ((h << 5) + h + teks.charCodeAt(i)) >>> 0;
+    return "lemah:" + h.toString(16);
+  }
+  const kunci = await crypto.subtle.importKey("raw", new TextEncoder().encode(String(pin)),
+    "PBKDF2", false, ["deriveBits"]);
+  const bit = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt: hexKeBytes(garamHex), iterations: iterasi || ITERASI_PIN, hash: "SHA-256" },
+    kunci, 256);
+  return hexDari(new Uint8Array(bit));
+}
+function bacaPinTersimpan(){
   try {
-    const v = localStorage.getItem("jhtp-pin");
-    if (v && v !== "246810") return v;      // PIN yang sudah diganti sendiri
-    return PIN_BAWAAN;
-  } catch (e) { return PIN_BAWAAN; }
+    const j = JSON.parse(localStorage.getItem(KUNCI_PIN) || "null");
+    return (j && j.s && j.h) ? j : null;
+  } catch (e) { return null; }
 }
-function simpanPin(pin){
-  try { localStorage.setItem("jhtp-pin", pin); } catch (e) {}
+let garamBawaanCache = "";
+function garamBawaan(){
+  if (!garamBawaanCache) garamBawaanCache = hexDari(new TextEncoder().encode("jhtp|tangerang-cipendoh|bawaan"));
+  return garamBawaanCache;
 }
+async function cocokkanPin(pin){
+  const t = bacaPinTersimpan();
+  const hash = await hashPin(pin, t ? t.s : garamBawaan(), t ? (t.i || ITERASI_PIN) : ITERASI_PIN);
+  if (t) return hash === t.h;
+  return hash === (await hashPin(PIN_BAWAAN, garamBawaan(), ITERASI_PIN));
+}
+async function simpanPin(pin){
+  const garam = acakHex(16);
+  const h = await hashPin(pin, garam, ITERASI_PIN);
+  try { localStorage.setItem(KUNCI_PIN, JSON.stringify({ s: garam, i: ITERASI_PIN, h: h })); } catch (e) {}
+}
+/* PIN lama (masih teks biasa di HP ini) diubah jadi hash sekali saja */
+async function migrasiPin(){
+  try {
+    const lama = localStorage.getItem(KUNCI_PIN_LAMA);
+    if (lama == null) return;
+    if (lama && lama !== PIN_LAMA_DIKENAL && /^\d{6}$/.test(lama) && !bacaPinTersimpan()){
+      await simpanPin(lama);
+    }
+    localStorage.removeItem(KUNCI_PIN_LAMA);
+  } catch (e) {}
+}
+migrasiPin();
 function perbaruiTombol(){
   const wadah = document.getElementById("tombolKanan");
   if (!wadah) return;
@@ -2052,8 +2108,7 @@ function bukaHadirin(){
       if (baru === null) return;
       const bersih = String(baru).trim();
       if (!/^\d{6}$/.test(bersih)){ alert("PIN harus 6 angka."); return; }
-      simpanPin(bersih);
-      alert("PIN sudah diganti.");
+      simpanPin(bersih).then(() => alert("PIN sudah diganti."));
     }
   });
   tirai.addEventListener("keydown", (ev) => { if (ev.key === "Escape") tirai.remove(); });
@@ -2076,8 +2131,17 @@ function bukaPin(){
   const inp = tirai.querySelector(".pin-input");
   const salah = tirai.querySelector(".pin-salah");
 
-  const masuk = () => {
-    if (String(inp.value).trim() === pinTersimpan()){
+  const masuk = async () => {
+    const tombol = tirai.querySelector(".pin-masuk");
+    if (!tombol || tombol.disabled) return;
+    tombol.disabled = true;
+    const teksAsli = tombol.textContent;
+    tombol.textContent = "Memeriksa…";
+    let cocok = false;
+    try { cocok = await cocokkanPin(String(inp.value).trim()); } catch (e) { cocok = false; }
+    tombol.disabled = false;
+    tombol.textContent = teksAsli;
+    if (cocok){
       setAdmin(true);
       tirai.remove();
     } else {
@@ -3191,6 +3255,38 @@ async function ambilHalamanWol(kode){
   return await r.text();
 }
 
+/* kotak pesan di dalam aplikasi (bukan alert bawaan browser) */
+function pesanKotak(opsi){
+  const o = Object.assign({ judul: "", isi: "", ok: "OK", batal: null }, opsi || {});
+  return new Promise((selesai) => {
+    const tirai = document.createElement("div");
+    tirai.className = "modal-tirai";
+    const isi = String(o.isi || "").split("\n")
+      .map((t) => (t ? `<p>${esc(t)}</p>` : ""))
+      .join("");
+    tirai.innerHTML = '<div class="modal-kotak pin-kotak" role="dialog" aria-modal="true">'
+      + '<div class="modal-kepala"><span>' + esc(o.judul) + '</span>'
+      + '<button type="button" class="modal-x" title="Tutup">&times;</button></div>'
+      + '<div class="modal-isi">' + isi + '</div>'
+      + '<div class="modal-kaki"><span class="kaki-kanan">'
+      + (o.batal ? '<button type="button" class="ed-batal">' + esc(o.batal) + '</button>' : "")
+      + '<button type="button" class="ed-simpan pesan-ok">' + esc(o.ok) + '</button>'
+      + '</span></div></div>';
+    document.body.appendChild(tirai);
+    const tutup = (nilai) => { tirai.remove(); selesai(nilai); };
+    tirai.addEventListener("click", (ev) => {
+      if (ev.target.closest(".pesan-ok")) { tutup(true); return; }
+      if (ev.target.closest(".ed-batal") || ev.target.closest(".modal-x") || ev.target === tirai) tutup(false);
+    });
+    tirai.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter"){ ev.preventDefault(); tutup(true); }
+      if (ev.key === "Escape") tutup(false);
+    });
+    const b = tirai.querySelector(".pesan-ok");
+    if (b) setTimeout(() => b.focus(), 0);
+  });
+}
+
 let syncJalan = false;
 async function syncWol(){
   if (syncJalan) return;
@@ -3205,7 +3301,7 @@ async function syncWol(){
     const akhir = JADWAL.length ? msTanggalPekan(JADWAL[JADWAL.length - 1].tanggal) : NaN;
     let ketemu = "", pekanPertama = null;
     for (const kode of kandidat){
-      setel("&#8635; Periksa " + kode + "…");
+      setel("&#8635; Memeriksa…");
       let html = "";
       try { html = await ambilHalamanWol(kode + "01"); } catch (e) { continue; }
       if (!/HARTA DALAM FIRMAN ALLAH/i.test(html)) continue;       /* halaman belum ada */
@@ -3218,15 +3314,31 @@ async function syncWol(){
       ketemu = kode; pekanPertama = p; break;
     }
     if (!ketemu){
-      alert("Jadwal baru belum terbit.\n\n"
-        + "Jadwal terakhir yang ada: " + (JADWAL.length ? JADWAL[JADWAL.length - 1].tanggal : "—") + "\n"
-        + "Sudah diperiksa: " + kandidat.join(", "));
+      setel("&#8635; Sync");
+      const akhirTeks = JADWAL.length ? JADWAL[JADWAL.length - 1].tanggal : "—";
+      await pesanKotak({
+        judul: "Belum ada jadwal baru",
+        isi: "Jadwal yang tersedia sekarang sampai " + akhirTeks + ".\n\n"
+          + "Jadwal edisi berikutnya biasanya terbit menjelang akhir bulan. "
+          + "Coba periksa lagi beberapa hari lagi.\n\n"
+          + "Tidak ada data yang berubah.",
+        ok: "Mengerti"
+      });
       return;
     }
+    setel("&#8635; Sync");
     const tgl = tanggalDariRentang(pekanPertama.pekan);
-    if (!confirm("Jadwal baru sudah terbit!\n\n" + pekanPertama.pekan + " — " + pekanPertama.alkitab
-      + "\nPerhimpunan pertama: " + tgl.tanggal + "\n\n"
-      + "Ambil sekarang? Pekan baru hanya ditambahkan di ujung; pekan dan nama yang sudah ada tidak diubah.")) return;
+    const setuju = await pesanKotak({
+      judul: "Jadwal baru sudah terbit!",
+      isi: String(pekanPertama.pekan || "").toLowerCase().replace(/\b([a-z])/g, (m, c) => c.toUpperCase())
+        + " · " + (pekanPertama.alkitab || "") + "\n"
+        + "Perhimpunan pertama: " + tgl.tanggal + "\n\n"
+        + "Ambil dan susun sekarang?\n"
+        + "Jadwal lama, nama yang sudah dipilih, dan data hadirin tidak diubah.",
+      ok: "Ambil sekarang",
+      batal: "Nanti"
+    });
+    if (!setuju) return;
 
     const pekan = [];
     for (let n = 1; n <= 9; n++){
@@ -3246,11 +3358,30 @@ async function syncWol(){
     const hasil = gabungWol(data);
     simpanImpor(data);
     susunUlang(hasil.tambah ? JADWAL.length - 1 : undefined);
-    alert(hasil.tambah
-      ? hasil.tambah + " pekan baru ditambahkan (" + hasil.pekan.join(", ") + ")."
-      : "Semua pekan di edisi ini sudah ada.");
+    if (hasil.tambah){
+      const awal = hasil.pekan[0] || "";
+      const akhirBaru = hasil.pekan[hasil.pekan.length - 1] || "";
+      await pesanKotak({
+        judul: "Jadwal sudah ditambahkan",
+        isi: hasil.tambah + " pekan baru sudah masuk ke daftar"
+          + (awal ? " (" + awal + " sampai " + akhirBaru + ")" : "") + ".\n\n"
+          + "Silakan bagi tugas seperti biasa lewat tombol Bagi tugas.",
+        ok: "Selesai"
+      });
+    } else {
+      await pesanKotak({
+        judul: "Sudah lengkap",
+        isi: "Semua pekan dari edisi ini sudah ada di jadwal.",
+        ok: "Mengerti"
+      });
+    }
   } catch (e) {
-    alert("Gagal memeriksa jadwal: " + e.message + "\n\nCoba lagi saat ada internet.");
+    await pesanKotak({
+      judul: "Tidak bisa memeriksa",
+      isi: "Pastikan HP tersambung internet, lalu coba lagi.\n\n"
+        + "Tidak ada data yang berubah.",
+      ok: "Mengerti"
+    });
   } finally {
     syncJalan = false;
     if (tombol){ tombol.classList.remove("sibuk"); tombol.innerHTML = "&#8635; Sync"; }

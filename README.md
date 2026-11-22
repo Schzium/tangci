@@ -4,7 +4,7 @@ Satu aplikasi, dua tampilan. Tombol **☰** di kiri atas untuk pindah:
 
 | Menu | Isi |
 |---|---|
-| **Jadwal Tengah Pekan** | Jadwal Nov–Des 2026 (WOL), 9 pekan, link biru + spoiler lagu/ayat, pilih nama, admin PIN |
+| **Jadwal Tengah Pekan** | Jadwal Nov–Des 2026 (WOL), 9 pekan, link biru + spoiler lagu/ayat, pilih nama, mode admin |
 | **Hitung Hadirin** | Denah kursi (app TangCi): klik kursi → isi nama → hijau; ada view AV / Podium, pilih baris, reset |
 
 Isi folder:
@@ -65,7 +65,6 @@ Sudah ada manifest + service worker, jadi terbuka layar penuh tanpa address bar.
 ## Catatan
 
 - Setiap HP menyimpan salinan di `localStorage`; kalau internet mati aplikasi tetap jalan.
-- PIN admin jadwal: **000000** (bisa diganti di panel Hadirin → Ganti PIN).
 - Print jadwal tetap 9 halaman per set, ukuran 612×792 pt, sama seperti file aslinya.
 
 ## 4. Tombol ⟳ Sync (jadwal baru tanpa repot)
