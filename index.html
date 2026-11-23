@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="versi" content="2026-11-23.2">
+<meta name="versi" content="2026-11-23.3">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0d5c7a">
 <meta name="mobile-web-app-capable" content="yes">
@@ -939,13 +939,16 @@
   .bar-aksi .btn-sync{ border-style:dashed; color:#7E0024; }
   .bar-aksi .btn-sync:hover{ background:#fdf2f5; }
   .bar-aksi .btn-sync.sibuk{ opacity:.6; cursor:progress; }
+  .bar-aksi .btn-tabel{ border-style:solid; color:#0d5c7a; border-color:#bcd3dd; }
+  .bar-aksi .btn-tabel:hover{ background:#eef4f7; }
   .bar-aksi .btn-keluar{ color:#8a5a12; border-color:#e6d6a4; background:#fffaf0; }
   body.tema-hadirin .bar-aksi button{ background:#1b212d; border-color:#2c3546; color:#dbe3ee; }
   body.tema-hadirin .bar-aksi .btn-keluar{ color:#e8c98a; border-color:#4a3d22; background:#221d13; }
   @media (max-width: 460px){
     .bar-judul small{ display:none; }
-    .bar-aksi{ gap:4px; }
-    .bar-aksi button{ font-size:8.1pt; padding:4px 7px; }
+    .bar-judul b{ font-size:10.2pt; }
+    .bar-aksi{ gap:3px; }
+    .bar-aksi button{ font-size:7.4pt; padding:4px 5.5px; }
   }
 
   /* ---------- pembungkus dua tampilan ---------- */
@@ -1207,7 +1210,7 @@ body.tema-hadirin{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sa
   <div class="py-kepala">
     <div class="py-atas">
       <h1>Daftar Penyiar</h1>
-      <button type="button" class="py-sunting" id="pySunting">&#9998; Sunting daftar</button>
+      <button type="button" class="py-sunting" id="pySunting">Sunting daftar</button>
     </div>
     <p class="py-ringkas" id="pyRingkas"></p>
     <p class="py-legenda">Urut <b>P</b> (Perintis) &rarr; <b>HP</b> (Hamba Pelayanan) &rarr; <b>Penyiar</b>.
@@ -1971,6 +1974,32 @@ function renderPekan(d, index){
 
 let pekanAktif = 0;
 
+/* Pekan yang sedang berjalan menurut tanggal hari ini.
+   Contoh: hari ini 23 Nov → aplikasi terbuka di pekan 25 Nov.
+   (Pekan tetap dianggap "berjalan" sampai sehari setelah tanggalnya.) */
+function pekanHariIni(){
+  if (!JADWAL || !JADWAL.length) return 0;
+  const bulan = {
+    jan: 0, feb: 1, mar: 2, apr: 3, mei: 4, jun: 5, jul: 6, agu: 7, agt: 7,
+    sep: 8, okt: 9, nov: 10, des: 11
+  };
+  const kini = new Date();
+  kini.setHours(0, 0, 0, 0);
+  const sekarang = kini.getTime();
+  for (let i = 0; i < JADWAL.length; i++){
+    const m = String(JADWAL[i].tanggal || "").match(/(\d{1,2})\s+([A-Za-z]+)/);
+    if (!m) continue;
+    const b = bulan[m[2].slice(0, 3).toLowerCase()];
+    if (b == null) continue;
+    const hari = parseInt(m[1], 10);
+    const th = new Date().getFullYear();
+    let ms = new Date(th, b, hari).getTime();
+    if (ms < sekarang - 180 * 864e5) ms = new Date(th + 1, b, hari).getTime();
+    if (ms >= sekarang) return i;
+  }
+  return JADWAL.length - 1;      /* semua sudah lewat: pakai pekan terakhir */
+}
+
 function tandaAktif(){
   const teks = document.getElementById("pkTeks");
   if (teks && JADWAL[pekanAktif]) teks.textContent = JADWAL[pekanAktif].label;
@@ -2085,11 +2114,13 @@ function perbaruiTombol(){
   /* kepala: PDF (semua orang), Sync, dan Admin/Keluar */
   if (atas){
     atas.innerHTML =
-      `<button type="button" class="btn-pdf" id="btnPdf" title="Simpan lembar jadwal pekan ini sebagai PDF">&#8681; PDF</button>`
-      + `<button type="button" class="btn-sync" id="btnSync" title="Periksa apakah jadwal baru sudah terbit di wol.jw.org">&#8635; Sync</button>`
-      + (admin
-        ? `<button type="button" class="btn-keluar" id="btnKeluar" title="Keluar dari mode admin">Keluar</button>`
-        : `<button type="button" id="btnAdmin" title="Masuk mode admin (PIN)">Admin</button>`);
+      (admin
+        ? `<button type="button" class="btn-pdf" id="btnPdf" title="Simpan lembar jadwal pekan ini sebagai PDF">PDF</button>`
+          + `<button type="button" class="btn-sync" id="btnSync" title="Periksa apakah jadwal baru sudah terbit di wol.jw.org">Sync</button>`
+          + `<button type="button" class="btn-tabel" id="btnTabel" title="Tabel semua penyiar beserta statusnya">Tabel</button>`
+          + `<button type="button" class="btn-keluar" id="btnKeluar" title="Keluar dari mode admin">Keluar</button>`
+        : `<button type="button" class="btn-sync" id="btnSync" title="Periksa apakah jadwal baru sudah terbit di wol.jw.org">Sync</button>`
+          + `<button type="button" id="btnAdmin" title="Masuk mode admin (PIN)">Admin</button>`);
   }
   const menuPenyiar = document.querySelector('.pm-item[data-view="penyiar"]');
   if (menuPenyiar){
@@ -2101,8 +2132,8 @@ function perbaruiTombol(){
   /* baris pekan: hanya alat admin */
   if (wadah){
     wadah.innerHTML = admin
-      ? `<button type="button" class="btn-daftar" id="btnHadirin" title="Daftar penyiar dan data tugas">&#9998; Penyiar</button>`
-        + `<button type="button" class="btn-daftar" id="btnTugas" title="Isi otomatis slot siswa/asisten yang masih kosong">&#8635; Bagi tugas</button>`
+      ? `<button type="button" class="btn-daftar" id="btnHadirin" title="Daftar penyiar dan data tugas">Penyiar</button>`
+        + `<button type="button" class="btn-daftar" id="btnTugas" title="Isi otomatis slot siswa/asisten yang masih kosong">Bagi tugas</button>`
       : "";
   }
 }
@@ -2185,6 +2216,11 @@ function susun(){
       const b = ev.target.closest("button");
       if (!b) return;
       if (b.id === "btnPdf"){ ev.preventDefault(); cetakPdf(); return; }
+      if (b.id === "btnTabel"){
+        ev.preventDefault();
+        if (typeof window.pilihTampilan === "function") window.pilihTampilan("penyiar", true);
+        return;
+      }
       if (b.id === "btnSync"){ ev.preventDefault(); syncWol(); return; }
     });
     document.addEventListener("keydown", (ev) => {
@@ -2194,8 +2230,7 @@ function susun(){
 
   isiPanelPekan();
   perbaruiTombol();
-  const dariHash = JADWAL.findIndex((d) => d.kunci === location.hash.replace("#", ""));
-  tampilkanPekan(dariHash >= 0 ? dariHash : pekanAktif, false);
+  tampilkanPekan(pekanHariIni(), false);
   window.addEventListener("resize", skalaHalaman);
 }
 
@@ -3599,14 +3634,14 @@ async function syncWol(){
   const setel = (t) => { if (tombol) tombol.innerHTML = t; };
   syncJalan = true;
   if (tombol) tombol.classList.add("sibuk");
-  setel("&#8635; Memeriksa…");
+  setel("Memeriksa…");
   try {
     const kandidat = kodeEdisi ? kodeBerikut(kodeEdisi) : [];
     if (!kandidat.length) throw new Error("kode edisi terakhir belum diketahui");
     const akhir = JADWAL.length ? msTanggalPekan(JADWAL[JADWAL.length - 1].tanggal) : NaN;
     let ketemu = "", pekanPertama = null;
     for (const kode of kandidat){
-      setel("&#8635; Memeriksa…");
+      setel("Memeriksa…");
       let html = "";
       try { html = await ambilHalamanWol(kode + "01"); } catch (e) { continue; }
       if (!/HARTA DALAM FIRMAN ALLAH/i.test(html)) continue;       /* halaman belum ada */
@@ -3619,7 +3654,7 @@ async function syncWol(){
       ketemu = kode; pekanPertama = p; break;
     }
     if (!ketemu){
-      setel("&#8635; Sync");
+      setel("Sync");
       const akhirTeks = JADWAL.length ? JADWAL[JADWAL.length - 1].tanggal : "—";
       await pesanKotak({
         judul: "Belum ada jadwal baru",
@@ -3631,7 +3666,7 @@ async function syncWol(){
       });
       return;
     }
-    setel("&#8635; Sync");
+    setel("Sync");
     const tgl = tanggalDariRentang(pekanPertama.pekan);
     const setuju = await pesanKotak({
       judul: "Jadwal baru sudah terbit!",
@@ -3648,7 +3683,7 @@ async function syncWol(){
     const pekan = [];
     for (let n = 1; n <= 9; n++){
       const kode = ketemu + String(n).padStart(2, "0");
-      setel("&#8635; " + n + "/9…");
+      setel(n + "/9…");
       let html = "";
       try { html = await ambilHalamanWol(kode); } catch (e) { html = ""; }
       if (!/HARTA DALAM FIRMAN ALLAH/i.test(html)) continue;
@@ -3689,7 +3724,7 @@ async function syncWol(){
     });
   } finally {
     syncJalan = false;
-    if (tombol){ tombol.classList.remove("sibuk"); tombol.innerHTML = "&#8635; Sync"; }
+    if (tombol){ tombol.classList.remove("sibuk"); tombol.innerHTML = "Sync"; }
   }
 }
 

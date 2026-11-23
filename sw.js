@@ -1,4 +1,4 @@
-const CACHE = 'jhtp-v6';
+const CACHE = 'jhtp-v7';
 const ASET = ['./', './index.html', './manifest.json', './icon-192-3d.png', './icon-512-3d.png'];
 
 self.addEventListener('install', (e) => {
