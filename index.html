@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="versi" content="2026-11-23.4">
+<meta name="versi" content="2026-11-23.5">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0d5c7a">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2141,7 +2141,7 @@ function perbaruiTombol(){
   if (atas){
     atas.innerHTML =
       (admin
-        ? `<button type="button" class="btn-pdf" id="btnPdf" title="Simpan lembar jadwal pekan ini sebagai PDF">PDF</button>`
+        ? `<button type="button" class="btn-pdf" id="btnPdf" title="Simpan lembar jadwal pekan ini sebagai PDF (langsung terunduh)">PDF</button>`
           + `<button type="button" class="btn-sync" id="btnSync" title="Periksa apakah jadwal baru sudah terbit di wol.jw.org">Sync</button>`
           + `<button type="button" class="btn-tabel" id="btnTabel" title="Daftar penyiar beserta statusnya">Penyiar</button>`
           + `<button type="button" class="btn-keluar" id="btnKeluar" title="Keluar dari mode admin">Keluar</button>`
@@ -2194,12 +2194,217 @@ function isiPanelPekan(){
 }
 
 /* ---------- simpan lembar jadwal sebagai PDF ---------- */
-function cetakPdf(){
-  tutupPanelPekan();
-  const tirai = document.getElementById("tirai"); if (tirai) tirai.classList.remove("buka");
-  const menu = document.getElementById("panelMenu"); if (menu) menu.classList.remove("buka");
-  const tombolMenu = document.getElementById("btnMenu"); if (tombolMenu) tombolMenu.setAttribute("aria-expanded", "false");
-  document.querySelectorAll(".pn-pop").forEach((e) => e.remove());
+/* Satu klik → berkas PDF langsung terunduh. Tanpa dialog cetak, tanpa
+   mengatur kertas/margin/skala. Lembar ditangkap apa adanya (warna penuh)
+   lalu dibungkus jadi PDF satu halaman ukuran 8,5 x 11 inci. */
+const PDF_PT = { w: 612, h: 792 };    /* ukuran halaman PDF (point) */
+const PDF_PX = { w: 816, h: 1056 };   /* sama, dalam piksel 96 dpi */
+
+/* semua aturan @media print dibuka bungkusnya, supaya hasil tangkapan
+   sama persis dengan hasil cetak (caret/panah nama hilang, warna utuh) */
+function cssCetakDatar(){
+  let hasil = "";
+  document.querySelectorAll("style").forEach((st) => {
+    const t = st.textContent || "";
+    let i = 0;
+    for (;;){
+      const a = t.indexOf("@media print", i);
+      if (a < 0) break;
+      const buka = t.indexOf("{", a);
+      if (buka < 0) break;
+      let dalam = 0, j = buka;
+      for (; j < t.length; j++){
+        if (t[j] === "{") dalam++;
+        else if (t[j] === "}"){ dalam--; if (dalam === 0) break; }
+      }
+      hasil += t.slice(buka + 1, j) + "\n";
+      i = j + 1;
+    }
+  });
+  return hasil;
+}
+
+/* peubah warna & ukuran (--kiri, --abu, …) beserta gaya dasar huruf */
+function gayaAkar(){
+  let css = "";
+  const gelar = (cs, daftar) => daftar.forEach((p) => {
+    const v = cs.getPropertyValue(p);
+    if (v) css += p + ":" + v + ";";
+  });
+  try { gelar(getComputedStyle(document.documentElement), Array.from(getComputedStyle(document.documentElement)).filter((p) => p.indexOf("--") === 0)); } catch (e) {}
+  const b = getComputedStyle(document.body);
+  ["font-family", "font-size", "line-height", "color", "letter-spacing", "font-variant-numeric", "font-kerning"].forEach((p) => {
+    const v = b.getPropertyValue(p); if (v) css += p + ":" + v + ";";
+  });
+  return css;
+}
+
+function dataUrlKeBytes(dataUrl){
+  const i = dataUrl.indexOf("base64,");
+  if (i < 0) return null;
+  const bin = atob(dataUrl.slice(i + 7));
+  const u8 = new Uint8Array(bin.length);
+  for (let k = 0; k < bin.length; k++) u8[k] = bin.charCodeAt(k);
+  return u8;
+}
+
+function infoJpeg(bytes){
+  let pos = 2;
+  while (pos + 9 < bytes.length){
+    if (bytes[pos] !== 0xFF){ pos++; continue; }
+    const m = bytes[pos + 1];
+    if (m >= 0xC0 && m <= 0xCF && m !== 0xC4 && m !== 0xC8 && m !== 0xCC){
+      return {
+        h: (bytes[pos + 5] << 8) | bytes[pos + 6],
+        w: (bytes[pos + 7] << 8) | bytes[pos + 8],
+        components: bytes[pos + 9]
+      };
+    }
+    const len = (bytes[pos + 2] << 8) | bytes[pos + 3];
+    pos += 2 + len;
+  }
+  return null;
+}
+
+function unduhBerkas(nama, bytes, mime){
+  const blob = new Blob([bytes], { type: mime || "application/octet-stream" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = nama; a.style.display = "none"; a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 4000);
+}
+
+/* gambar JPEG → PDF satu halaman, gambar memenuhi halaman 1:1 */
+function pdfSatuHalaman(im, wPt, hPt){
+  const objs = [];
+  const add = (b) => { objs.push(b); return objs.length; };
+  const fmt = (v) => String(Math.round(v * 100) / 100);
+  add("<< /Type /Catalog /Pages 2 0 R >>");
+  add("<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
+  const ops = "q " + fmt(wPt) + " 0 0 " + fmt(hPt) + " 0 0 cm /Im1 Do Q";
+  add("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + fmt(wPt) + " " + fmt(hPt) + "]"
+    + " /Resources << /XObject << /Im1 5 0 R >> >> /Contents 4 0 R >>");
+  add("<< /Length " + ops.length + " >>\nstream\n" + ops + "\nendstream");
+  const cs = im.components === 1 ? "/DeviceGray" : im.components === 4 ? "/DeviceCMYK" : "/DeviceRGB";
+  add("<< /Type /XObject /Subtype /Image /Width " + im.w + " /Height " + im.h
+    + " /ColorSpace " + cs + " /BitsPerComponent 8 /Filter /DCTDecode /Length " + im.bytes.length + " >>\nstream");
+
+  const enc = (t) => { const u = new Uint8Array(t.length); for (let i = 0; i < t.length; i++) u[i] = t.charCodeAt(i) & 0xFF; return u; };
+  const bagian = [enc("%PDF-1.4\n")];
+  let total = bagian[0].length;      /* panjang "%PDF-1.4\n" = 9 */
+  const posisi = [];
+  for (let i = 0; i < objs.length; i++){
+    posisi.push(total);
+    const kepala = enc((i + 1) + " 0 obj\n" + objs[i] + "\n");
+    bagian.push(kepala); total += kepala.length;
+    if (i === objs.length - 1){            /* objek gambar: ada arus JPEG */
+      bagian.push(im.bytes); total += im.bytes.length;
+      const tutup = enc("\nendstream\nendobj\n");
+      bagian.push(tutup); total += tutup.length;
+    } else {
+      const tutup = enc("endobj\n");
+      bagian.push(tutup); total += tutup.length;
+    }
+  }
+  let xref = "xref\n0 " + (objs.length + 1) + "\n0000000000 65535 f \n";
+  posisi.forEach((p) => { xref += String(p).padStart(10, "0") + " 00000 n \n"; });
+  xref += "trailer\n<< /Size " + (objs.length + 1) + " /Root 1 0 R >>\nstartxref\n" + total + "\n%%EOF";
+  const ekor = enc(xref);
+  bagian.push(ekor); total += ekor.length;
+
+  const out = new Uint8Array(total);
+  let p = 0;
+  bagian.forEach((b) => { out.set(b, p); p += b.length; });
+  return out;
+}
+
+function namaBerkasPdf(){
+  const d = JADWAL[pekanAktif] || {};
+  const dasar = ("Jadwal Tengah Pekan " + (d.label || "")).trim().replace(/[^\w\- ]+/g, " ").replace(/\s+/g, "-");
+  return dasar + ".pdf";
+}
+
+/* tangkap lembar jadi gambar (persis tampilan cetak) */
+async function tangkapLembar(el){
+  const W = PDF_PX.w, SK = 3;                 /* 3x → tajam saat dicetak */
+  const klon = el.cloneNode(true);
+  klon.removeAttribute("id");
+  klon.style.cssText = "";
+  klon.style.width = W + "px";
+  klon.style.minHeight = PDF_PX.h + "px";
+  klon.style.height = "auto";
+  klon.style.margin = "0";
+  klon.style.boxShadow = "none";
+  klon.style.transform = "none";
+  klon.style.zoom = "1";
+  klon.style.overflow = "hidden";
+  klon.style.background = "#fff";
+
+  /* gambar (bila ada) jadi data URL supaya ikut terekam */
+  const daftarGambar = Array.from(klon.querySelectorAll("img"));
+  await Promise.all(daftarGambar.map(async (img) => {
+    const src = img.getAttribute("src") || "";
+    if (!src || src.indexOf("data:") === 0) return;
+    try {
+      const r = await fetch(new URL(src, location.href).href);
+      if (!r.ok) throw new Error("gagal");
+      const blob = await r.blob();
+      const du = await new Promise((ok) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.readAsDataURL(blob); });
+      img.setAttribute("src", du);
+    } catch (e) { img.style.display = "none"; }
+  }));
+
+  /* ukur tinggi sebenarnya: kalau isi pekan ini lebih panjang dari satu
+     lembar, halaman PDF ikut memanjang supaya tidak ada yang terpotong */
+  let H = PDF_PX.h;
+  try {
+    const ukur = klon.cloneNode(true);
+    const probe = document.createElement("div");
+    probe.style.cssText = "position:fixed;left:-99999px;top:0;width:" + W + "px;height:auto;visibility:hidden;pointer-events:none;background:#fff";
+    probe.appendChild(ukur);
+    document.body.appendChild(probe);
+    const tinggi = Math.ceil(ukur.getBoundingClientRect().height || ukur.scrollHeight || 0);
+    probe.remove();
+    if (tinggi > H) H = tinggi;
+  } catch (e) {}
+
+  const gaya = Array.from(document.querySelectorAll("style")).map((s) => s.textContent).join("\n")
+    + "\n" + cssCetakDatar();
+
+  klon.style.height = H + "px";
+  klon.style.minHeight = H + "px";
+
+  const xdoc = document.implementation.createHTMLDocument("");
+  const wadah = xdoc.createElement("div");
+  wadah.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+  wadah.setAttribute("style", "width:" + W + "px;height:" + H + "px;overflow:hidden;background:#fff;" + gayaAkar());
+  const st = xdoc.createElement("style");
+  st.textContent = gaya;
+  wadah.appendChild(st);
+  wadah.appendChild(xdoc.importNode(klon, true));
+
+  const xml = new XMLSerializer().serializeToString(wadah);
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '">'
+    + '<foreignObject width="100%" height="100%">' + xml + "</foreignObject></svg>";
+  const img = new Image();
+  await new Promise((ok, gagal) => {
+    img.onload = ok;
+    img.onerror = () => gagal(new Error("lembar gagal digambar"));
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  });
+
+  const c = document.createElement("canvas");
+  c.width = W * SK; c.height = H * SK;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.drawImage(img, 0, 0, c.width, c.height);
+  return { kanvas: c, tinggiPx: H };
+}
+
+function cetakLewatBrowser(){
   const judulAsli = document.title;
   const d = JADWAL[pekanAktif];
   document.title = "Jadwal Tengah Pekan " + ((d && d.label) ? d.label : "");
@@ -2207,6 +2412,38 @@ function cetakPdf(){
   window.addEventListener("afterprint", balik, { once: true });
   setTimeout(() => { try { window.print(); } catch (e) {} }, 60);
   setTimeout(balik, 30000);
+}
+
+async function cetakPdf(){
+  tutupPanelPekan();
+  const tirai = document.getElementById("tirai"); if (tirai) tirai.classList.remove("buka");
+  const menu = document.getElementById("panelMenu"); if (menu) menu.classList.remove("buka");
+  const tombolMenu = document.getElementById("btnMenu"); if (tombolMenu) tombolMenu.setAttribute("aria-expanded", "false");
+  document.querySelectorAll(".pn-pop").forEach((e) => e.remove());
+
+  const lembar = document.querySelector("#halaman .halaman") || document.querySelector(".halaman");
+  const tombol = document.getElementById("btnPdf");
+  const labelTombol = tombol ? tombol.textContent : "";
+  if (tombol){ tombol.disabled = true; tombol.textContent = "…"; tombol.classList.add("sibuk"); }
+  try {
+    if (!lembar) throw new Error("lembar tidak ditemukan");
+    const hasil = await tangkapLembar(lembar);
+    const kanvas = hasil.kanvas;
+    const jpg = kanvas.toDataURL("image/jpeg", 0.94);
+    const bytes = dataUrlKeBytes(jpg);
+    if (!bytes) throw new Error("gambar kosong");
+    const info = infoJpeg(bytes) || { w: kanvas.width, h: kanvas.height, components: 3 };
+    const tinggiPt = PDF_PT.w * (hasil.tinggiPx / PDF_PX.w);   /* jaga perbandingan */
+    const pdf = pdfSatuHalaman({ bytes: bytes, w: info.w, h: info.h, components: info.components }, PDF_PT.w, tinggiPt);
+    const nama = namaBerkasPdf();
+    unduhBerkas(nama, pdf, "application/pdf");
+    if (typeof showToast === "function") showToast("PDF tersimpan: " + nama);
+  } catch (e) {
+    console.warn("PDF langsung gagal, memakai dialog cetak:", e);
+    cetakLewatBrowser();
+  } finally {
+    if (tombol){ tombol.disabled = false; tombol.textContent = labelTombol; tombol.classList.remove("sibuk"); }
+  }
 }
 
 function susun(){

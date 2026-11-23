@@ -94,22 +94,27 @@ terbuka, supaya isian yang belum disimpan tidak hilang.
 Cara kerjanya: ada penanda di kepala berkas
 
 ```
-<meta name="versi" content="2026-11-23.2">
+<meta name="versi" content="2026-11-23.5">
 ```
 
 **Setiap kali `index.html` diubah lalu diunggah, ubah juga angka `content` itu**
-(mis. jadi `2026-11-23.3`). Angka berbeda = semua HP yang sedang membuka aplikasi
+(mis. jadi `2026-11-23.6`). Angka berbeda = semua HP yang sedang membuka aplikasi
 akan menyegarkan dirinya sendiri. Naikkan juga `CACHE` di `sw.js` supaya berkas
 lain ikut diperbarui.
 
 ## Catatan
 
 - Setiap HP menyimpan salinan di `localStorage`; kalau internet mati aplikasi tetap jalan.
-- Tombol **⇩ PDF** hanya mencetak lembar jadwal pekan yang sedang tampil (1 lembar,
-  612×792 pt). Menu, tombol, dan tampilan Hitung Hadirin tidak ikut tercetak.
-  Warna pita bagian (abu/emas/marun), garis kepala, dan titik bullet dipaksa ikut
-  tercetak lewat `print-color-adjust: exact`, jadi tidak perlu mencentang
-  "Grafik latar belakang" di dialog cetak.
+- Tombol **PDF** sekali klik langsung menyimpan berkas PDF ke folder **Unduhan**
+  (di HP: folder Download). Tidak ada dialog cetak, jadi tidak ada pengaturan
+  kertas, margin, skala, atau "grafik latar belakang" yang perlu diubah.
+  Isinya hanya lembar jadwal pekan yang sedang tampil, satu halaman 8,5 × 11 inci
+  (612 × 792 pt), warna pita bagian (abu/emas/marun) utuh. Nama berkasnya mengikuti
+  pekan, mis. `Jadwal-Tengah-Pekan-25-Nov.pdf`.
+  Di dalam berkas itu lembarnya tersimpan sebagai gambar beresolusi tinggi (3×),
+  jadi tampilannya persis seperti di layar dan warnanya tidak mungkin pudar —
+  tapi teksnya tidak bisa diblok atau dicari. Kalau peramban menolak cara ini,
+  aplikasi otomatis kembali memakai dialog cetak biasa (Ctrl+P).
 
 ## 4. Tombol di kepala aplikasi
 
