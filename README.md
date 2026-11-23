@@ -67,23 +67,93 @@ Sudah ada manifest + service worker, jadi terbuka layar penuh tanpa address bar.
 
 ## 6. Halaman "Daftar Penyiar" (khusus admin, bisa disunting)
 
-Log in → tombol **Penyiar** di kepala (atau menu ☰ → **Daftar Penyiar**). Isinya
-**satu daftar panjang** semua penyiar yang bisa langsung disunting di tempat:
+Log in → tombol **Penyiar** di kepala. (Tidak ada lagi di menu ☰ supaya tidak dobel;
+di sana tinggal **Jadwal Tengah Pekan** dan **Hitung Hadirin**.)
 
-- kolom **Nama** dan **Inisial** (ketik langsung),
-- tombol **L/P** (L → P → kosong), **Kat** (**P** = Penatua, **HP** = Hamba
-  Pelayanan, kosong = penyiar biasa), **Rot** (ikut rotasi siswa/asisten atau tidak),
-- **×** untuk menghapus baris,
-- di bawah tiap baris: **tugasnya apa dan pekan mana**, mis.
-  `2 tugas: Asisten 4 Nov · Siswa 9 Des`, lalu statusnya (`siap ditugaskan`,
-  `jeda N pekan`, `sudah ada tugas mendatang`, `belum pernah dapat tugas`),
-- kotak **Tambah** untuk nama baru, dan baris **Ganti PIN · Batal · Simpan** yang
-  menempel di bawah layar.
+Isinya **satu daftar ringkas** semua penyiar yang bisa disunting di tempat:
 
-Urutan awal: **Penatua (P) → Hamba Pelayanan (HP) → Penyiar**, lalu A–Z. Baris kuning
-= nama yang tertulis di jadwal tapi belum ada di daftar. Mengubah nama di sini ikut
-mengganti nama itu di seluruh jadwal (lihat bagian 5). Halaman ini **tidak ikut
-tercetak** — saat PDF hanya lembar jadwal (halaman 1) yang keluar.
+- kotak **Cari nama…** di atas untuk menyaring daftar (nama atau inisial),
+- tombol **+ Tambah** → muncul jendela form (Nama, Inisial, L/P, Kategori), lalu
+  orangnya langsung masuk ke kelompoknya,
+- kolom **Nama** dan **Inisial** (ketik langsung; inisial kosong untuk saudari),
+- tombol **L/P** (L → P → kosong) dan **Kat** — sekali ketuk berganti urut:
+  kosong (penyiar biasa) → **P** Penatua → **HP** Hamba Pelayanan → **OP**
+  Operator → **MC** Mic → **OM** Operator & Mic → kembali kosong. Tiap kategori
+  punya warna sendiri supaya gampang dilihat sekilas,
+- **×** untuk menghapus — selalu ditanya dulu **"Hapus penyiar?"** dengan pilihan
+  **Ya, hapus** / **Batal**, jadi tidak ada yang terhapus karena salah tekan,
+- baris **Ganti PIN · Batal · Simpan** menempel di bawah layar.
+
+**Urutan daftar:** Penatua → Hamba Pelayanan → OP → MC → OM → penyiar
+laki-laki → penyiar perempuan, masing-masing A–Z. (Urutan dirapikan saat daftar
+dibuka; mengubah kategori tidak membuat baris melompat di bawah jari.) Baris kuning = nama yang tertulis di jadwal tapi belum
+ada di daftar. Mengubah nama di sini ikut mengganti nama itu di seluruh jadwal
+(lihat bagian 5). Halaman ini **tidak ikut tercetak** — saat PDF hanya lembar jadwal
+yang keluar.
+
+## 6b. Riwayat tugas & antrean yang adil
+
+Jeda tugas tetap **8 pekan sekali**: setelah dapat tugas siswa/asisten, orang itu
+baru muncul lagi sebagai "siap" setelah 8 pekan lewat.
+
+Supaya pembagiannya kelihatan adil, aplikasi menyimpan **riwayat tugas 26 pekan
+sebelum 4 November 2026** (dibaca dari lembar jadwal Mei–Oktober 2026: 6 Mei s.d.
+28 Oktober). Riwayat ini:
+
+- hanya dipakai untuk menghitung **kapan terakhir seseorang dapat tugas** — pekan
+  lama tidak tampil sebagai lembar yang bisa disunting dan tidak menambah penyiar
+  baru ke daftar;
+- membuat kolom **Status** di daftar pilihan berbunyi `siap · 21 pekan` (sudah 21
+  pekan tidak dapat tugas → paling layak didahulukan), bukan cuma `siap`;
+- pekan yang tidak ada perhimpunan (1 Juli, 18 November) tetap dihitung satu pekan.
+
+### Penyeragaman nama (23 Nov 2026)
+
+Nama penyiar diseragamkan di **semua** tempat (daftar penyiar, lembar jadwal, dan
+hitungan tugas), termasuk untuk daftar yang sudah tersimpan di HP/cloud — tidak
+perlu diubah manual:
+
+| di jadwal lama | sekarang |
+|---|---|
+| Anchilla | **Ancilla** |
+| Heliana | **Helliana** |
+| Hans | **Hansen** |
+| Sisca | **Fransisca** |
+| Rita / Rita S. | **Anarita** |
+| Debby | **Debby M** (Debby P tetap ada, tidak dicampur) |
+| A. Pangaribuan | **Agus P** |
+| HR | **Tsunehiro N** |
+| Benyamin / Beny E | **Benyamin E** |
+| Rey D | **Reynatan** |
+
+Empat nama yang dulu tidak ada di daftar ditambahkan: **Alex, Itje, Jerry, Josea**
+(L/P-nya masih kosong — ketuk sekali di kolom L/P untuk mengisi; begitu diisi,
+inisial & tampilannya menyesuaikan). `BM` dan `Yulia` sengaja **tidak** ditambahkan
+karena sudah pindah — keduanya hanya tertinggal di jadwal lama.
+
+Kalau salah satu nama di atas dihapus lewat tombol ×, nama itu tidak akan muncul
+lagi sendiri (aplikasi mengingatnya).
+
+## 6c. Tombol **Cetak S-89** (slip tugas siswa)
+
+Di baris pekan, sebelah **Bagi tugas**, ada tombol **Cetak S-89**. Sekali tekan,
+aplikasi membuat slip tugas (form S-89) untuk **setiap siswa yang bertugas di pekan
+yang sedang dibuka** — satu siswa satu berkas PDF, tidak digabung:
+
+- nama berkas: `S-89_Nama_Penyiar.pdf`;
+- ukuran halaman sama dengan PDF jadwal (8,5 × 11 inci, 612 × 792 pt);
+- isi slip: Nama, Asisten, Tanggal, Bagian no., pilihan ruang (Ruang utama /
+  Ruang tambahan 1 / Ruang tambahan 2), dan catatan untuk siswa — seperti form
+  aslinya.
+
+**Yang dapat slip:** siswa **Pembacaan Alkitab (bagian 3)** dan siswa bagian
+**Bersemangatlah dalam Pelayanan (bagian 4–6)**. Kalau bagian itu ada asistennya,
+nama asisten ditulis di kolom **Asisten** pada slip yang sama (bukan slip
+terpisah). Pelajaran Alkitab Sidang dan Pembahasan tidak dibuatkan slip.
+
+Contoh: pekan 25 Nov → 4 berkas, yaitu Adriel (bag. 3), Lilis (bag. 4, asisten Iim),
+Bile (bag. 5, asisten Anarita), Sumanto (bag. 6). Nama yang dipakai adalah nama
+yang tampil di layar, jadi kalau nama sudah diganti lewat Penyiar, slipnya ikut.
 
 ## 7. Aplikasi menyegarkan diri sendiri
 
@@ -198,8 +268,9 @@ yang sama, sedangkan di layar admin tetap berkolom rapi supaya kedua nama mudah 
 
 Di kepala aplikasi ada tombol **↻ Sync**; baris pekan berisi **dropdown pekan**.
 
-- **Dropdown pekan** — semua pekan ada di satu daftar; klik untuk pindah. Baris tab
-  tidak lagi memakan tempat (satu baris saja, juga di HP).
+- **Dropdown pekan** — semua pekan ada di satu daftar, **pekan terbaru di paling
+  atas** (30 Des → 4 Nov); klik untuk pindah. Baris tab tidak lagi memakan tempat
+  (satu baris saja, juga di HP).
 - **⟳ Sync** — aplikasi memeriksa sendiri ke wol.jw.org apakah edisi berikutnya
   sudah terbit.
   - Belum terbit → muncul: *"Jadwal baru belum terbit. Jadwal terakhir yang ada:
