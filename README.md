@@ -95,7 +95,7 @@ terbuka, supaya isian yang belum disimpan tidak hilang.
 Cara kerjanya: ada penanda di kepala berkas
 
 ```
-<meta name="versi" content="2026-11-23.9">
+<meta name="versi" content="2026-11-23.10">
 ```
 
 **Setiap kali `index.html` diubah lalu diunggah, ubah juga angka `content` itu**
@@ -134,7 +134,21 @@ ditiadakan ditandai *tidak ada perhimpunan* dan tidak bisa dipilih); pilih satu
 pekan, dan hanya pekan itu yang diisi. Pekan lain tidak disentuh.
 
 Hanya admin yang bisa mengubah isi jadwal (klik nama siswa/asisten, **Ketua**, dan
-**Doa** untuk memilih dari daftar penyiar). Yang belum log in hanya bisa membaca:
+**Doa** untuk memilih dari daftar penyiar). Daftar pilihan itu sudah disaring sesuai
+tugasnya — judul kecil di atas daftar menyebut aturannya, jadi tidak perlu mengingat:
+
+| Yang dipilih | Isi daftar |
+|---|---|
+| **Ketua**, **Doa** | Penatua (P) & Hamba Pelayanan (HP) saja |
+| **1.** Pelajaran pertama, **2.** Permata Rohani | Penatua & HP saja |
+| **3.** Pembacaan Alkitab (Siswa) | laki-laki (L) saja |
+| **4–5.** Memulai Percakapan, Kunjungan Kembali, Menjadikan Murid | semua nama |
+| **6.** Khotbah | laki-laki saja |
+| **Kehidupan Kristen** (7, 8, termasuk Pelajaran Alkitab Sidang) | Penatua & HP saja |
+
+Nama yang sedang terpasang tetap ditampilkan walau di luar aturan, supaya bisa diganti
+(dan kelihatan kalau ada yang perlu diperbaiki). Tombol **Bagi tugas** memakai aturan
+yang sama: Pembacaan Alkitab dan Khotbah hanya diisi saudara (L). Yang belum log in hanya bisa membaca:
 nama tidak bisa diklik, tanda panah kecil di sebelah nama tidak ditampilkan, dan
 pasangan siswa/asisten ditulis mengalir seperti biasa — **"Calvin / Febri"** — bukan
 dua kolom yang saling berjauhan — dan kursi yang belum diisi tidak diberi tanda "—". Lembar PDF (tombol **PDF**) memakai gaya mengalir

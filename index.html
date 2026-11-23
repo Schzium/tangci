@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="versi" content="2026-11-23.9">
+<meta name="versi" content="2026-11-23.10">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0d5c7a">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1945,6 +1945,49 @@ function pnIsi(w, no, slot, isi, semi, label){
     + `<span class="pn-caret" aria-hidden="true">&#9662;</span></span>`;
 }
 
+/* ---- aturan siapa yang boleh dipilih untuk tiap slot ----
+   PH    : hanya Penatua (P) dan Hamba Pelayanan (HP)
+   L     : hanya laki-laki
+   bebas : semua nama
+   null  : tanpa aturan khusus (ikut aturan lama: P/HP disembunyikan
+           pada slot siswa/asisten) */
+function aturanSlotNama(w, no, slot){
+  if (slot === "ketua" || slot === "doa"){
+    return { jenis: "PH", teks: "hanya Penatua & HP" };
+  }
+  const wi = Number(String(w || "").replace(/\D/g, "")) - 1;
+  const d = JADWAL[wi];
+  if (!d || !Array.isArray(d.baris)) return null;
+  const cari = String(parseInt(no, 10));
+  if (!cari || cari === "NaN") return null;
+  let seksi = "";      /* judul bagian: HARTA / BERSEMANGATLAH / KEHIDUPAN */
+  let warna = "";      /* abu = harta, emas = pelayanan, marun = kehidupan */
+  let baris = null;
+  for (let i = 0; i < d.baris.length; i++){
+    const b = d.baris[i];
+    if (b.jenis === "seksi"){
+      seksi = String(b.judul || b.teks || "");
+      warna = String(b.warna || "");
+      continue;
+    }
+    if (String(parseInt(b.nomor, 10)) === cari){ baris = b; break; }
+  }
+  if (!baris) return null;
+  const s = seksi.toLowerCase();
+  const t = String(baris.teks || "").trim();
+  const kehidupan = (warna === "marun") || s.indexOf("kehidupan") >= 0;
+  const harta = (warna === "abu") || s.indexOf("harta") >= 0;
+  const pelayanan = (warna === "emas") || s.indexOf("pelayanan") >= 0;
+  if (kehidupan) return { jenis: "PH", teks: "hanya Penatua & HP" };
+  if (harta){
+    if (cari === "1" || cari === "2") return { jenis: "PH", teks: "hanya Penatua & HP" };
+    if (cari === "3" || /pembacaan alkitab/i.test(t)) return { jenis: "L", teks: "hanya laki-laki" };
+  }
+  if (/^khotbah\b/i.test(t)) return { jenis: "L", teks: "hanya laki-laki" };
+  if (pelayanan) return { jenis: "bebas", teks: "semua nama" };
+  return null;
+}
+
 function kolomNama(w, no, awal, duaSlot, peran, semi){
   const pisah = String(awal || "").split("/").map((t) => t.trim());
   const jml = duaSlot ? 2 : 1;
@@ -2716,7 +2759,9 @@ function bagiTugas(wiPilih){
         isi.push(kosong(v) ? null : v);
       }
       if (isi.indexOf(null) < 0) return;
-      let gender = "";
+      /* pembacaan Alkitab dan khotbah hanya untuk saudara (laki-laki) */
+      const wajibL = /pembacaan alkitab/i.test(String(b.teks || "")) || /^khotbah\b/i.test(String(b.teks || "").trim());
+      let gender = wajibL ? "L" : "";
       isi.forEach((v) => { if (v){ const o = cariOrang(v); if (o && o.g) gender = o.g; } });
       for (let i = 0; i < jml; i++){
         if (isi[i]) continue;
@@ -2740,6 +2785,8 @@ function bagiTugas(wiPilih){
         }
         const bebanlah = (o) => beban.get(kunci(o)) || 0;
         const akhirnya = (o) => (terakhir.get(kunci(o)) == null ? -1 : terakhir.get(kunci(o)));
+        if (wajibL) calon = calon.filter((o) => o.g === "L");
+        if (!calon.length){ gagal++; continue; }
         calon.sort((a, c) => (bebanlah(a) - bebanlah(c)) || (jeda(c) - jeda(a))
           || (akhirnya(a) - akhirnya(c)) || a.n.localeCompare(c.n));
         const pilih = calon[0];
@@ -2873,6 +2920,8 @@ function bukaBagiPekan(){
 
   let urutOpsi = { kolom: "nama", arah: 1 };
   let modeSemi = false;      /* true = dropdown siswa/asisten (P & HP tidak ikut) */
+  let aturanAktif = null;    /* aturan slot yang sedang dibuka (lihat aturanSlotNama) */
+  let awalAktif = "";        /* nama yang sedang terpasang, selalu ditampilkan */
   const khusus = (nama) => {
     const org = cariOrang(nama);
     return !!(org && (org.k === "P" || org.k === "HP"));
@@ -2898,9 +2947,17 @@ function bukaBagiPekan(){
     let no = 0;
     let jumlahSiap = 0;
     arr.forEach((o) => {
-      if (modeSemi && khusus(o.n)) return;      // P / HP hanya untuk tugas selain siswa/asisten
       const org = cariOrang(o.n);
       const g = org && org.g ? org.g : "";
+      const kat = org && org.k ? org.k : "";
+      const sedangDipakai = (awalAktif && normNama(o.n) === normNama(awalAktif));
+      if (aturanAktif){
+        if (aturanAktif.jenis === "PH" && !(kat === "P" || kat === "HP") && !sedangDipakai) return;
+        if (aturanAktif.jenis === "L" && g !== "L" && !sedangDipakai) return;
+        /* "bebas": semua nama ditampilkan */
+      } else if (modeSemi && khusus(o.n)){
+        return;                                 // P / HP hanya untuk tugas selain siswa/asisten
+      }
       const st = statusOrang(info.get(normNama(o.n)));
       if (st.siap) jumlahSiap += 1;
       if (saringSiap && !st.siap) return;
@@ -2929,8 +2986,15 @@ function bukaBagiPekan(){
 
   function gambar(trig, awal){
     modeSemi = trig.dataset.semi === "1";
+    awalAktif = awal || "";
+    aturanAktif = (typeof aturanSlotNama === "function")
+      ? aturanSlotNama(trig.dataset.w, trig.dataset.no, trig.dataset.slot)
+      : null;
+    const judulOpsi = aturanAktif && aturanAktif.teks
+      ? "Pilih nama · " + aturanAktif.teks
+      : "Pilih nama";
     pop.innerHTML =
-      '<div class="pn-kepala"><span class="pn-judul">Pilih nama</span>'
+      '<div class="pn-kepala"><span class="pn-judul">' + esc(judulOpsi) + '</span>'
       + '<span class="pn-saring">'
       + '<button type="button" class="pn-sbtn" data-siap="0">Semua</button>'
       + '<button type="button" class="pn-sbtn" data-siap="1">Siap tugas</button>'
