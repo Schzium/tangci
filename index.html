@@ -869,6 +869,26 @@
   .pm-item.aktif{ background:#e7f1f5; color:var(--biru); font-weight:700; }
   .pm-ikon{ width:15px; height:15px; flex:0 0 auto; }
   .pm-kaki{ margin-top:auto; font-size:7.5pt; color:#a3a9ad; padding:8px 10px; line-height:1.5; }
+  /* tombol di kepala: PDF / Sync / Admin */
+  .bar-aksi{ margin-left:auto; display:flex; align-items:center; gap:5px; flex:0 0 auto; }
+  .bar-aksi button{
+    font-family: Calibri, "Segoe UI", Arial, sans-serif;
+    font-size:8.6pt; font-weight:700; line-height:1.2; white-space:nowrap;
+    padding:4px 9px; border:1px solid #d4d4d4; border-radius:5px;
+    background:#fff; color:#3a4145; cursor:pointer;
+  }
+  .bar-aksi button:hover{ background:#f2f5f6; }
+  .bar-aksi .btn-sync{ border-style:dashed; color:#7E0024; }
+  .bar-aksi .btn-sync:hover{ background:#fdf2f5; }
+  .bar-aksi .btn-sync.sibuk{ opacity:.6; cursor:progress; }
+  .bar-aksi .btn-keluar{ color:#8a5a12; border-color:#e6d6a4; background:#fffaf0; }
+  body.tema-hadirin .bar-aksi button{ background:#1b212d; border-color:#2c3546; color:#dbe3ee; }
+  body.tema-hadirin .bar-aksi .btn-keluar{ color:#e8c98a; border-color:#4a3d22; background:#221d13; }
+  @media (max-width: 460px){
+    .bar-judul small{ display:none; }
+    .bar-aksi{ gap:4px; }
+    .bar-aksi button{ font-size:8.1pt; padding:4px 7px; }
+  }
 
   /* ---------- pembungkus dua tampilan ---------- */
   #vJadwal{ padding-top: var(--bar); }
@@ -879,8 +899,8 @@
 
   @media print{
     #barAtas, #panelMenu, #tirai, #vHadirin{ display:none !important; }
-    #vJadwal{ padding-top:0 !important; display:block !important; }
-    body.tema-hadirin{ background:#fff; }
+    #vJadwal, #vJadwal[hidden]{ padding-top:0 !important; display:block !important; }
+    body.tema-hadirin{ background:#fff !important; }
   }
 </style>
 
@@ -1010,6 +1030,7 @@ body.tema-hadirin{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sa
     <b id="judulAtas">Jadwal Tengah Pekan</b>
     <small>TANGERANG CIPONDOH</small>
   </span>
+  <div class="bar-aksi" id="barAksi"></div>
 </header>
 
 <div id="tirai"></div>
@@ -1979,15 +2000,23 @@ async function migrasiPin(){
 migrasiPin();
 function perbaruiTombol(){
   const wadah = document.getElementById("tombolKanan");
-  if (!wadah) return;
-  if (modeAdmin()){
-    wadah.innerHTML =
-      `<button type="button" class="btn-daftar" id="btnHadirin" title="Daftar penyiar, data tugas, dan daftar nama">&#9998; Penyiar &amp; hadirin</button>`
-      + `<button type="button" class="btn-daftar" id="btnTugas" title="Isi otomatis slot siswa/asisten yang masih kosong">&#8635; Bagi tugas</button>`
-      + `<button type="button" class="btn-daftar btn-keluar" id="btnKeluar" title="Keluar dari mode admin">Keluar</button>`;
-  } else {
-    wadah.innerHTML =
-      `<button type="button" class="btn-daftar" id="btnAdmin" title="Masuk mode admin (PIN)">Admin</button>`;
+  const atas = document.getElementById("barAksi");
+  const admin = modeAdmin();
+  /* kepala: PDF (semua orang), Sync, dan Admin/Keluar */
+  if (atas){
+    atas.innerHTML =
+      `<button type="button" class="btn-pdf" id="btnPdf" title="Simpan lembar jadwal pekan ini sebagai PDF">&#8681; PDF</button>`
+      + `<button type="button" class="btn-sync" id="btnSync" title="Periksa apakah jadwal baru sudah terbit di wol.jw.org">&#8635; Sync</button>`
+      + (admin
+        ? `<button type="button" class="btn-keluar" id="btnKeluar" title="Keluar dari mode admin">Keluar</button>`
+        : `<button type="button" id="btnAdmin" title="Masuk mode admin (PIN)">Admin</button>`);
+  }
+  /* baris pekan: hanya alat admin */
+  if (wadah){
+    wadah.innerHTML = admin
+      ? `<button type="button" class="btn-daftar" id="btnHadirin" title="Daftar penyiar dan data tugas">&#9998; Penyiar</button>`
+        + `<button type="button" class="btn-daftar" id="btnTugas" title="Isi otomatis slot siswa/asisten yang masih kosong">&#8635; Bagi tugas</button>`
+      : "";
   }
 }
 
@@ -2021,6 +2050,22 @@ function isiPanelPekan(){
     + `</button>`).join("");
 }
 
+/* ---------- simpan lembar jadwal sebagai PDF ---------- */
+function cetakPdf(){
+  tutupPanelPekan();
+  const tirai = document.getElementById("tirai"); if (tirai) tirai.classList.remove("buka");
+  const menu = document.getElementById("panelMenu"); if (menu) menu.classList.remove("buka");
+  const tombolMenu = document.getElementById("btnMenu"); if (tombolMenu) tombolMenu.setAttribute("aria-expanded", "false");
+  document.querySelectorAll(".pn-pop").forEach((e) => e.remove());
+  const judulAsli = document.title;
+  const d = JADWAL[pekanAktif];
+  document.title = "Jadwal Tengah Pekan " + ((d && d.label) ? d.label : "");
+  const balik = () => { document.title = judulAsli; };
+  window.addEventListener("afterprint", balik, { once: true });
+  setTimeout(() => { try { window.print(); } catch (e) {} }, 60);
+  setTimeout(balik, 30000);
+}
+
 function susun(){
   const nav = document.getElementById("pilihPekan");
   nav.innerHTML = `<span class="judul-pilih">Pekan:</span>`
@@ -2031,15 +2076,11 @@ function susun(){
     + `<span class="pk-caret" aria-hidden="true">&#9662;</span></button>`
     + `<div class="pk-panel" id="pkPanel" role="listbox" aria-label="Pilih pekan" hidden></div>`
     + `</span>`
-    + `<span class="tombol-kanan" id="tombolKanan"></span>`
-    + `<button type="button" class="btn-sync" id="btnSync"`
-    + ` title="Periksa apakah jadwal baru sudah terbit di wol.jw.org">&#8635; Sync</button>`;
+    + `<span class="tombol-kanan" id="tombolKanan"></span>`;
 
   if (!nav.dataset.siap){
     nav.dataset.siap = "1";
     nav.addEventListener("click", (ev) => {
-      const s2 = ev.target.closest("#btnSync");
-      if (s2){ syncWol(); return; }
       const it = ev.target.closest(".pk-item");
       if (it){ tutupPanelPekan(); tampilkanPekan(Number(it.dataset.i)); return; }
       const tb = ev.target.closest("#btnPekan");
@@ -2051,6 +2092,13 @@ function susun(){
     });
     document.addEventListener("click", (ev) => {
       if (!ev.target.closest(".pk-wadah")) tutupPanelPekan();
+    });
+    const kepala = document.getElementById("barAksi");
+    if (kepala) kepala.addEventListener("click", (ev) => {
+      const b = ev.target.closest("button");
+      if (!b) return;
+      if (b.id === "btnPdf"){ ev.preventDefault(); cetakPdf(); return; }
+      if (b.id === "btnSync"){ ev.preventDefault(); syncWol(); return; }
     });
     document.addEventListener("keydown", (ev) => {
       if (ev.key === "Escape") tutupPanelPekan();
@@ -2572,6 +2620,26 @@ function bagiTugas(){
   }
 
   function bukaEditor(){
+    /* Jangan buka suntingan di atas daftar bawaan: kalau HP ini belum punya
+     daftar dan cloud sudah punya, tunggu daftar dari cloud dulu supaya
+     tidak ada nama yang tertimpa. */
+    let lokalDaftar = null;
+    try { lokalDaftar = JSON.parse(localStorage.getItem(KUNCI_DAFTAR) || "null"); } catch (e) {}
+    if ((!Array.isArray(lokalDaftar) || !lokalDaftar.length) && window.__daftarAwan === "ada"){
+      pesanKotak({
+        judul: "Menyiapkan daftar",
+        isi: "Daftar penyiar sedang diambil dari cloud. Sebentar ya\u2026",
+        ok: "Tutup"
+      });
+      if (typeof window.mintaDaftar === "function"){
+        window.mintaDaftar(function(){
+          const ok = document.querySelector(".pesan-ok");
+          if (ok) ok.click();
+          setTimeout(bukaEditor, 250);
+        });
+      }
+      return;
+    }
     tutup();
     const belum = namaBelumCocok();
     const perluNama = belum.filter((v) => /[a-z]/.test(v));
@@ -4261,7 +4329,25 @@ return { doReset: doReset, confirmReset: confirmReset, cancelReset: cancelReset,
     kabar('Cloud terkunci \u00b7 jalan dari data HP', false);
   });
 
+  /* ambil daftar dari cloud saat diminta (mis. HP baru yang belum punya daftar) */
+  window.mintaDaftar = function(selesai){
+    refDaftar.get().then(function(doc){
+      var d = doc.data() || {};
+      if (Array.isArray(d.arr) && d.arr.length){
+        try { localStorage.setItem('jhtp-daftar-siswa', JSON.stringify(d.arr)); } catch(e){}
+        window.__daftarAwan = 'ada';
+        gambarUlang();
+        if (typeof selesai === 'function') selesai();
+      }
+    }).catch(function(){
+      var el = document.getElementById('statusCloud');
+      if (el) el.textContent = 'Cloud belum bisa dihubungi';
+    });
+  };
+
   refDaftar.onSnapshot(function(doc){
+    var _d = doc.exists ? (doc.data() || {}) : {};
+    window.__daftarAwan = (Array.isArray(_d.arr) && _d.arr.length) ? 'ada' : 'kosong';
     if (!doc.exists) return;
     if (Date.now() - tungguDaftar < 3000) return;      // baru saja kita kirim sendiri
     var d = doc.data() || {};

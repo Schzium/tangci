@@ -17,6 +17,9 @@ sw.js               ← cache offline
 icon-192-3d.png     ← ikon
 icon-512-3d.png     ← ikon
 firebase.json       ← pengaturan deploy Firebase Hosting
+ambil-wol.mjs       ← alat bantu (opsional): ambil ulang isi ayat + lirik
+package.json        ← daftar paket untuk alat bantu itu
+package-lock.json
 ```
 
 ## 1. Firebase (supaya semua HP lihat data yang sama)
@@ -27,7 +30,7 @@ Aplikasi memakai project **tangci** yang sudah ada. Data jadwal disimpan di:
 - `jhtp/daftar` → daftar penyiar (nama, inisial, L/P, boleh-tugas)
 - `tangci/state` → denah kursi hitung hadirin (dipakai app lama)
 
-Sekarang Firestore menolak baca/tulis (pesan di menu: **"Cloud terkunci"**), jadi aplikasi
+Kalau Firestore menolak baca/tulis (pesan di menu: **"Cloud terkunci"**), aplikasi
 jalan dari data HP saja. Supaya tersambung, buka
 **Firebase Console → Firestore Database → Rules**, lalu pakai:
 
@@ -65,11 +68,18 @@ Sudah ada manifest + service worker, jadi terbuka layar penuh tanpa address bar.
 ## Catatan
 
 - Setiap HP menyimpan salinan di `localStorage`; kalau internet mati aplikasi tetap jalan.
-- Print jadwal tetap 9 halaman per set, ukuran 612×792 pt, sama seperti file aslinya.
+- Tombol **⇩ PDF** hanya mencetak lembar jadwal pekan yang sedang tampil (1 lembar,
+  612×792 pt). Menu, tombol, dan tampilan Hitung Hadirin tidak ikut tercetak.
 
-## 4. Tombol ⟳ Sync (jadwal baru tanpa repot)
+## 4. Tombol di kepala aplikasi
 
-Di baris atas ada dua tombol: **dropdown pekan** dan **⟳ Sync**.
+Di kepala (sejajar dengan tombol ☰) ada **⇩ PDF**, **↻ Sync**, dan **Admin** (berganti
+jadi **Keluar** setelah masuk PIN). Tombol **✎ Penyiar** dan **↻ Bagi tugas** muncul
+di baris pekan, hanya saat mode admin aktif.
+
+## 5. Tombol ↻ Sync (jadwal baru tanpa repot)
+
+Di kepala aplikasi ada tombol **↻ Sync**; baris pekan berisi **dropdown pekan**.
 
 - **Dropdown pekan** — semua pekan ada di satu daftar; klik untuk pindah. Baris tab
   tidak lagi memakan tempat (satu baris saja, juga di HP).
@@ -89,13 +99,21 @@ Catatan teknis: wol.jw.org tidak mengizinkan permintaan langsung dari browser (C
 jadi halaman diambil lewat `r.jina.ai` yang meneruskan HTML aslinya (tanpa akun,
 gratis). Kalau pemeriksaan gagal, aplikasi memberi pesan dan tidak mengubah data apa pun.
 
-### Isi `alat/` (opsional, untuk memuat ulang isi ayat + lirik)
+### Alat bantu di folder yang sama (opsional, untuk memuat ulang isi ayat + lirik)
 
 ```
-alat/ambil-wol.mjs  ← pengambil jadwal dari wol.jw.org → wol.json (Node 20+, jsdom)
-alat/package.json
+ambil-wol.mjs      ← pengambil jadwal dari wol.jw.org → wol.json (Node 20+, jsdom)
+package.json
+package-lock.json
 ```
 
-Jalankan di komputer: `cd alat && npm i && node ambil-wol.mjs 2020264 wol.json`,
+Semua berkas ada di satu folder supaya gampang diunggah ke GitHub. Jalankan di komputer:
+
+```
+npm install
+node ambil-wol.mjs 2020264 wol.json
+```
+
 lalu ganti `wol.json` di folder aplikasi. Ini hanya perlu kalau ingin isi ayat/lirik
-diperbarui; untuk menambah pekan baru cukup tombol ⟳ Sync.
+diperbarui; untuk menambah pekan baru cukup tombol ⟳ Sync. Ketiga berkas alat itu
+tidak ikut terbit ke hosting (sudah masuk `ignore` di `firebase.json`).
