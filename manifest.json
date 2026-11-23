@@ -1,7 +1,7 @@
 {
-  "name": "Jadwal Perhimpunan & Hitung Hadirin",
-  "short_name": "Jadwal & Hadirin",
-  "description": "Jadwal Perhimpunan Tengah Pekan dan Hitung Hadirin Tangerang Cipendoh",
+  "name": "TangCi",
+  "short_name": "TangCi",
+  "description": "TangCi — jadwal perhimpunan tengah pekan & hitung hadirin Tangerang Cipendoh",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

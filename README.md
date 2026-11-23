@@ -1,4 +1,4 @@
-# Jadwal & Hadirin — Tangerang Cipendoh
+# TangCi — Jadwal & Hadirin Tangerang Cipendoh
 
 Satu aplikasi, dua tampilan. Tombol **☰** di kiri atas untuk pindah:
 
@@ -95,7 +95,7 @@ terbuka, supaya isian yang belum disimpan tidak hilang.
 Cara kerjanya: ada penanda di kepala berkas
 
 ```
-<meta name="versi" content="2026-11-23.8">
+<meta name="versi" content="2026-11-23.9">
 ```
 
 **Setiap kali `index.html` diubah lalu diunggah, ubah juga angka `content` itu**
