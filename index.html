@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="versi" content="2026-11-23.3">
+<meta name="versi" content="2026-11-23.4">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0d5c7a">
 <meta name="mobile-web-app-capable" content="yes">
@@ -439,6 +439,9 @@
     border-bottom-color: #9fb6c0;
   }
   .pilih-nama:focus-visible{ outline: 1pt solid #0d5c7a; outline-offset: 1pt; }
+  body:not(.admin) .pilih-nama{ cursor: default; }
+  body:not(.admin) .pilih-nama:hover{ background: none; border-bottom-color: transparent; }
+  body:not(.admin) .pilih-nama .pn-caret{ display: none; }
   .pilih-nama .pn-caret{
     margin-left: 2pt;
     font-size: 7pt;
@@ -877,7 +880,21 @@
   .pm-item[hidden]{ display:none !important; }
 
   /* ---------- tampilan 3: daftar penyiar (khusus admin) ---------- */
-  #vPenyiar{ padding: calc(var(--bar) + 12px) 12px 40px; }
+  #vPenyiar{ padding: calc(var(--bar) + 10px) 10px 30px; }
+  .ed-halaman{ max-width: 760px; margin: 0 auto; }
+  .ed-halaman .modal-kotak{
+    width: 100%; max-height: none; box-shadow: none; border: 0; border-radius: 0;
+    background: #fff;
+  }
+  .ed-halaman .modal-kepala .modal-x{ display: none; }
+  .ed-halaman .modal-isi{ overflow: visible; }
+  .ed-halaman{ padding-bottom: 78px; }
+  .ed-halaman .modal-kaki{
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 300;
+    background: #fff; border-top: 1px solid #e2e7ea;
+    box-shadow: 0 -6px 14px rgba(0,0,0,.07);
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  }
   #vPenyiar[hidden]{ display:none !important; }
   .py-kepala{ max-width:1120px; margin:0 auto 8px; }
   .py-atas{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
@@ -1205,21 +1222,8 @@ body.tema-hadirin{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sa
 </div>
 </div>
 
-<!-- ================= TAMPILAN 3: DAFTAR PENYIAR (khusus admin) ================= -->
-<div id="vPenyiar" hidden>
-  <div class="py-kepala">
-    <div class="py-atas">
-      <h1>Daftar Penyiar</h1>
-      <button type="button" class="py-sunting" id="pySunting">Sunting daftar</button>
-    </div>
-    <p class="py-ringkas" id="pyRingkas"></p>
-    <p class="py-legenda">Urut <b>P</b> (Perintis) &rarr; <b>HP</b> (Hamba Pelayanan) &rarr; <b>Penyiar</b>.
-      Status: <b>siap</b> = boleh ditugaskan sekarang &middot; <b>jeda N pekan</b> = sedang istirahat &middot;
-      tanggal = sudah terjadwal di pekan itu &middot; <b>belum pernah</b> = belum pernah dapat tugas.
-      &times; = jumlah tugas sampai pekan terakhir.</p>
-  </div>
-  <div class="py-dua" id="pyIsi"></div>
-</div>
+<!-- ================= TAMPILAN 2: DAFTAR PENYIAR (khusus admin, bisa disunting) ================= -->
+<div id="vPenyiar" hidden><div id="pyTempat"></div></div>
 
 <script>
 
@@ -1848,12 +1852,19 @@ const WOL = {"pekan":{"w1":{"pekan":"2-8 November","alkitab":"Yeremia 49-50","ba
 const esc = (s) => String(s == null ? "" : s)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-function barisLagu(b, kelasTambahan){
+function barisLagu(b, kelasTambahan, w, i){
   const peluru = b.peluru === false ? "" : "";
   const menit = b.menit ? `<span class="durasi">&nbsp;(${esc(b.menit)} men.)</span>` : "";
-  const nilai = b.doa !== undefined
-    ? `<div class="label">Doa${b.doakah === false ? "" : ":"}</div><div class="nilai">${esc(b.doa)}</div>`
-    : (b.nilai !== undefined && b.nilai !== "" ? `<div class="label"></div><div class="nilai">${esc(b.nilai)}</div>` : "");
+  let nilai = "";
+  if (b.doa !== undefined){
+    const kunciBaris = "r" + i;
+    const simpanDoa = namaTersimpan(w, kunciBaris, "doa");
+    const isiDoa = simpanDoa != null ? simpanDoa : b.doa;
+    nilai = `<div class="label">Doa${b.doakah === false ? "" : ":"}</div>`
+      + `<div class="nilai">${pnIsi(w, kunciBaris, "doa", isiDoa, false, "Doa")}</div>`;
+  } else if (b.nilai !== undefined && b.nilai !== ""){
+    nilai = `<div class="label"></div><div class="nilai">${esc(b.nilai)}</div>`;
+  }
 
   const cocokLagu = /^Nyanyian\s+(\d+)$/.exec(String(b.teks || "").trim());
   const adaLagu = cocokLagu && typeof LAGU !== "undefined" && LAGU[cocokLagu[1]];
@@ -1876,6 +1887,18 @@ function barisLagu(b, kelasTambahan){
 function adaTema(w, no){
   const p = WOL.pekan[w] && WOL.pekan[w].bagian[no];
   return p && p.isi && p.isi.length ? p : null;
+}
+
+/* satu nama yang bisa diklik (Ketua, Doa, Siswa, Asisten) */
+function pnIsi(w, no, slot, isi, semi, label){
+  const nilai = String(isi == null ? "" : isi);
+  const lihat = nilai ? tampilNama(nilai, !!semi) : "";
+  return `<span class="pilih-nama" role="button" tabindex="0" aria-expanded="false"`
+    + ` data-w="${esc(w)}" data-no="${esc(no)}" data-slot="${esc(slot)}"`
+    + ` data-nilai="${esc(nilai)}" data-semi="${semi ? "1" : "0"}"`
+    + ` title="${esc(label)} — klik untuk pilih nama">`
+    + `<span class="pn-teks${nilai ? "" : " pn-kosong"}">${nilai ? esc(lihat) : "&mdash;"}</span>`
+    + `<span class="pn-caret" aria-hidden="true">&#9662;</span></span>`;
 }
 
 function kolomNama(w, no, awal, duaSlot, peran, semi){
@@ -1943,7 +1966,7 @@ function renderPekan(d, index){
     if (b.jenis === "lagu"){
       const kelas = warnaAktif === "kehidupan" ? "kehidupan" : "";
       const akhir = (i === d.baris.length - 2) ? " terakhir" : "";
-      isi += barisLagu(b, kelas + akhir);
+      isi += barisLagu(b, kelas + akhir, "w" + (index + 1), i);
       return;
     }
     if (b.jenis === "bagian"){
@@ -1954,6 +1977,9 @@ function renderPekan(d, index){
   });
 
   const catatan = d.catatan ? ` <span class="catatan">${esc(d.catatan)}</span>` : "";
+  const simpanKetua = namaTersimpan("w" + (index + 1), "k", "ketua");
+  const ketuaSel = pnIsi("w" + (index + 1), "k", "ketua",
+    simpanKetua != null ? simpanKetua : d.ketua, false, "Ketua");
 
   return `<section class="halaman" id="pekan-${esc(d.kunci)}">
     <div class="kepala">
@@ -1965,7 +1991,7 @@ function renderPekan(d, index){
     <div class="baris-atas">
       <div class="pekan">${esc(d.tanggal)} | ${esc(d.kitab)}${catatan}</div>
       <div class="label">Ketua:</div>
-      <div class="nilai">${esc(d.ketua)}</div>
+      <div class="nilai">${ketuaSel}</div>
     </div>
 
     ${isi}
@@ -2117,10 +2143,10 @@ function perbaruiTombol(){
       (admin
         ? `<button type="button" class="btn-pdf" id="btnPdf" title="Simpan lembar jadwal pekan ini sebagai PDF">PDF</button>`
           + `<button type="button" class="btn-sync" id="btnSync" title="Periksa apakah jadwal baru sudah terbit di wol.jw.org">Sync</button>`
-          + `<button type="button" class="btn-tabel" id="btnTabel" title="Tabel semua penyiar beserta statusnya">Tabel</button>`
+          + `<button type="button" class="btn-tabel" id="btnTabel" title="Daftar penyiar beserta statusnya">Penyiar</button>`
           + `<button type="button" class="btn-keluar" id="btnKeluar" title="Keluar dari mode admin">Keluar</button>`
-        : `<button type="button" class="btn-sync" id="btnSync" title="Periksa apakah jadwal baru sudah terbit di wol.jw.org">Sync</button>`
-          + `<button type="button" id="btnAdmin" title="Masuk mode admin (PIN)">Admin</button>`);
+        : `<button type="button" id="btnAdmin" title="Masuk dengan PIN">Log in</button>`);
+  document.body.classList.toggle("admin", admin);
   }
   const menuPenyiar = document.querySelector('.pm-item[data-view="penyiar"]');
   if (menuPenyiar){
@@ -2132,8 +2158,7 @@ function perbaruiTombol(){
   /* baris pekan: hanya alat admin */
   if (wadah){
     wadah.innerHTML = admin
-      ? `<button type="button" class="btn-daftar" id="btnHadirin" title="Daftar penyiar dan data tugas">Penyiar</button>`
-        + `<button type="button" class="btn-daftar" id="btnTugas" title="Isi otomatis slot siswa/asisten yang masih kosong">Bagi tugas</button>`
+      ? `<button type="button" class="btn-daftar" id="btnTugas" title="Isi otomatis slot siswa/asisten yang masih kosong">Bagi tugas</button>`
       : "";
   }
 }
@@ -2268,57 +2293,6 @@ function dataHadirin(){
   });
   return Array.from(peta.values());
 }
-
-/* ---------- tampilan 3: tabel semua penyiar (khusus admin) ----------
-   Urut: Perintis (P) → Hamba Pelayanan (HP) → Penyiar, lalu A–Z.
-   Dua kolom kiri-kanan supaya 70+ nama tidak memanjang ke bawah.
-   Tidak ikut tercetak: yang dicetak hanya lembar jadwal. */
-function renderPenyiar(){
-  const wadah = document.getElementById("pyIsi");
-  if (!wadah) return;
-  const kategori = (o) => (o && (o.k === "P" || o.k === "HP")) ? o.k : "";
-  const bobot = { P: 0, HP: 1, "": 2 };
-  const data = dataHadirin().filter((it) => it.o && String(it.o.n || "").trim());
-  data.sort((a, b) => {
-    const ka = bobot[kategori(a.o)], kb = bobot[kategori(b.o)];
-    if (ka !== kb) return ka - kb;
-    return String(a.o.n).localeCompare(String(b.o.n), "id");
-  });
-  const status = (it) => {
-    if (it.o.r === 0) return ["tidak ikut rotasi", "mati"];
-    if (it.terakhir === null) return ["belum pernah", "belum"];
-    if (it.terakhir > pekanAktif) return ["jadwal " + ((JADWAL[it.terakhir] || {}).label || "?"), ""];
-    const sisa = JEDA_PEKAN - (pekanAktif - it.terakhir);
-    if (sisa > 0) return ["jeda " + sisa + " pekan", ""];
-    return ["siap", "siap"];
-  };
-  let html = "", grupLalu = null;
-  const n = { P: 0, HP: 0, "": 0 };
-  data.forEach((it) => {
-    const k = kategori(it.o);
-    n[k] += 1;
-    if (k !== grupLalu){
-      html += '<div class="py-grup">' + (k === "P" ? "Perintis (P)"
-        : k === "HP" ? "Hamba Pelayanan (HP)" : "Penyiar") + '</div>';
-      grupLalu = k;
-    }
-    const st = status(it);
-    html += '<div class="py-baris">'
-      + '<span class="py-nama">' + esc(it.o.n)
-      + (it.o.i ? '<b class="py-ini">' + esc(it.o.i) + '</b>' : '') + '</span>'
-      + '<span class="py-kat ' + (k === "P" ? "p" : k === "HP" ? "hp" : "kosong") + '">' + esc(k) + '</span>'
-      + '<span class="py-meta ' + st[1] + '">'
-      + esc((it.tugas ? it.tugas + "× · " : "") + st[0]) + '</span>'
-      + '</div>';
-  });
-  wadah.innerHTML = html || '<p class="py-ringkas">Daftar penyiar masih kosong.</p>';
-  const ringkas = document.getElementById("pyRingkas");
-  if (ringkas){
-    ringkas.textContent = data.length + " orang · " + n.P + " perintis · "
-      + n.HP + " hamba pelayanan · " + n[""] + " penyiar";
-  }
-}
-window.renderPenyiar = renderPenyiar;
 
 /* nilai antre: makin besar = makin lama tidak dapat tugas (dipakai untuk sortir) */
 function nilaiAntre(it, o){
@@ -2720,6 +2694,7 @@ function bagiTugas(){
     const trig = ev.target.closest ? ev.target.closest(".pilih-nama") : null;
     if (trig){
       ev.preventDefault();
+      if (typeof modeAdmin === "function" && !modeAdmin()) return;   /* lihat saja */
       if (aktif === trig) tutup(); else buka(trig);
       return;
     }
@@ -2732,7 +2707,9 @@ function bagiTugas(){
     if (ev.key === "Escape"){ tutup(); return; }
     const trig = ev.target.closest ? ev.target.closest(".pilih-nama") : null;
     if (trig && (ev.key === "Enter" || ev.key === " ")){
-      ev.preventDefault(); buka(trig);
+      ev.preventDefault();
+      if (typeof modeAdmin === "function" && !modeAdmin()) return;
+      buka(trig);
     }
   });
 
@@ -2755,7 +2732,7 @@ function bagiTugas(){
       + `<input class="ed-input ed-nama" type="text" value="${esc(o.n)}" placeholder="Nama" aria-label="Nama ${i + 1}">`
       + `<input class="ed-input ed-ini" type="text" value="${esc(o.i)}" placeholder="Ini" aria-label="Inisial ${i + 1}">`
       + `<button type="button" class="ed-g g-${g || "x"}" title="Jenis kelamin (klik untuk ganti): ${g === "L" ? "Laki-laki" : g === "P" ? "Perempuan" : "belum diisi"}">${g || "?"}</button>`
-      + `<button type="button" class="ed-k${kategori ? " k-" + kategori.toLowerCase() : ""}" title="Kategori (klik untuk ganti): ${kategori === "P" ? "Perintis — hanya untuk tugas selain siswa/asisten" : kategori === "HP" ? "Hamba Pelayanan — hanya untuk tugas selain siswa/asisten" : "Penyiar — boleh jadi siswa/asisten"}">${kategori || "&ndash;"}</button>`
+      + `<button type="button" class="ed-k${kategori ? " k-" + kategori.toLowerCase() : ""}" title="Kategori (klik untuk ganti): ${kategori === "P" ? "Penatua — hanya untuk tugas selain siswa/asisten" : kategori === "HP" ? "Hamba Pelayanan — hanya untuk tugas selain siswa/asisten" : "Penyiar — boleh jadi siswa/asisten"}">${kategori || "&ndash;"}</button>`
       + `<button type="button" class="ed-r${rotasi ? "" : " mati"}" title="${rotasi ? "Ikut rotasi siswa/asisten" : "Tidak ikut rotasi"}">${rotasi ? "&#10003;" : "&ndash;"}</button>`
       + `<button type="button" class="ed-hapus" title="Hapus nama">&times;</button>`
       + `</div><div class="ed-info">${ket}</div></div>`;
@@ -2776,7 +2753,8 @@ function bagiTugas(){
       if (it.o.r === 0){
         status = '<span class="info-mati">tidak ikut rotasi</span>';
       } else if (it.o.k === "P" || it.o.k === "HP"){
-        status = '<span class="info-kat">khusus ' + esc(it.o.k) + ' &middot; tidak untuk siswa/asisten</span>';
+        const namaKat = it.o.k === "P" ? "Penatua" : "Hamba Pelayanan";
+      status = '<span class="info-kat">khusus ' + esc(namaKat) + ' &middot; tidak untuk siswa/asisten</span>';
       } else if (it.terakhir === null){
         status = '<span class="info-siap">belum pernah dapat tugas</span>';
       } else if (it.terakhir > pekanAktif){
@@ -2792,7 +2770,7 @@ function bagiTugas(){
     };
   }
 
-  function bukaEditor(){
+  function bukaEditor(tempat){
     /* Jangan buka suntingan di atas daftar bawaan: kalau HP ini belum punya
      daftar dan cloud sudah punya, tunggu daftar dari cloud dulu supaya
      tidak ada nama yang tertimpa. */
@@ -2824,8 +2802,19 @@ function bagiTugas(){
         k: (o.k === "P" || o.k === "HP") ? o.k : "",
         _asli: o.n, _asliIni: o.i
       })));
+    if (tempat) tempat.innerHTML = "";
+    /* urutan awal: Penatua (P) → Hamba Pelayanan (HP) → Penyiar, lalu A–Z.
+       Baris kuning (nama dari jadwal yang belum terdaftar) tetap di atas. */
+    const bobotKat = { P: 0, HP: 1, "": 2 };
+    const barisBaru = kerja.filter((o) => o.baru);
+    const terdaftar = kerja.filter((o) => !o.baru)
+      .sort((a, b) => (bobotKat[a.k || ""] - bobotKat[b.k || ""])
+        || String(a.n || "").localeCompare(String(b.n || ""), "id"));
+    kerja = barisBaru.concat(terdaftar);
+
     const tirai = document.createElement("div");
-    tirai.className = "modal-tirai";
+    tirai.className = tempat ? "ed-halaman" : "modal-tirai";
+    tirai._tempat = tempat || null;
     tirai.innerHTML = '<div class="modal-kotak" role="dialog" aria-modal="true" aria-label="Penyiar dan data tugas">'
       + '<div class="modal-kepala"><span>Penyiar &amp; data tugas</span>'
       + '<button type="button" class="modal-x" title="Tutup">&times;</button></div>'
@@ -2849,7 +2838,7 @@ function bagiTugas(){
       + '<span class="kaki-kanan">'
       + '<button type="button" class="ed-batal">Batal</button>'
       + '<button type="button" class="ed-simpan">Simpan</button></span></div></div>';
-    document.body.appendChild(tirai);
+    (tempat || document.body).appendChild(tirai);
     const kotak = tirai.querySelector(".ed-daftar");
     const legenda = tirai.querySelector(".ed-legenda");
     let pesan = "";
@@ -2988,7 +2977,9 @@ function bagiTugas(){
           }));
         simpanDaftarSiswa(bersih);
         const jejak = pasangan.length ? gantiNamaMenyeluruh(pasangan) : { jadwal: 0, slot: 0, nama: [] };
+        const tmp = tirai._tempat;
         tirai.remove();
+        if (tmp) setTimeout(() => bukaEditor(tmp), 60);
         if (typeof tampilkanPekan === "function" && typeof pekanAktif === "number") tampilkanPekan(pekanAktif, false);
         if (pasangan.length){
           const daftarUbah = pasangan.map((p) => p.lama + " → " + p.baru).join("\n");
@@ -3007,7 +2998,9 @@ function bagiTugas(){
         return;
       }
       if (ev.target.closest(".ed-batal") || ev.target.closest(".modal-x") || ev.target === tirai){
+        const tmp = tirai._tempat;
         tirai.remove();
+        if (tmp && typeof window.pilihTampilan === "function") window.pilihTampilan("jadwal", true);
       }
     });
 
@@ -3037,7 +3030,7 @@ document.addEventListener("click", (ev) => {
   }
   if (ev.target.closest && ev.target.closest("#btnHadirin")){
     ev.preventDefault();
-    if (window.bukaDaftarNama) window.bukaDaftarNama();
+    if (typeof window.pilihTampilan === "function") window.pilihTampilan("penyiar", true);
     return;
   }
   if (ev.target.closest && ev.target.closest("#btnTugas")){
@@ -4347,7 +4340,12 @@ return { doReset: doReset, confirmReset: confirmReset, cancelReset: cancelReset,
     });
     judul.textContent = (v === 'hadirin') ? 'Hitung Hadirin'
       : (v === 'penyiar') ? 'Daftar Penyiar' : 'Jadwal Tengah Pekan';
-    if (v === 'penyiar' && typeof window.renderPenyiar === 'function') window.renderPenyiar();
+    var tmp = document.getElementById('pyTempat');
+    if (v === 'penyiar'){
+      if (typeof window.bukaDaftarNama === 'function' && tmp) window.bukaDaftarNama(tmp);
+    } else if (tmp){
+      tmp.innerHTML = '';        /* tinggalkan halaman penyiar: bersihkan */
+    }
     tutupMenu();
     if (simpan){
       try { localStorage.setItem('jhtp-tampilan', v); } catch(e){}
@@ -4366,10 +4364,7 @@ return { doReset: doReset, confirmReset: confirmReset, cancelReset: cancelReset,
     b.addEventListener('click', function(){ pilih(b.dataset.view, true); });
   });
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') tutupMenu(); });
-  var tombolSunting = document.getElementById('pySunting');
-  if (tombolSunting) tombolSunting.addEventListener('click', function(){
-    if (window.bukaDaftarNama) window.bukaDaftarNama();
-  });
+
   if (window.matchMedia) {
     var mm = window.matchMedia('print');
     if (mm.addEventListener) mm.addEventListener('change', function(e){ if (e.matches) tutupMenu(); });

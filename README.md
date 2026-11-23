@@ -65,15 +65,24 @@ Alamatnya jadi `https://tangci.web.app`.
 Buka alamat di atas dengan Chrome → menu ⋮ → **Tambahkan ke layar utama**.
 Sudah ada manifest + service worker, jadi terbuka layar penuh tanpa address bar.
 
-## 6. Halaman "Daftar Penyiar" (khusus admin)
+## 6. Halaman "Daftar Penyiar" (khusus admin, bisa disunting)
 
-Masuk PIN → menu **☰** → **Daftar Penyiar**. Isinya tabel semua penyiar dalam
-**dua kolom kiri-kanan** (supaya 70+ nama tidak memanjang ke bawah), diurutkan
-**P (Perintis) → HP (Hamba Pelayanan) → Penyiar**, lalu A–Z. Tiap baris:
-nama + inisial, kategori, jumlah tugas (×), dan statusnya (`siap`, `jeda N pekan`,
-`jadwal 23 Des`, `belum pernah`). Tombol **✎ Sunting daftar** membuka panel sunting
-seperti biasa. Halaman ini **tidak ikut tercetak** — saat PDF hanya lembar jadwal
-(halaman 1) yang keluar.
+Log in → tombol **Penyiar** di kepala (atau menu ☰ → **Daftar Penyiar**). Isinya
+**satu daftar panjang** semua penyiar yang bisa langsung disunting di tempat:
+
+- kolom **Nama** dan **Inisial** (ketik langsung),
+- tombol **L/P** (L → P → kosong), **Kat** (**P** = Penatua, **HP** = Hamba
+  Pelayanan, kosong = penyiar biasa), **Rot** (ikut rotasi siswa/asisten atau tidak),
+- **×** untuk menghapus baris,
+- di bawah tiap baris: jumlah tugas + status (`siap`, `jeda N pekan`, `jadwal 23 Des`,
+  `belum pernah dapat tugas`),
+- kotak **Tambah** untuk nama baru, dan baris **Ganti PIN · Batal · Simpan** yang
+  menempel di bawah layar.
+
+Urutan awal: **Penatua (P) → Hamba Pelayanan (HP) → Penyiar**, lalu A–Z. Baris kuning
+= nama yang tertulis di jadwal tapi belum ada di daftar. Mengubah nama di sini ikut
+mengganti nama itu di seluruh jadwal (lihat bagian 5). Halaman ini **tidak ikut
+tercetak** — saat PDF hanya lembar jadwal (halaman 1) yang keluar.
 
 ## 7. Aplikasi menyegarkan diri sendiri
 
@@ -104,9 +113,13 @@ lain ikut diperbarui.
 
 ## 4. Tombol di kepala aplikasi
 
-Di kepala (sejajar dengan tombol ☰) ada **⇩ PDF**, **↻ Sync**, dan **Admin** (berganti
-jadi **Keluar** setelah masuk PIN). Tombol **✎ Penyiar** dan **↻ Bagi tugas** muncul
-di baris pekan, hanya saat mode admin aktif.
+Semua tombol kerja hanya muncul **setelah Log in** (PIN). Sebelumnya yang tampak
+hanya **Log in**. Sesudah masuk: **PDF**, **Sync**, **Penyiar**, **Keluar**, plus
+**Bagi tugas** di baris pekan.
+
+Hanya admin yang bisa mengubah isi jadwal (klik nama siswa/asisten, **Ketua**, dan
+**Doa** untuk memilih dari daftar penyiar). Yang belum log in hanya bisa membaca:
+nama tidak bisa diklik dan tanda panah kecil di sebelah nama tidak ditampilkan.
 
 ## 5. Tombol ↻ Sync (jadwal baru tanpa repot)
 
