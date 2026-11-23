@@ -149,7 +149,10 @@ yang sedang dibuka** — satu siswa satu berkas PDF, tidak digabung:
 **Yang dapat slip:** siswa **Pembacaan Alkitab (bagian 3)** dan siswa bagian
 **Bersemangatlah dalam Pelayanan (bagian 4–6)**. Kalau bagian itu ada asistennya,
 nama asisten ditulis di kolom **Asisten** pada slip yang sama (bukan slip
-terpisah). Pelajaran Alkitab Sidang dan Pembahasan tidak dibuatkan slip.
+terpisah).
+
+Nama yang dicetak di slip adalah **nama lengkap** siswa (lihat 6d). Kalau nama
+lengkapnya belum diisi, slip memakai nama yang tampil di jadwal. Pelajaran Alkitab Sidang dan Pembahasan tidak dibuatkan slip.
 
 Contoh: pekan 25 Nov → 4 berkas, yaitu Adriel (bag. 3), Lilis (bag. 4, asisten Iim),
 Bile (bag. 5, asisten Anarita), Sumanto (bag. 6). Nama yang dipakai adalah nama
@@ -179,6 +182,28 @@ Hurufnya **dibundel di dalam berkas** (Open Sans untuk teks tebal/isi, Cousine u
 isian) dalam bentuk `@font-face` base64, jadi tampilan slip sama di semua HP — tidak
 bergantung huruf bawaan Android/Samsung/iPhone dan tetap benar saat berkas dipakai
 tanpa internet. Karena hurufnya ikut, ukuran `index.html` bertambah sekitar 55 KB.
+
+## 6d. Nama lengkap (untuk slip S-89)
+
+Setiap penyiar punya tiga bentuk nama, dan masing-masing dipakai di tempat berbeda:
+
+| Bentuk | Contoh | Dipakai di |
+| --- | --- | --- |
+| Nama di jadwal (semi) | `Calvin W` | tabel jadwal & PDF jadwal |
+| Inisial | `CW` | kolom inisial di jadwal |
+| Nama lengkap | `Calvin Wijaya` | slip S-89 & nama berkasnya |
+
+**Mengisi nama lengkap:**
+
+1. buka **Penyiar**;
+2. ketuk tombol **Lengkap** di atas daftar (sebelah **+ Tambah**);
+3. isi nama lengkap tiap orang pada kolom kanan — kolom kiri hanya menampilkan
+   nama yang dipakai di jadwal, supaya tidak tertukar;
+4. ketuk **Simpan** di jendela itu, lalu **Simpan** di halaman penyiar.
+
+Kolom nama lengkap juga ada di jendela **+ Tambah** waktu menambah penyiar baru.
+Nama lengkap yang dibiarkan kosong tidak masalah: slip S-89 memakai nama di jadwal.
+Mengubah nama lengkap **tidak** mengubah jadwal, inisial, atau nama di tabel.
 
 ## 7. Aplikasi menyegarkan diri sendiri
 

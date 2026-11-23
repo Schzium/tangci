@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="versi" content="2026-11-23.23">
+<meta name="versi" content="2026-11-23.24">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0d5c7a">
 <meta name="mobile-web-app-capable" content="yes">
@@ -693,7 +693,7 @@
   }
   .ed-daftar{ overflow-y: auto; min-height: 0; padding-right: 2pt; }
   /* kotak cari + tombol tambah */
-  .ed-alat{ display: grid; grid-template-columns: 1fr auto; gap: 4pt; margin-bottom: 6pt; }
+  .ed-alat{ display: grid; grid-template-columns: 1fr auto auto; gap: 4pt; margin-bottom: 6pt; }
   .ed-cari{ font-size: 9.5pt; }
   .ed-baru{
     padding: 3.5pt 10pt; border: .75pt solid #0d5c7a; border-radius: 2pt;
@@ -701,6 +701,12 @@
     cursor: pointer; white-space: nowrap;
   }
   .ed-baru:hover{ background: #0a4b64; border-color: #0a4b64; }
+  .ed-lengkap{
+    padding: 3.5pt 9pt; border: .75pt solid #0d5c7a; border-radius: 2pt;
+    background: #fff; color: #0d5c7a; font: inherit; font-size: 9pt; font-weight: 700;
+    cursor: pointer; white-space: nowrap;
+  }
+  .ed-lengkap:hover{ background: #eef4f7; }
   /* lapis untuk kotak tanya (hapus) dan form tambah */
   .ed-lapis{
     position: fixed; inset: 0; z-index: 60; padding: 14pt;
@@ -1820,14 +1826,15 @@ function daftarSiswa(){
             i: String(x.i || bikinInisial(x.n)),
             g: (x.g === "L" || x.g === "P") ? x.g : "",
             r: x.r === 0 ? 0 : 1,
-            k: window.katSah(x.k)
+            k: window.katSah(x.k),
+            f: String(x.f || "")
           };
         }
-        return { n: String(x), i: bikinInisial(x), g: "", r: 1, k: "" };
+        return { n: String(x), i: bikinInisial(x), g: "", r: 1, k: "", f: "" };
       }).filter((o) => o.n).map(perbaruiOrang))));
     }
   } catch (e) {}
-  return (_cacheDaftar = rapikanInisial(lengkapiPenyiar(DAFTAR_SISWA_BAWAAN.map((o) => ({ n: o.n, i: o.i, g: o.g || "", r: o.r === 0 ? 0 : 1, k: o.k || "" })))));
+  return (_cacheDaftar = rapikanInisial(lengkapiPenyiar(DAFTAR_SISWA_BAWAAN.map((o) => ({ n: o.n, i: o.i, g: o.g || "", r: o.r === 0 ? 0 : 1, k: o.k || "", f: o.f || "" })))));
 }
 /* penyesuaian data orang yang namanya dilengkapi belakangan */
 const PERBARUI_ORANG = [
@@ -1849,7 +1856,9 @@ function perbaruiOrang(o){
   const k = normNama(o.n);
   const p = PERBARUI_ORANG.find((x) => x.lama === k);
   const g = (x) => (x && (x.g === "L" || x.g === "P")) ? x.g : "";
-  return p ? { n: p.baru.n, i: p.baru.i, g: g(p.baru) || g(o), r: o.r === 0 ? 0 : 1, k: o.k || "" } : o;
+  return p
+    ? { n: p.baru.n, i: p.baru.i, g: g(p.baru) || g(o), r: o.r === 0 ? 0 : 1, k: o.k || "", f: o.f || "" }
+    : o;
 }
 /* nama yang pernah ditambahkan otomatis lalu sengaja dihapus admin tidak
    dimunculkan lagi (dicatat di localStorage oleh tombol Simpan) */
@@ -1864,7 +1873,7 @@ function lengkapiPenyiar(arr){
   (typeof TAMBAH_PENYIAR !== "undefined" ? TAMBAH_PENYIAR : []).forEach((x) => {
     const k = normNama(x.n);
     if (ada.has(k) || hapus.indexOf(k) >= 0) return;
-    arr.push({ n: x.n, i: bikinInisial(x.n), g: "", r: 1, k: "" });
+    arr.push({ n: x.n, i: bikinInisial(x.n), g: "", r: 1, k: "", f: "" });
     ada.add(k);
   });
   return arr;
@@ -2816,7 +2825,10 @@ function daftarSlipS89(wi){
 }
 function namaLengkapOrang(v){
   const o = cariOrang(v);
-  return o ? o.n : String(v == null ? "" : v).trim();
+  const polos = String(v == null ? "" : v).trim();
+  if (!o) return polos;
+  const lengkap = String(o.f || "").trim();
+  return lengkap || o.n;
 }
 function tanggalSlip(wi){
   const d = JADWAL[wi] || {};
@@ -3638,7 +3650,7 @@ function bukaBagiPekan(){
       .map((v) => ({ n: v, i: bikinInisial(v), g: "", r: 1, baru: true, _asli: "", _asliIni: "" }))
       .concat(daftarSiswa().map((o) => ({
         n: o.n, i: o.i, g: o.g || "", r: o.r === 0 ? 0 : 1,
-        k: window.katSah(o.k),
+        k: window.katSah(o.k), f: o.f || "",
         _asli: o.n, _asliIni: o.i
       })));
     if (tempat) tempat.innerHTML = "";
@@ -3674,6 +3686,7 @@ function bukaBagiPekan(){
       + '<div class="modal-isi">'
       + '<div class="ed-alat">'
       + '<input class="ed-input ed-cari" type="search" placeholder="Cari nama&hellip;" aria-label="Cari nama penyiar">'
+      + '<button type="button" class="ed-lengkap" title="Isi nama lengkap untuk slip S-89">Lengkap</button>'
       + '<button type="button" class="ed-baru" title="Tambah penyiar baru">+ Tambah</button></div>'
       + '<div class="ed-legenda" hidden></div>'
       + '<div class="ed-kepala-kolom"><span>Nama</span><span>Inisial</span><span>L/P</span><span>Kat</span><span></span></div>'
@@ -3755,6 +3768,8 @@ function bukaBagiPekan(){
         + '<input class="ed-input f-nama" type="text" placeholder="Nama lengkap&hellip;" aria-label="Nama"></label>'
         + '<label class="ed-form-baris"><span>Inisial</span>'
         + '<input class="ed-input f-ini" type="text" maxlength="4" placeholder="otomatis" aria-label="Inisial"></label>'
+        + '<label class="ed-form-baris"><span>Nama lengkap</span>'
+        + '<input class="ed-input f-lengkap" type="text" placeholder="untuk slip S-89 (boleh kosong)" aria-label="Nama lengkap untuk slip S-89"></label>'
         + '<div class="ed-form-dua">'
         + '<label class="ed-form-baris"><span>L/P</span><select class="ed-input f-g" aria-label="Jenis kelamin">'
         + '<option value="">&mdash;</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></label>'
@@ -3783,7 +3798,8 @@ function bukaBagiPekan(){
           i: (inI.value.trim() || bikinInisial(nama)).toUpperCase(),
           g: selG.value === "L" || selG.value === "P" ? selG.value : "",
           k: window.katSah(selK.value),
-          r: 1
+          r: 1,
+          f: box.querySelector(".f-lengkap").value.replace(/\s+/g, " ").trim()
         });
       };
       box.addEventListener("click", (ev) => {
@@ -3804,6 +3820,50 @@ function bukaBagiPekan(){
         else inI.placeholder = "otomatis";
       });
       setTimeout(() => inN.focus(), 0);
+    });
+
+    /* isi nama lengkap (hanya dipakai slip S-89) */
+    const formLengkap = () => new Promise((selesai) => {
+      const daftar = [];
+      kerja.forEach((o, i) => { if (String(o.n || "").trim()) daftar.push({ i: i, o: o }); });
+      const box = document.createElement("div");
+      box.className = "ed-lapis";
+      box.innerHTML = '<div class="ed-form" style="max-height:82vh;display:flex;flex-direction:column"'
+        + ' role="dialog" aria-modal="true" aria-label="Nama lengkap untuk S-89">'
+        + '<p class="ed-form-judul">Nama lengkap (slip S-89)</p>'
+        + '<p style="margin:0 0 6pt;font-size:8.5pt;line-height:1.35;color:#6a7176;">'
+        + 'Nama di kiri = nama di jadwal (beserta inisialnya). Nama lengkap hanya dipakai di slip S-89. '
+        + 'Kalau dikosongkan, slip memakai nama di jadwal.</p>'
+        + '<div style="flex:1 1 auto;min-height:0;overflow-y:auto;">'
+        + daftar.map((d) => '<label style="display:grid;grid-template-columns:1fr 1.15fr;gap:5pt;'
+            + 'align-items:center;margin-bottom:4pt;">'
+            + '<span style="font-size:9pt;color:#333;overflow:hidden;text-overflow:ellipsis;'
+            + 'white-space:nowrap;">' + esc(d.o.n) + '</span>'
+            + '<input class="ed-input f-penuh" type="text" data-i="' + d.i + '"'
+            + ' value="' + esc(d.o.f || "") + '" placeholder="' + esc(d.o.n) + '"'
+            + ' aria-label="Nama lengkap ' + esc(d.o.n) + '"></label>').join("")
+        + '</div>'
+        + '<div class="ed-tanya-kaki"><button type="button" class="ed-form-batal">Batal</button>'
+        + '<button type="button" class="ed-form-ok">Simpan</button></div></div>';
+      tirai.appendChild(box);
+      const tutup = (ok) => { box.remove(); selesai(!!ok); };
+      const simpan = () => {
+        box.querySelectorAll(".f-penuh").forEach((inp) => {
+          const i = Number(inp.dataset.i);
+          if (kerja[i]) kerja[i].f = inp.value.replace(/\s+/g, " ").trim();
+        });
+        if (typeof tandaiKotor === "function") tandaiKotor();
+        tutup(true);
+      };
+      box.addEventListener("click", (ev) => {
+        if (ev.target.closest(".ed-form-ok")) simpan();
+        else if (ev.target.closest(".ed-form-batal") || ev.target === box) tutup(false);
+      });
+      box.addEventListener("keydown", (ev) => {
+        if (ev.key === "Escape") tutup(false);
+        if (ev.key === "Enter"){ ev.preventDefault(); simpan(); }
+      });
+      setTimeout(() => { const f = box.querySelector(".f-penuh"); if (f) f.focus(); }, 0);
     });
 
     segarkan();
@@ -3857,6 +3917,10 @@ function bukaBagiPekan(){
         });
         return;
       }
+      if (ev.target.closest(".ed-lengkap")){
+        formLengkap().then((adaUbah) => { if (adaUbah) segarkan(); });
+        return;
+      }
       if (ev.target.closest(".ed-baru")){
         formTambah().then((baru) => {
           if (!baru) return;
@@ -3879,10 +3943,11 @@ function bukaBagiPekan(){
             i: String(o.i || "").trim().toUpperCase(),
             g: (o.g === "L" || o.g === "P") ? o.g : "",
             r: o.r === 0 ? 0 : 1,
-            k: window.katSah(o.k)
+            k: window.katSah(o.k),
+            f: String(o.f || "").replace(/\s+/g, " ").trim()
           }))
           .filter((o) => o.n)
-          .map((o) => ({ n: o.n, i: o.i || bikinInisial(o.n), g: o.g, r: o.r, k: o.k }));
+          .map((o) => ({ n: o.n, i: o.i || bikinInisial(o.n), g: o.g, r: o.r, k: o.k, f: o.f }));
         const pasangan = kerja
           .filter((o) => o._asli && String(o.n || "").trim() && normNama(o._asli) !== normNama(o.n))
           .map((o) => ({
