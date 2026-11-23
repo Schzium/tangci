@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="versi" content="2026-11-23.10">
+<meta name="versi" content="2026-11-23.14">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0d5c7a">
 <meta name="mobile-web-app-capable" content="yes">
@@ -729,6 +729,7 @@
   .bagi-item.tutup .bi-label{ font-weight: 400; }
   .info-tugas{ font-weight: 700; }
   .info-rinci{ color: #3c4348; }
+  .info-lain{ color: #7b8388; }
   .ed-info{
     display: flex; flex-wrap: wrap; gap: 8pt;
     font-size: 7.5pt; color: #7b8287;
@@ -746,6 +747,7 @@
   }
   .ed-urut button.aktif{ background: #0d5c7a; border-color: #0d5c7a; color: #fff; }
   .ed-baris .ed-ini, .ed-tambah .baru-ini{ text-align: center; text-transform: uppercase; }
+  .ed-baris .ed-ini.ini-kosong{ background: #f2f4f5; color: #b3b8bc; border-style: dashed; }
   .ed-g, .ed-r, .ed-k{
     height: 15pt; line-height: 1;
     border: .75pt solid #ccd2d6; border-radius: 2pt;
@@ -1557,81 +1559,83 @@ const JADWAL = [
 
 /* daftar siswa/penyiar Sidang Tangerang Cipendoh: nama lengkap + inisial */
 const DAFTAR_SISWA_BAWAAN = [
-  { n: "Calvin Wijaya", i: "CW", g: "L", r: 1 },
-  { n: "Febri Widjaja", i: "FW", g: "L", r: 1 },
-  { n: "Alwie", i: "AL", g: "L", r: 1 },
-  { n: "Tony", i: "TO", g: "L", r: 1 },
-  { n: "Ronny Sutoto", i: "RS", g: "L", r: 1 },
-  { n: "Tsunehiro N", i: "TN", g: "L", r: 1 },
-  { n: "Doedu", i: "DO", g: "L", r: 1 },
-  { n: "Franz Nainggolan", i: "FN", g: "L", r: 1 },
-  { n: "Arindra Nainggolan", i: "AN", g: "L", r: 1 },
-  { n: "Kelvin Sutoto", i: "KS", g: "L", r: 1 },
-  { n: "Nao N", i: "NN", g: "P", r: 1 },
-  { n: "Davida Gatrasaputra", i: "DG", g: "P", r: 1 },
-  { n: "Claudia", i: "CL", g: "P", r: 1 },
-  { n: "Marissa", i: "MA", g: "P", r: 1 },
-  { n: "TL", i: "TL", g: "", r: 1 },
-  { n: "Debby Meha", i: "DM", g: "P", r: 1 },
-  { n: "Ruth Yenni", i: "RY", g: "P", r: 1 },
-  { n: "Norlina Salim Song", i: "NS", g: "P", r: 1 },
-  { n: "L", i: "L", g: "", r: 1 },
-  { n: "Beny", i: "BE", g: "L", r: 1 },
-  { n: "Emalia", i: "EM", g: "P", r: 1 },
-  { n: "Tata", i: "TA", g: "", r: 1 },
-  { n: "Poppy Sendra", i: "PS", g: "P", r: 1 },
-  { n: "Untari", i: "UN", g: "P", r: 1 },
-  { n: "Elvride", i: "EL", g: "", r: 1 },
-  { n: "Nadin", i: "NA", g: "P", r: 1 },
-  { n: "Lis", i: "LI", g: "P", r: 1 },
-  { n: "Karin", i: "KA", g: "P", r: 1 },
-  { n: "Priscilla", i: "PR", g: "P", r: 1 },
-  { n: "Sharon Marchella Pange", i: "SH", g: "P", r: 1 },
-  { n: "Ryan Pange", i: "RYA", g: "L", r: 1 },
-  { n: "Bile", i: "BI", g: "", r: 1 },
-  { n: "Ferren", i: "FE", g: "", r: 1 },
-  { n: "Richard Espee", i: "RE", g: "L", r: 1 },
-  { n: "Ito Suprianto", i: "IS", g: "L", r: 1 },
-  { n: "Ina Susiati", i: "IN", g: "P", r: 1 },
-  { n: "Papi", i: "PA", g: "L", r: 1 },
-  { n: "Yakobus Timop", i: "YT", g: "L", r: 1 },
-  { n: "Agus Pangaribuan", i: "AP", g: "L", r: 1 },
-  { n: "Sandy", i: "SA", g: "L", r: 1 },
-  { n: "Sumanto", i: "SM", g: "L", r: 1 },
-  { n: "Anthony Iskandar", i: "AI", g: "L", r: 1 },
-  { n: "Bosi Manurung", i: "BM", g: "L", r: 1 },
-  { n: "sangaloy.id", i: "SG", g: "", r: 1 },
-  { n: "Jemmy Wim", i: "JW", g: "L", r: 1 },
-  { n: "Valdo", i: "VA", g: "L", r: 1 },
-  { n: "Asien", i: "AS", g: "", r: 1 },
-  { n: "Darwin", i: "DA", g: "L", r: 1 },
-  { n: "Basaria Manurung", i: "BA", g: "P", r: 1 },
-  { n: "Retno Sari Prayogo", i: "RT", g: "P", r: 1 },
-  { n: "Herni", i: "HE", g: "P", r: 1 },
-  { n: "Herawati", i: "HW", g: "P", r: 1 },
-  { n: "Fransisca", i: "FR", g: "P", r: 1 },
-  { n: "Rosmelyana Pangaribuan", i: "RO", g: "P", r: 1 },
-  { n: "Rina Yan", i: "RN", g: "P", r: 1 },
-  { n: "Yulia Manurung", i: "YM", g: "P", r: 1 },
-  { n: "Lamria Manurung", i: "LM", g: "P", r: 1 },
-  { n: "Yan", i: "YN", g: "L", r: 1 },
-  { n: "Yolanda Wendersteyt", i: "YW", g: "P", r: 1 },
-  { n: "Ketty", i: "KE", g: "P", r: 1 },
-  { n: "Rama", i: "RA", g: "L", r: 1 },
-  { n: "Dorkas Ngongo", i: "DN", g: "P", r: 1 },
-  { n: "ling Pokim", i: "LP", g: "", r: 1 },
-  { n: "Mami", i: "MM", g: "P", r: 1 },
-  { n: "Elv", i: "EV", g: "", r: 1 },
-  { n: "Nana", i: "NAN", g: "", r: 1 },
-  { n: "Yemima Adisti", i: "YE", g: "P", r: 1 },
-  { n: "Ancilla", i: "AC", g: "P", r: 1 },
-  { n: "Titi", i: "TI", g: "P", r: 1 },
-  { n: "yunushansen", i: "YU", g: "L", r: 1 },
-  { n: "Rostina Pakpahan", i: "RSP", g: "P", r: 1 },
-  { n: "Pandi", i: "PD", g: "L", r: 1 },
-  { n: "Esther", i: "ES", g: "P", r: 1 },
-  { n: "Debby", i: "DE", g: "P", r: 1 },
-  ];
+  { n: "Adriel", i: "AD", g: "L", r: 1, k: "" },
+  { n: "Agus P", i: "AP", g: "L", r: 1, k: "" },
+  { n: "Alwie", i: "AL", g: "L", r: 1, k: "P" },
+  { n: "Anchilla", i: "ANC", g: "P", r: 1, k: "" },
+  { n: "Anthony", i: "AT", g: "L", r: 1, k: "" },
+  { n: "Arindra N", i: "AN", g: "L", r: 1, k: "P" },
+  { n: "Asien", i: "AS", g: "P", r: 1, k: "" },
+  { n: "Basaria", i: "BA", g: "P", r: 1, k: "" },
+  { n: "Beny E", i: "BE", g: "L", r: 1, k: "" },
+  { n: "Bile", i: "BI", g: "P", r: 1, k: "" },
+  { n: "Calvin W", i: "CW", g: "L", r: 1, k: "" },
+  { n: "Claudia", i: "CP", g: "P", r: 1, k: "" },
+  { n: "Davida", i: "DV", g: "P", r: 1, k: "" },
+  { n: "Debby M", i: "DM", g: "P", r: 1, k: "" },
+  { n: "Debby P", i: "DE", g: "P", r: 1, k: "" },
+  { n: "Desmi", i: "DES", g: "P", r: 1, k: "" },
+  { n: "Diaspati", i: "DI", g: "L", r: 1, k: "" },
+  { n: "Doedu L", i: "DL", g: "L", r: 1, k: "HP" },
+  { n: "Dorkas", i: "DO", g: "P", r: 1, k: "" },
+  { n: "Eko", i: "EK", g: "L", r: 1, k: "" },
+  { n: "Elvride", i: "EL", g: "P", r: 1, k: "" },
+  { n: "Emalia", i: "EW", g: "P", r: 1, k: "" },
+  { n: "Esther", i: "ES", g: "P", r: 1, k: "" },
+  { n: "Febri W", i: "FW", g: "L", r: 1, k: "HP" },
+  { n: "Ferren", i: "FE", g: "L", r: 1, k: "" },
+  { n: "Fransisca", i: "FR", g: "P", r: 1, k: "" },
+  { n: "Franz N", i: "FN", g: "L", r: 1, k: "P" },
+  { n: "Hansen", i: "YH", g: "L", r: 1, k: "" },
+  { n: "Heliana", i: "HE", g: "P", r: 1, k: "" },
+  { n: "Herawati", i: "HW", g: "P", r: 1, k: "" },
+  { n: "Herni", i: "HER", g: "P", r: 1, k: "" },
+  { n: "Iim", i: "II", g: "P", r: 1, k: "" },
+  { n: "Ina", i: "IN", g: "P", r: 1, k: "" },
+  { n: "Ito S", i: "IS", g: "L", r: 1, k: "P" },
+  { n: "Jemmy W", i: "JW", g: "L", r: 1, k: "P" },
+  { n: "Karin", i: "KA", g: "P", r: 1, k: "" },
+  { n: "Kelvin S", i: "KS", g: "L", r: 1, k: "" },
+  { n: "Ketty", i: "KT", g: "P", r: 1, k: "" },
+  { n: "Kieng", i: "KE", g: "P", r: 1, k: "" },
+  { n: "Lamria", i: "LM", g: "P", r: 1, k: "" },
+  { n: "Lan Ing", i: "LI", g: "P", r: 1, k: "" },
+  { n: "Lidya", i: "LID", g: "P", r: 1, k: "" },
+  { n: "Lilis", i: "LIL", g: "P", r: 1, k: "" },
+  { n: "Marissa", i: "MA", g: "P", r: 1, k: "" },
+  { n: "Melly", i: "MP", g: "P", r: 1, k: "" },
+  { n: "Nadin", i: "NA", g: "P", r: 1, k: "" },
+  { n: "Nao", i: "NN", g: "P", r: 1, k: "" },
+  { n: "Norlina", i: "NS", g: "P", r: 1, k: "" },
+  { n: "Pandi P", i: "PP", g: "L", r: 1, k: "" },
+  { n: "Poppy", i: "PS", g: "P", r: 1, k: "" },
+  { n: "Priscilla", i: "PR", g: "P", r: 1, k: "" },
+  { n: "Rama", i: "RA", g: "L", r: 1, k: "" },
+  { n: "Retno", i: "RT", g: "P", r: 1, k: "" },
+  { n: "Rey D", i: "RD", g: "L", r: 1, k: "" },
+  { n: "Richard E", i: "RE", g: "L", r: 1, k: "" },
+  { n: "Rina", i: "RN", g: "P", r: 1, k: "" },
+  { n: "Rinaldi", i: "RI", g: "L", r: 1, k: "P" },
+  { n: "Rita", i: "RS", g: "P", r: 1, k: "" },
+  { n: "Ronny S", i: "RON", g: "L", r: 1, k: "" },
+  { n: "Rostina", i: "RO", g: "P", r: 1, k: "" },
+  { n: "Ryan", i: "RY", g: "L", r: 1, k: "" },
+  { n: "Sandy W", i: "SW", g: "L", r: 1, k: "P" },
+  { n: "Sharon", i: "SH", g: "P", r: 1, k: "" },
+  { n: "Sumanto", i: "SM", g: "L", r: 1, k: "HP" },
+  { n: "Teddy W.", i: "TW", g: "L", r: 1, k: "" },
+  { n: "Tiodor", i: "TI", g: "P", r: 1, k: "" },
+  { n: "Titi", i: "TS", g: "P", r: 1, k: "" },
+  { n: "Tony U", i: "TU", g: "L", r: 1, k: "" },
+  { n: "Tsunehiro N", i: "TN", g: "L", r: 1, k: "P" },
+  { n: "Untari", i: "UW", g: "P", r: 1, k: "" },
+  { n: "Valdo N", i: "VN", g: "L", r: 1, k: "HP" },
+  { n: "Yakobus T", i: "YT", g: "L", r: 1, k: "HP" },
+  { n: "Yan F", i: "YF", g: "L", r: 1, k: "" },
+  { n: "Yemima", i: "YE", g: "P", r: 1, k: "" },
+  { n: "Ruth", i: "YP", g: "P", r: 1, k: "" },
+  { n: "Yolanda", i: "YW", g: "P", r: 1, k: "" }
+];
 
 const KUNCI_DAFTAR = "jhtp-daftar-siswa";
 
@@ -1642,11 +1646,69 @@ function bikinInisial(nama){
   return (kata[0][0] + kata[kata.length - 1][0]).toUpperCase();
 }
 
+/* dua orang tidak boleh memakai inisial yang sama: kalau kembar, tulisan
+   "AN" di jadwal jadi tidak jelas siapa. Yang mempertahankan inisialnya
+   didahulukan Penatua/HP (inisial mereka dipakai di slot Ketua, Doa,
+   Ruang Utama, Kehidupan Kristen), sisanya diberi inisial lebih panjang. */
+function inisialUnik(nama, dipakai){
+  const kata = String(nama || "").replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
+  const dasar = bikinInisial(nama);
+  const calon = [];
+  if (kata[0]) calon.push(kata[0].slice(0, 3).toUpperCase());
+  if (kata.length > 1) calon.push((kata[0][0] + kata[1].slice(0, 2)).toUpperCase());
+  if (kata.length > 2) calon.push((kata[0][0] + kata[1][0] + kata[2][0]).toUpperCase());
+  for (let n = 2; n <= 9; n++) calon.push(dasar + n);
+  for (let i = 0; i < calon.length; i++){
+    const c = calon[i];
+    if (c && c !== dasar && !dipakai.has(c)) return c;
+  }
+  return dasar;
+}
+function rapikanInisial(arr){
+  if (!Array.isArray(arr) || arr.length < 2) return arr;
+  const bobot = (o) => (o.k === "P" ? 0 : o.k === "HP" ? 1 : 2);
+  const urut = arr.map((o, i) => ({ o: o, i: i }))
+    .sort((a, b) => (bobot(a.o) - bobot(b.o)) || (a.i - b.i));
+  const dipakai = new Set();
+  const hasil = arr.slice();
+  let ubah = 0;
+  urut.forEach(({ o, i }) => {
+    /* perempuan tetap ikut hitungan keunikan (supaya "AN" tidak ambigu),
+       tetapi inisialnya tidak pernah ditampilkan */
+    let ini = String(o.i || bikinInisial(o.n)).trim().toUpperCase();
+    if (dipakai.has(ini)){
+      ini = inisialUnik(o.n, dipakai);
+      ubah += 1;
+      hasil[i] = Object.assign({}, o, { i: ini });
+    }
+    dipakai.add(ini);
+  });
+  rapikanInisial.jumlahUbah = ubah;
+  return hasil;
+}
+
+/* ---- cache -------------------------------------------------------------
+   Dulu SETIAP pencarian nama membaca ulang localStorage + menyortir 76 nama,
+   sehingga satu kali buka tabel penyiar memicu ±470 pembacaan (itulah sebabnya
+   terasa berat di HP). Sekarang hasilnya disimpan dan hanya dibuang kalau
+   daftar penyiar atau pilihan nama di jadwal berubah. */
+let _cacheDaftar = null;
+let _cacheOrang = new Map();
+let _cacheHadirin = null;
+function lupakanCache(daftarBerubah){
+  if (daftarBerubah !== false){
+    _cacheDaftar = null;
+    _cacheOrang = new Map();
+  }
+  _cacheHadirin = null;
+}
+
 function daftarSiswa(){
+  if (_cacheDaftar) return _cacheDaftar;
   try {
     const v = JSON.parse(localStorage.getItem(KUNCI_DAFTAR));
     if (Array.isArray(v)){
-      return v.map((x) => {
+      return (_cacheDaftar = rapikanInisial(v.map((x) => {
         if (x && typeof x === "object"){
           return {
             n: String(x.n || ""),
@@ -1657,10 +1719,10 @@ function daftarSiswa(){
           };
         }
         return { n: String(x), i: bikinInisial(x), g: "", r: 1, k: "" };
-      }).filter((o) => o.n).map(perbaruiOrang);
+      }).filter((o) => o.n).map(perbaruiOrang)));
     }
   } catch (e) {}
-  return DAFTAR_SISWA_BAWAAN.map((o) => ({ n: o.n, i: o.i, g: o.g || "", r: o.r === 0 ? 0 : 1 }));
+  return (_cacheDaftar = rapikanInisial(DAFTAR_SISWA_BAWAAN.map((o) => ({ n: o.n, i: o.i, g: o.g || "", r: o.r === 0 ? 0 : 1, k: o.k || "" }))));
 }
 /* penyesuaian data orang yang namanya dilengkapi belakangan */
 const PERBARUI_ORANG = [
@@ -1675,6 +1737,7 @@ function perbaruiOrang(o){
 }
 function simpanDaftarSiswa(arr){
   try { localStorage.setItem(KUNCI_DAFTAR, JSON.stringify(arr)); } catch (e) {}
+  lupakanCache();
 }
 
 /* "Kelvin Sutoto" -> "Kelvin S" */
@@ -1711,29 +1774,38 @@ function jarak1(a, b){
 function cariOrang(teks){
   const t = normNama(teks);
   if (!t) return null;
+  if (_cacheOrang.has(t)) return _cacheOrang.get(t);
   const arr = daftarSiswa();
   const satu = (fn) => { const h = arr.filter(fn); return h.length === 1 ? h[0] : null; };
   const persis = arr.find((o) => normNama(o.n) === t);
-  if (persis) return persis;
+  if (persis){ _cacheOrang.set(t, persis); return persis; }
   const inis = satu((o) => normNama(o.i) === t);
-  if (inis) return inis;
+  if (inis){ _cacheOrang.set(t, inis); return inis; }
   const semi = satu((o) => normNama(namaSemi(o)) === t);
-  if (semi) return semi;
+  if (semi){ _cacheOrang.set(t, semi); return semi; }
   /* nama depan saja, mis. "Debby" untuk "Debby Meha" (harus tunggal) */
   const depan = satu((o) => normNama(o.n.split(" ")[0]) === t.split(" ")[0]);
-  if (depan) return depan;
+  if (depan){ _cacheOrang.set(t, depan); return depan; }
   /* alias yang sudah dipastikan (nama panggilan di jadwal -> nama di daftar) */
   const alias = (typeof ALIAS_NAMA !== "undefined") ? ALIAS_NAMA[t] : null;
   if (alias){
     const o = arr.find((x) => normNama(x.n) === normNama(alias));
-    if (o) return o;
+    if (o){ _cacheOrang.set(t, o); return o; }
   }
+  _cacheOrang.set(t, null);
   return null;
 }
 /* tampilan: siswa/asisten pakai nama semi, kolom lain pakai inisial */
+/* perempuan tidak berinisial: di jadwal aslinya saudari ditulis dengan
+   namanya saja, tanpa singkatan (mis. "Debby", bukan "DM") */
+function tanpaInisial(o){ return !!o && o.g === "P"; }
+
 function tampilNama(isi, semi){
   const org = cariOrang(isi);
-  if (org) return semi ? namaSemi(org) : (org.i || bikinInisial(org.n));
+  if (org){
+    if (tanpaInisial(org)) return org.n;          /* nama apa adanya */
+    return semi ? namaSemi(org) : (org.i || bikinInisial(org.n));
+  }
   /* nama yang belum ada di daftar: tampilkan apa adanya, tapi gaya semi
      diseragamkan ("Rita S." -> "Rita S", "Melly P." -> "Melly P") */
   const t = String(isi == null ? "" : isi).trim();
@@ -1755,14 +1827,25 @@ function namaBelumCocok(){
   };
   JADWAL.forEach((d, wi) => {
     const w = "w" + (wi + 1);
-    d.baris.forEach((b) => {
-      if (!b.siswa || !/siswa/i.test(b.siswa)) return;
+    /* semua slot nama diperiksa — Ketua, Doa, siswa/asisten, Pemandu/Pembaca,
+       Pembahasan, dan Bagian Penutup — supaya singkatan yang belum ada di
+       daftar penyiar (mis. "HR") ikut muncul sebagai baris yang perlu dicocokkan */
+    tambah(namaTersimpan(w, "k", "ketua") != null ? namaTersimpan(w, "k", "ketua") : d.ketua);
+    d.baris.forEach((b, i) => {
       const no = String(parseInt(b.nomor, 10));
-      const pisah = String(b.nilai || "").split("/").map((x) => x.trim());
+      const punyaNomor = !!(b.nomor && no !== "NaN");
+      if (!punyaNomor && !b.doa && !b.nilai) return;
+      if (b.doa !== undefined){
+        const simpanDoa = namaTersimpan(w, "r" + i, "doa");
+        tambah(simpanDoa != null ? simpanDoa : b.doa);
+        return;
+      }
+      if (!b.nilai) return;
+      const pisah = String(b.nilai).split("/").map((x) => x.trim());
       const jml = pisah.length > 1 ? 2 : 1;
-      for (let i = 0; i < jml; i++){
-        const simpan = namaTersimpan(w, no, "s" + i);
-        tambah(simpan != null ? simpan : pisah[i]);
+      for (let i2 = 0; i2 < jml; i2++){
+        const simpan = punyaNomor ? namaTersimpan(w, no, "s" + i2) : null;
+        tambah(simpan != null ? simpan : pisah[i2]);
       }
     });
   });
@@ -1795,12 +1878,14 @@ function namaTersimpan(w, no, slot){
 }
 function simpanNama(w, no, slot, nilai){
   try { localStorage.setItem(KUNCI_NAMA + w + ":" + no + ":" + slot, nilai); } catch (e) {}
+  lupakanCache(false);      /* hanya hitungan tugas yang perlu dihitung ulang */
 }
 
 /* Ganti nama orang di SEMUA tempat sekaligus: data jadwal, dan pilihan yang
    sudah tersimpan per slot (termasuk yang sudah ada di cloud lewat simpanNama).
    Dipakai waktu nama di daftar penyiar diubah. */
 function gantiNamaMenyeluruh(pasangan){
+  lupakanCache();
   const hasil = { jadwal: 0, slot: 0 };
   if (!pasangan || !pasangan.length) return hasil;
   const rapi = (t) => String(t == null ? "" : t).replace(/\s+/g, " ").trim();
@@ -1907,7 +1992,7 @@ function barisLagu(b, kelasTambahan, w, i){
     nilai = `<div class="label">Doa${b.doakah === false ? "" : ":"}</div>`
       + `<div class="nilai">${pnIsi(w, kunciBaris, "doa", isiDoa, false, "Doa")}</div>`;
   } else if (b.nilai !== undefined && b.nilai !== ""){
-    nilai = `<div class="label"></div><div class="nilai">${esc(b.nilai)}</div>`;
+    nilai = `<div class="label"></div><div class="nilai">${esc(tampilNama(b.nilai, false))}</div>`;
   }
 
   const cocokLagu = /^Nyanyian\s+(\d+)$/.exec(String(b.teks || "").trim());
@@ -1952,9 +2037,8 @@ function pnIsi(w, no, slot, isi, semi, label){
    null  : tanpa aturan khusus (ikut aturan lama: P/HP disembunyikan
            pada slot siswa/asisten) */
 function aturanSlotNama(w, no, slot){
-  if (slot === "ketua" || slot === "doa"){
-    return { jenis: "PH", teks: "hanya Penatua & HP" };
-  }
+  if (slot === "ketua") return { jenis: "PH", teks: "hanya Penatua & HP" };
+  if (slot === "doa") return { jenis: "PL", teks: "laki-laki atau Penatua/HP" };
   const wi = Number(String(w || "").replace(/\D/g, "")) - 1;
   const d = JADWAL[wi];
   if (!d || !Array.isArray(d.baris)) return null;
@@ -2026,8 +2110,9 @@ function barisBagian(b, kelas, w){
   const khotbah = (kelas === "pelayanan") && /^khotbah\b/i.test(String(b.teks || "").trim());
   const duaSlot = !khotbah && (pls || !!(b.siswa && b.siswa.indexOf("/") >= 0));
   const peran = pls ? ["Pemandu", "Pembaca"] : ["Siswa", "Asisten"];
-  /* nama semi-lengkap HANYA untuk slot siswa/asisten; Pemandu, Pembaca,
-     Pembahasan, Doa, Ketua, Pelajaran Alkitab Sidang tetap inisial */
+  /* Kolom Ketua, Doa, Ruang Utama, Pemandu/Pembaca, Pembahasan, dan Bagian
+     Penutup memakai INISIAL (FN, DL, RI …). Khusus saudari, tampilannya nama
+     karena perempuan memang tidak berinisial (lihat tampilNama). */
   const semiNama = !!(b.siswa && /siswa/i.test(b.siswa));
   const labelSiswa = khotbah ? "Siswa:" : b.siswa;
   const kanan = (b.siswa ? `<div class="tengah">${esc(labelSiswa)}</div>` : "")
@@ -2605,11 +2690,36 @@ susun();
 const JEDA_PEKAN = 8;   // setelah dapat tugas, tunggu 8 pekan (dihitung per pekan, bukan per bulan)
 
 function dataHadirin(){
+  if (_cacheHadirin) return _cacheHadirin;
   const peta = new Map();
-  daftarSiswa().forEach((o) => peta.set(normNama(o.n), { o: o, tugas: 0, terakhir: null, pekan: [], rincian: [] }));
+  daftarSiswa().forEach((o) => peta.set(normNama(o.n), { o: o, tugas: 0, terakhir: null, pekan: [], rincian: [], lain: [] }));
+  /* tugas di luar siswa/asisten: Ruang Utama, Ketua, Doa */
+  const catatLain = (wi, teks, peran) => {
+    const v = String(teks || "").trim();
+    if (!v || v === "\u2014" || /^menyusul$/i.test(v)) return;
+    const org = cariOrang(v);
+    const kn = normNama(org ? org.n : v);
+    if (!peta.has(kn)){
+      peta.set(kn, {
+        o: org || { n: v, i: "", g: "", r: 1, liar: true },
+        tugas: 0, terakhir: null, pekan: [], rincian: [], lain: []
+      });
+    }
+    peta.get(kn).lain.push({ wi: wi, peran: peran, label: JADWAL[wi] ? JADWAL[wi].label : "?" });
+  };
   JADWAL.forEach((d, wi) => {
-    d.baris.forEach((b) => {
-      if (!b.nomor || !b.siswa || !/siswa/i.test(b.siswa)) return;
+    d.baris.forEach((b, bi) => {
+      /* nama di luar siswa/asisten (Ruang Utama, Doa) dicatat untuk keterangan */
+      if (b.doa !== undefined){
+        const simpanDoa = namaTersimpan("w" + (wi + 1), "r" + bi, "doa");
+        catatLain(wi, simpanDoa != null ? simpanDoa : b.doa, "Doa");
+        return;
+      }
+      if (!b.siswa || !/siswa/i.test(b.siswa)){
+        if (b.nilai) catatLain(wi, String(b.nilai).split("/")[0], "Ruang Utama");
+        return;
+      }
+      if (!b.nomor) return;
       const jml = String(b.nilai || "").indexOf("/") >= 0 ? 2 : 1;
       for (let i = 0; i < jml; i++){
         const simpan = namaTersimpan("w" + (wi + 1), String(parseInt(b.nomor, 10)), "s" + i);
@@ -2634,11 +2744,12 @@ function dataHadirin(){
           peran: peranSlot[i] || "Siswa",
           label: JADWAL[wi] ? JADWAL[wi].label : "?"
         });
-        if (it.terakhir === null || wi > it.terakhir) it.terakhir = wi;
+            if (it.terakhir === null || wi > it.terakhir) it.terakhir = wi;
       }
     });
+    if (d.ketua) catatLain(wi, d.ketua, "Ketua");
   });
-  return Array.from(peta.values());
+  return (_cacheHadirin = Array.from(peta.values()));
 }
 
 /* nilai antre: makin besar = makin lama tidak dapat tugas (dipakai untuk sortir) */
@@ -2787,7 +2898,10 @@ function bagiTugas(wiPilih){
         const akhirnya = (o) => (terakhir.get(kunci(o)) == null ? -1 : terakhir.get(kunci(o)));
         if (wajibL) calon = calon.filter((o) => o.g === "L");
         if (!calon.length){ gagal++; continue; }
-        calon.sort((a, c) => (bebanlah(a) - bebanlah(c)) || (jeda(c) - jeda(a))
+        /* urutan giliran: belum pernah → 8 pekan → 7 → … → pekan lalu,
+           lalu yang bebannya paling sedikit. Yang sudah terjadwal di pekan
+           mendatang otomatis paling belakang karena jedanya negatif. */
+        calon.sort((a, c) => (jeda(c) - jeda(a)) || (bebanlah(a) - bebanlah(c))
           || (akhirnya(a) - akhirnya(c)) || a.n.localeCompare(c.n));
         const pilih = calon[0];
         simpanNama("w" + (wi + 1), String(parseInt(b.nomor, 10)), "s" + i, pilih.n);
@@ -2954,6 +3068,7 @@ function bukaBagiPekan(){
       if (aturanAktif){
         if (aturanAktif.jenis === "PH" && !(kat === "P" || kat === "HP") && !sedangDipakai) return;
         if (aturanAktif.jenis === "L" && g !== "L" && !sedangDipakai) return;
+        if (aturanAktif.jenis === "PL" && !(kat === "P" || kat === "HP" || g === "L") && !sedangDipakai) return;
         /* "bebas": semua nama ditampilkan */
       } else if (modeSemi && khusus(o.n)){
         return;                                 // P / HP hanya untuk tugas selain siswa/asisten
@@ -2965,7 +3080,7 @@ function bukaBagiPekan(){
       html += `<button type="button" class="pn-opsi" data-n="${encodeURIComponent(o.n)}">`
         + `<span class="pn-no">${no}</span>`
         + `<span class="pn-nama g${g || "x"}">${esc(o.n)}</span>`
-        + `<span class="pn-ini">${esc(o.i || "")}</span>`
+        + `<span class="pn-ini">${esc((org && org.g === "P") ? "" : (o.i || ""))}</span>`
         + `<span class="pn-st ${st.kelas}">${esc(st.teks)}</span>`
         + `<span class="pn-cek"></span>`
         + `</button>`;
@@ -3148,8 +3263,10 @@ function bukaBagiPekan(){
   }, true);
 
   /* ---------- kelola daftar nama ---------- */
-  function renderEditor(kotak, arr, info){
-    const isi = arr.map((o, i) => {
+  /* HTML satu baris; dipakai untuk menggambar seluruh daftar sekali, atau
+     memperbarui satu baris saja saat tombol L/P, kategori, atau rotasi diklik
+     (menggambar ulang 76 baris setiap klik itulah yang membuat tabel tersendat). */
+  function htmlBarisEditor(o, i, info){
       const g = (o.g === "L" || o.g === "P") ? o.g : "";
       const rotasi = o.r !== 0;
       const kategori = (o.k === "P" || o.k === "HP") ? o.k : "";
@@ -3157,13 +3274,17 @@ function bukaBagiPekan(){
       return `<div class="ed-baris${o.baru ? " baru" : ""}" data-i="${i}"${o.baru ? ' title="Dari jadwal, belum ada di daftar"' : ""}>`
       + `<div class="ed-atas">`
       + `<input class="ed-input ed-nama" type="text" value="${esc(o.n)}" placeholder="Nama" aria-label="Nama ${i + 1}">`
-      + `<input class="ed-input ed-ini" type="text" value="${esc(o.i)}" placeholder="Ini" aria-label="Inisial ${i + 1}">`
+      + (tanpaInisial(o)
+        ? `<input class="ed-input ed-ini ini-kosong" type="text" value="" placeholder="&ndash;" readonly tabindex="-1" title="Perempuan: tanpa inisial (di jadwal ditulis namanya)" aria-label="Inisial ${i + 1} (tidak dipakai)">`
+        : `<input class="ed-input ed-ini" type="text" value="${esc(o.i)}" placeholder="Ini" aria-label="Inisial ${i + 1}">`)
       + `<button type="button" class="ed-g g-${g || "x"}" title="Jenis kelamin (klik untuk ganti): ${g === "L" ? "Laki-laki" : g === "P" ? "Perempuan" : "belum diisi"}">${g || "?"}</button>`
       + `<button type="button" class="ed-k${kategori ? " k-" + kategori.toLowerCase() : ""}" title="Kategori (klik untuk ganti): ${kategori === "P" ? "Penatua — hanya untuk tugas selain siswa/asisten" : kategori === "HP" ? "Hamba Pelayanan — hanya untuk tugas selain siswa/asisten" : "Penyiar — boleh jadi siswa/asisten"}">${kategori || "&ndash;"}</button>`
       + `<button type="button" class="ed-r${rotasi ? "" : " mati"}" title="${rotasi ? "Ikut rotasi siswa/asisten" : "Tidak ikut rotasi"}">${rotasi ? "&#10003;" : "&ndash;"}</button>`
       + `<button type="button" class="ed-hapus" title="Hapus nama">&times;</button>`
       + `</div><div class="ed-info">${ket}</div></div>`;
-    }).join("");
+  }
+  function renderEditor(kotak, arr, info){
+    const isi = arr.map((o, i) => htmlBarisEditor(o, i, info)).join("");
     kotak.innerHTML = isi || '<div class="ed-kosong">Daftar masih kosong.</div>';
   }
 
@@ -3202,7 +3323,13 @@ function bukaBagiPekan(){
           ? '<span>jeda ' + sisa + ' pekan</span>'
           : '<span class="info-siap">siap ditugaskan</span>');
       }
-      return tugasTeks + status;
+      const lain = (it.lain || []).slice().sort((a, b) => a.wi - b.wi);
+      const lainTeks = lain.length
+        ? '<span class="info-lain">juga: '
+          + lain.slice(0, 4).map((r) => esc(r.peran + " " + r.label)).join(" &middot; ")
+          + (lain.length > 4 ? " &middot; +" + (lain.length - 4) + " lagi" : "") + '</span>'
+        : '';
+      return tugasTeks + status + lainTeks;
     };
   }
 
@@ -3325,6 +3452,15 @@ function bukaBagiPekan(){
         b.classList.toggle("aktif", b.dataset.urut === urut);
       });
     };
+    /* perbarui SATU baris saja (tombol L/P, kategori, rotasi) — jauh lebih
+       ringan daripada menggambar ulang seluruh daftar tiap klik */
+    const segarkanBaris = (i) => {
+      const lama = kotak.querySelector('.ed-baris[data-i="' + i + '"]');
+      if (!lama || !kerja[i]){ segarkan(); return; }
+      const node = document.createElement("div");
+      node.innerHTML = htmlBarisEditor(kerja[i], i, info);
+      lama.replaceWith(node.firstElementChild);
+    };
     const dataHadirinCache = (() => {
       const m = new Map();
       try { dataHadirin().forEach((it) => m.set(normNama(it.o.n), it)); } catch (e) {}
@@ -3355,9 +3491,7 @@ function bukaBagiPekan(){
         const i = Number(gantiG.closest(".ed-baris").dataset.i);
         const urut = ["", "L", "P"];
         kerja[i].g = urut[(urut.indexOf(kerja[i].g || "") + 1) % 3];
-        const pos = kotak.scrollTop;
-        segarkan();
-        kotak.scrollTop = pos;
+        segarkanBaris(i);
         return;
       }
       const gantiK = ev.target.closest(".ed-k");
@@ -3365,18 +3499,15 @@ function bukaBagiPekan(){
         const i = Number(gantiK.closest(".ed-baris").dataset.i);
         const siklus = ["", "P", "HP"];
         kerja[i].k = siklus[(siklus.indexOf(kerja[i].k || "") + 1) % 3];
-        const pos = kotak.scrollTop;
-        segarkan();
-        kotak.scrollTop = pos;
+        segarkanBaris(i);
+        if (ringkas) isiRingkas();
         return;
       }
       const gantiR = ev.target.closest(".ed-r");
       if (gantiR){
         const i = Number(gantiR.closest(".ed-baris").dataset.i);
         kerja[i].r = kerja[i].r === 0 ? 1 : 0;
-        const pos = kotak.scrollTop;
-        segarkan();
-        kotak.scrollTop = pos;
+        segarkanBaris(i);
         return;
       }
       const hapus = ev.target.closest(".ed-hapus");
@@ -5011,6 +5142,7 @@ return { doReset: doReset, confirmReset: confirmReset, cancelReset: cancelReset,
       var d = doc.data() || {};
       if (Array.isArray(d.arr) && d.arr.length){
         try { localStorage.setItem('jhtp-daftar-siswa', JSON.stringify(d.arr)); } catch(e){}
+        try { lupakanCache(); } catch(e){}
         window.__daftarAwan = 'ada';
         gambarUlang();
         if (typeof selesai === 'function') selesai();
@@ -5038,6 +5170,7 @@ return { doReset: doReset, confirmReset: confirmReset, cancelReset: cancelReset,
     try {
       if (localStorage.getItem('jhtp-daftar-siswa') === JSON.stringify(d.arr)) return;
       localStorage.setItem('jhtp-daftar-siswa', JSON.stringify(d.arr));
+      try { lupakanCache(); } catch(e){}
     } catch(e){ return; }
     gambarUlang();
   }, function(err){ console.warn('[jhtp] daftar offline', err); });

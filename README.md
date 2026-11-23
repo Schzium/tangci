@@ -117,6 +117,16 @@ lain ikut diperbarui.
   tapi teksnya tidak bisa diblok atau dicari. Kalau peramban menolak cara ini,
   aplikasi otomatis kembali memakai dialog cetak biasa (Ctrl+P).
 
+### Catatan kinerja
+
+Daftar penyiar, hasil pencarian nama, dan hitungan tugas sekarang disimpan di
+memori (cache) dan hanya dihitung ulang kalau daftar penyiar atau pilihan nama di
+jadwal berubah. Dulu setiap pencarian nama membaca ulang data dan menyortir 76 nama,
+sehingga satu kali membuka **Penyiar** memicu ±470 pembacaan dan terasa tersendat di
+HP. Sesudah diperbaiki: buka tabel penyiar **13 ms** (dari 57 ms), dan menekan tombol
+**L/P**, **kategori**, atau **rotasi** hanya menggambar ulang satu baris —
+**1 ms** per ketukan (dari 21 ms untuk seluruh 76 baris).
+
 ## 4. Tombol di kepala aplikasi
 
 Semua tombol kerja hanya muncul **setelah Log in** (PIN). Sebelumnya yang tampak
@@ -139,7 +149,8 @@ tugasnya — judul kecil di atas daftar menyebut aturannya, jadi tidak perlu men
 
 | Yang dipilih | Isi daftar |
 |---|---|
-| **Ketua**, **Doa** | Penatua (P) & Hamba Pelayanan (HP) saja |
+| **Ketua** | Penatua (P) & Hamba Pelayanan (HP) saja |
+| **Doa** | laki-laki **atau** Penatua/HP |
 | **1.** Pelajaran pertama, **2.** Permata Rohani | Penatua & HP saja |
 | **3.** Pembacaan Alkitab (Siswa) | laki-laki (L) saja |
 | **4–5.** Memulai Percakapan, Kunjungan Kembali, Menjadikan Murid | semua nama |
@@ -148,7 +159,36 @@ tugasnya — judul kecil di atas daftar menyebut aturannya, jadi tidak perlu men
 
 Nama yang sedang terpasang tetap ditampilkan walau di luar aturan, supaya bisa diganti
 (dan kelihatan kalau ada yang perlu diperbaiki). Tombol **Bagi tugas** memakai aturan
-yang sama: Pembacaan Alkitab dan Khotbah hanya diisi saudara (L). Yang belum log in hanya bisa membaca:
+yang sama: Pembacaan Alkitab dan Khotbah hanya diisi saudara (L).
+
+**Inisial dipakai di kolom tugas, nama dipakai di kolom siswa/asisten.**
+Kolom **Ketua**, **Doa**, **Ruang Utama**, **Pemandu/Pembaca** Pelajaran Alkitab
+Sidang, **Pembahasan**, dan **Bagian Penutup** ditulis dengan inisial — **FN**,
+**DL**, **RI** — persis seperti lembar aslinya; kolom **Siswa/Asisten** ditulis
+dengan nama — **Adriel**, **Lilis / Iim**, **Bile / Rita**.
+
+**Saudari tanpa inisial.** Perempuan tidak berinisial: kalau seorang saudari
+bertugas di kolom Ketua/Doa/Pemandu dan seterusnya, yang ditulis namanya —
+mis. **Doa: Rita** — dan kolom **Inisial** di Daftar Penyiar untuk saudari
+dibiarkan kosong (tidak bisa diisi). Inisial saudara tetap unik: dulu *Arindra N*
+dan *Anchilla* sama-sama **AN** sehingga "AN" jadi tidak jelas siapa; sekarang
+**AN** hanya milik *Arindra N*, dan inisial Anchilla tidak ditampilkan.
+
+**Isi kolom nama selalu nama, bukan inisial.** Ketua, Doa, siswa/asisten, Pemandu/Pembaca
+Pelajaran Alkitab Sidang, Pembahasan, sampai Bagian Penutup ditulis seperti
+**"Arindra N"** — inisial (**AN**) hanya dipakai sebagai kunci pencarian, tidak lagi
+muncul di lembar jadwal. Supaya tidak ada dua orang berinisial sama (dulu *Arindra N*
+dan *Anchilla* sama-sama **AN**, sehingga "AN" jadi tidak jelas siapa), inisial
+dibuat unik: yang lebih dulu berhak (Penatua/HP didahulukan) memakai inisialnya,
+yang lain diberi bentuk lain — mis. **Anchilla → ANC**. Singkatan dari lembar WOL yang
+belum ada di daftar penyiar (mis. **HR**) tetap tampil apa adanya dan ikut muncul
+sebagai baris kuning di **Penyiar** supaya bisa dicocokkan.
+
+**Urutan "Bagi tugas":** yang **belum pernah** dapat tugas didahulukan, lalu yang
+terakhir bertugas **8 pekan** lalu, lalu 7, 6, … sampai 1 pekan lalu — jadi orang yang
+paling lama tidak dapat tugas selalu paling atas dalam daftar giliran. Yang sudah
+terjadwal di pekan mendatang otomatis paling belakang. Sesudah jeda, jumlah tugas
+yang sudah dipegang jadi penentu berikutnya. Yang belum log in hanya bisa membaca:
 nama tidak bisa diklik, tanda panah kecil di sebelah nama tidak ditampilkan, dan
 pasangan siswa/asisten ditulis mengalir seperti biasa — **"Calvin / Febri"** — bukan
 dua kolom yang saling berjauhan — dan kursi yang belum diisi tidak diberi tanda "—". Lembar PDF (tombol **PDF**) memakai gaya mengalir
