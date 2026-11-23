@@ -124,7 +124,10 @@ hanya **Log in**. Sesudah masuk: **PDF**, **Sync**, **Penyiar**, **Keluar**, plu
 
 Hanya admin yang bisa mengubah isi jadwal (klik nama siswa/asisten, **Ketua**, dan
 **Doa** untuk memilih dari daftar penyiar). Yang belum log in hanya bisa membaca:
-nama tidak bisa diklik dan tanda panah kecil di sebelah nama tidak ditampilkan.
+nama tidak bisa diklik, tanda panah kecil di sebelah nama tidak ditampilkan, dan
+pasangan siswa/asisten ditulis mengalir seperti biasa — **"Calvin / Febri"** — bukan
+dua kolom yang saling berjauhan — dan kursi yang belum diisi tidak diberi tanda "—". Lembar PDF (tombol **PDF**) memakai gaya mengalir
+yang sama, sedangkan di layar admin tetap berkolom rapi supaya kedua nama mudah diklik.
 
 ## 5. Tombol ↻ Sync (jadwal baru tanpa repot)
 

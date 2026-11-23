@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="versi" content="2026-11-23.5">
+<meta name="versi" content="2026-11-23.7">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0d5c7a">
 <meta name="mobile-web-app-capable" content="yes">
@@ -442,6 +442,9 @@
   body:not(.admin) .pilih-nama{ cursor: default; }
   body:not(.admin) .pilih-nama:hover{ background: none; border-bottom-color: transparent; }
   body:not(.admin) .pilih-nama .pn-caret{ display: none; }
+  /* kursi yang belum diisi tidak perlu tanda "—" saat dilihat penyiar */
+  body:not(.admin) .pn-teks.pn-kosong,
+  body:not(.admin) .pn-pisah.pisah-kosong{ display: none; }
   .pilih-nama .pn-caret{
     margin-left: 2pt;
     font-size: 7pt;
@@ -462,6 +465,22 @@
      dibuat berdekatan (bukan melebar seperti Siswa/Asisten) */
   .nilai.dua.rapat{ grid-template-columns: max-content 9pt 1fr; }
   .nilai.dua .pilih-nama{ display: inline-block; white-space: nowrap; }
+  /* mode lihat saja (penyiar, bukan admin): nama mengalir wajar —
+     "Calvin / Febri" — tidak lagi berjauhan seperti dua kolom */
+  body:not(.admin) .nilai.dua,
+  body:not(.admin) .nilai.dua.rapat,
+  .halaman.wajar .nilai.dua,
+  .halaman.wajar .nilai.dua.rapat{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 0;
+  }
+  body:not(.admin) .nilai.dua .pn-pisah,
+  .halaman.wajar .nilai.dua .pn-pisah{
+    text-align: left;
+    margin: 0 1.6pt;
+  }
   .pilih-nama{ white-space: nowrap; }
   .pn-pisah{ color: #8a9095; margin: 0 1.5pt; }
   .pn-teks.pn-kosong{ color: #b3b8bc; }
@@ -825,6 +844,8 @@
     .pilih-nama .pn-caret{ display: none !important; }
     .pn-pop, .modal-tirai{ display: none !important; }
     .pn-teks.pn-kosong, .pn-pisah.pisah-kosong{ display: none !important; }
+    /* pada cetakan/PDF jarak di kiri-kanan garis miring diberi sedikit ruang */
+    .halaman.wajar .nilai.dua .pn-pisah{ margin: 0 2.6pt !important; }
   }
 
 </style>
@@ -1904,13 +1925,18 @@ function pnIsi(w, no, slot, isi, semi, label){
 function kolomNama(w, no, awal, duaSlot, peran, semi){
   const pisah = String(awal || "").split("/").map((t) => t.trim());
   const jml = duaSlot ? 2 : 1;
-  let out = "";
+  const isiSlot = [];
   for (let i = 0; i < jml; i++){
     const simpan = namaTersimpan(w, no, "s" + i);
-    const isi = (simpan != null) ? simpan : (pisah[i] || "");
+    isiSlot.push((simpan != null) ? simpan : (pisah[i] || ""));
+  }
+  const duaIsi = jml > 1 && isiSlot[0] && isiSlot[1];   /* kedua nama terisi */
+  let out = "";
+  for (let i = 0; i < jml; i++){
+    const isi = isiSlot[i];
     const label = duaSlot ? (peran && peran[i] ? peran[i] : (i ? "Asisten" : "Siswa")) : "Nama";
     const lihat = tampilNama(isi, !!semi);
-    if (i) out += `<span class="pn-pisah${isi ? "" : " pisah-kosong"}">/</span>`;
+    if (i) out += `<span class="pn-pisah${duaIsi ? "" : " pisah-kosong"}">/</span>`;
     out += `<span class="pilih-nama" role="button" tabindex="0" aria-expanded="false"`
       + ` data-w="${esc(w)}" data-no="${esc(no)}" data-slot="s${i}" data-nilai="${esc(isi)}"`
       + ` data-semi="${semi ? "1" : "0"}"`
@@ -2341,6 +2367,7 @@ async function tangkapLembar(el){
   klon.style.zoom = "1";
   klon.style.overflow = "hidden";
   klon.style.background = "#fff";
+  klon.classList.add("wajar");     /* nama siswa/asisten mengalir wajar di lembar PDF */
 
   /* gambar (bila ada) jadi data URL supaya ikut terekam */
   const daftarGambar = Array.from(klon.querySelectorAll("img"));
