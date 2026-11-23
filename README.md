@@ -70,6 +70,9 @@ Sudah ada manifest + service worker, jadi terbuka layar penuh tanpa address bar.
 - Setiap HP menyimpan salinan di `localStorage`; kalau internet mati aplikasi tetap jalan.
 - Tombol **⇩ PDF** hanya mencetak lembar jadwal pekan yang sedang tampil (1 lembar,
   612×792 pt). Menu, tombol, dan tampilan Hitung Hadirin tidak ikut tercetak.
+  Warna pita bagian (abu/emas/marun), garis kepala, dan titik bullet dipaksa ikut
+  tercetak lewat `print-color-adjust: exact`, jadi tidak perlu mencentang
+  "Grafik latar belakang" di dialog cetak.
 
 ## 4. Tombol di kepala aplikasi
 

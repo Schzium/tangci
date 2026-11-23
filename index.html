@@ -799,6 +799,11 @@
 
   @media print{
     body{ background:#fff; }
+    /* paksa semua warna ikut tercetak: garis kepala, pita bagian, titik, dll. */
+    .halaman, .halaman *{
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
     .pilih-pekan{ display: none !important; }
     .halaman{
       margin: 0;
@@ -2673,7 +2678,6 @@ function bagiTugas(){
       + '<div class="ed-daftar"></div></div>'
       + '<div class="modal-kaki">'
       + '<button type="button" class="ed-reset" id="gantiPin" title="Ganti PIN mode admin">Ganti PIN</button>'
-      + '<button type="button" class="ed-reset ed-kembalikan" title="Kembalikan daftar nama ke bawaan">Daftar awal</button>'
       + '<span class="kaki-kanan">'
       + '<button type="button" class="ed-batal">Batal</button>'
       + '<button type="button" class="ed-simpan">Simpan</button></span></div></div>';
@@ -2793,11 +2797,6 @@ function bagiTugas(){
         segarkan();
         kotak.scrollTop = kotak.scrollHeight;
         inN.focus();
-        return;
-      }
-      if (ev.target.closest(".ed-kembalikan")){
-        kerja = DAFTAR_SISWA_BAWAAN.map((o) => ({ n: o.n, i: o.i, g: o.g || "", r: o.r === 0 ? 0 : 1, k: o.k || "", _asli: "", _asliIni: "" }));
-        segarkan();
         return;
       }
       if (ev.target.closest(".ed-simpan")){
