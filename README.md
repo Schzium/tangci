@@ -74,8 +74,9 @@ Log in → tombol **Penyiar** di kepala (atau menu ☰ → **Daftar Penyiar**). 
 - tombol **L/P** (L → P → kosong), **Kat** (**P** = Penatua, **HP** = Hamba
   Pelayanan, kosong = penyiar biasa), **Rot** (ikut rotasi siswa/asisten atau tidak),
 - **×** untuk menghapus baris,
-- di bawah tiap baris: jumlah tugas + status (`siap`, `jeda N pekan`, `jadwal 23 Des`,
-  `belum pernah dapat tugas`),
+- di bawah tiap baris: **tugasnya apa dan pekan mana**, mis.
+  `2 tugas: Asisten 4 Nov · Siswa 9 Des`, lalu statusnya (`siap ditugaskan`,
+  `jeda N pekan`, `sudah ada tugas mendatang`, `belum pernah dapat tugas`),
 - kotak **Tambah** untuk nama baru, dan baris **Ganti PIN · Batal · Simpan** yang
   menempel di bawah layar.
 
@@ -94,7 +95,7 @@ terbuka, supaya isian yang belum disimpan tidak hilang.
 Cara kerjanya: ada penanda di kepala berkas
 
 ```
-<meta name="versi" content="2026-11-23.5">
+<meta name="versi" content="2026-11-23.8">
 ```
 
 **Setiap kali `index.html` diubah lalu diunggah, ubah juga angka `content` itu**
@@ -121,6 +122,16 @@ lain ikut diperbarui.
 Semua tombol kerja hanya muncul **setelah Log in** (PIN). Sebelumnya yang tampak
 hanya **Log in**. Sesudah masuk: **PDF**, **Sync**, **Penyiar**, **Keluar**, plus
 **Bagi tugas** di baris pekan.
+
+Saat sedang membuka halaman **Daftar Penyiar**, deretan tombol itu berganti jadi
+satu tombol **← Jadwal** (bukan **Keluar**), jadi kembali ke lembar jadwal tidak
+membuat Anda harus log in ulang. Kalau ada perubahan yang belum disimpan, aplikasi
+menanyakan dulu: **Simpan dulu** atau **Buang perubahan**.
+
+Tombol **Bagi tugas** tidak lagi mengisi semua pekan sekaligus. Setelah ditekan
+muncul daftar pekan beserta jumlah slot yang masih kosong (pekan yang perhimpunannya
+ditiadakan ditandai *tidak ada perhimpunan* dan tidak bisa dipilih); pilih satu
+pekan, dan hanya pekan itu yang diisi. Pekan lain tidak disentuh.
 
 Hanya admin yang bisa mengubah isi jadwal (klik nama siswa/asisten, **Ketua**, dan
 **Doa** untuk memilih dari daftar penyiar). Yang belum log in hanya bisa membaca:

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="versi" content="2026-11-23.7">
+<meta name="versi" content="2026-11-23.8">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0d5c7a">
 <meta name="mobile-web-app-capable" content="yes">
@@ -151,6 +151,10 @@
   }
   .pilih-pekan button.btn-sync:hover{ background: #fdf2f5; }
   .pilih-pekan button.btn-sync.sibuk{ opacity: .6; cursor: progress; }
+  .pilih-pekan button.btn-balik{
+    background: #fff; border-color: #b9c0c5; color: #3c4348; font-weight: 700;
+  }
+  .pilih-pekan button.btn-balik:hover{ background: #f2f5f7; }
   .pilih-pekan a.aktif, .pilih-pekan button.aktif{
     background: var(--abu); border-color: var(--abu); color:#fff;
   }
@@ -706,6 +710,24 @@
     grid-template-columns: 1fr 36pt 19pt 24pt 18pt 13pt;
     gap: 4pt; align-items: center;
   }
+  .bagi-kotak{ max-width: 380pt; }
+  .bagi-petunjuk{ margin: 0 0 8pt; font-size: 9.5pt; color: #575A5D; }
+  .bagi-daftar{ display: flex; flex-direction: column; gap: 5pt; max-height: 58vh; overflow: auto; }
+  .bagi-item{
+    display: flex; align-items: baseline; gap: 7pt; width: 100%; text-align: left;
+    padding: 7pt 10pt; border: .75pt solid #d7dde1; border-radius: 6pt;
+    background: #fff; cursor: pointer; font-family: inherit; font-size: 10pt; color: #1a1a1a;
+  }
+  .bagi-item:hover{ background: #f2f6f8; border-color: #b9c6cd; }
+  .bagi-item.aktif{ border-color: #7E0024; box-shadow: inset 2pt 0 0 #7E0024; }
+  .bagi-item .bi-label{ font-weight: 700; }
+  .bagi-item .bi-kitab{ color: #575A5D; font-size: 9pt; }
+  .bagi-item .bi-info{ margin-left: auto; font-size: 9pt; color: #7E0024; font-weight: 700; }
+  .bagi-item .bi-info.penuh{ color: #8a9095; font-weight: 400; }
+  .bagi-item.tutup{ background: #f6f7f8; color: #8a9095; cursor: default; border-style: dashed; }
+  .bagi-item.tutup .bi-label{ font-weight: 400; }
+  .info-tugas{ font-weight: 700; }
+  .info-rinci{ color: #3c4348; }
   .ed-info{
     display: flex; flex-wrap: wrap; gap: 8pt;
     font-size: 7.5pt; color: #7b8287;
@@ -2163,8 +2185,12 @@ function perbaruiTombol(){
   const wadah = document.getElementById("tombolKanan");
   const atas = document.getElementById("barAksi");
   const admin = modeAdmin();
-  /* kepala: PDF (semua orang), Sync, dan Admin/Keluar */
-  if (atas){
+  const diPenyiar = (window.__tampilan === "penyiar");
+  /* kepala: PDF (semua orang), Sync, dan Admin/Keluar — atau tombol kembali
+     kalau sedang membuka halaman Daftar Penyiar */
+  if (atas && diPenyiar){
+    atas.innerHTML = `<button type="button" class="btn-balik" id="btnBalikJadwal" title="Kembali ke lembar jadwal">&#8592; Jadwal</button>`;
+  } else if (atas){
     atas.innerHTML =
       (admin
         ? `<button type="button" class="btn-pdf" id="btnPdf" title="Simpan lembar jadwal pekan ini sebagai PDF (langsung terunduh)">PDF</button>`
@@ -2184,7 +2210,7 @@ function perbaruiTombol(){
   /* baris pekan: hanya alat admin */
   if (wadah){
     wadah.innerHTML = admin
-      ? `<button type="button" class="btn-daftar" id="btnTugas" title="Isi otomatis slot siswa/asisten yang masih kosong">Bagi tugas</button>`
+      ? `<button type="button" class="btn-daftar" id="btnTugas" title="Isi otomatis slot siswa/asisten pada satu pekan pilihan">Bagi tugas</button>`
       : "";
   }
 }
@@ -2504,6 +2530,12 @@ function susun(){
     if (kepala) kepala.addEventListener("click", (ev) => {
       const b = ev.target.closest("button");
       if (!b) return;
+      if (b.id === "btnBalikJadwal"){
+        ev.preventDefault();
+        if (typeof window.kembaliKeJadwal === "function") window.kembaliKeJadwal();
+        else if (typeof window.pilihTampilan === "function") window.pilihTampilan("jadwal", true);
+        return;
+      }
       if (b.id === "btnPdf"){ ev.preventDefault(); cetakPdf(); return; }
       if (b.id === "btnTabel"){
         ev.preventDefault();
@@ -2530,7 +2562,7 @@ const JEDA_PEKAN = 8;   // setelah dapat tugas, tunggu 8 pekan (dihitung per pek
 
 function dataHadirin(){
   const peta = new Map();
-  daftarSiswa().forEach((o) => peta.set(normNama(o.n), { o: o, tugas: 0, terakhir: null, pekan: [] }));
+  daftarSiswa().forEach((o) => peta.set(normNama(o.n), { o: o, tugas: 0, terakhir: null, pekan: [], rincian: [] }));
   JADWAL.forEach((d, wi) => {
     d.baris.forEach((b) => {
       if (!b.nomor || !b.siswa || !/siswa/i.test(b.siswa)) return;
@@ -2544,13 +2576,20 @@ function dataHadirin(){
         if (!peta.has(kunciNama)){
           peta.set(kunciNama, {
             o: org || { n: String(v).trim(), i: "", g: "", r: 1, liar: true },
-            tugas: 0, terakhir: null, pekan: []
+            tugas: 0, terakhir: null, pekan: [], rincian: []
           });
         }
         const k = kunciNama;
         const it = peta.get(k);
         it.tugas += 1;
         it.pekan.push(wi);
+        const peranSlot = /pelajaran alkitab sidang/i.test(String(b.teks || ""))
+          ? ["Pemandu", "Pembaca"] : ["Siswa", "Asisten"];
+        it.rincian.push({
+          wi: wi,
+          peran: peranSlot[i] || "Siswa",
+          label: JADWAL[wi] ? JADWAL[wi].label : "?"
+        });
         if (it.terakhir === null || wi > it.terakhir) it.terakhir = wi;
       }
     });
@@ -2617,9 +2656,10 @@ function bukaPin(){
 }
 
 /* ---------- bagi tugas siswa/asisten untuk seluruh periode ---------- */
-function bagiTugas(){
+function bagiTugas(wiPilih){
   const orang = daftarSiswa().filter((o) => o.r !== 0 && o.k !== "P" && o.k !== "HP");
   if (!orang.length){ alert("Daftar nama masih kosong."); return; }
+  const satu = (typeof wiPilih === "number" && JADWAL[wiPilih]) ? wiPilih : null;
 
   const kunci = (o) => normNama(o.n);
   const beban = new Map();        // jumlah giliran siswa/asisten (termasuk yang sudah ada)
@@ -2661,9 +2701,10 @@ function bagiTugas(){
     if (d.ketua) tandai(wi, d.ketua, false);
   });
 
-  // 2) isi slot yang masih kosong
+  // 2) isi slot yang masih kosong (hanya pekan yang dipilih, kalau ada)
   let terisi = 0, gagal = 0, dipaksa = 0;
   JADWAL.forEach((d, wi) => {
+    if (satu != null && wi !== satu) return;
     if (/tidak ada perhimpunan|kebaktian|pertemuan wilayah|cancel|dibatalkan/i.test(d.catatan || "")) return;
     d.baris.forEach((b) => {
       if (!b.nomor || !b.siswa || !/siswa/i.test(b.siswa)) return;
@@ -2720,8 +2761,65 @@ function bagiTugas(){
   const catatanJeda = dipaksa
     ? "\n" + dipaksa + " slot terpaksa diisi sebelum jeda " + JEDA_PEKAN + " pekan selesai (kandidat sudah habis)."
     : "";
-  alert("Selesai.\n" + terisi + " slot siswa/asisten terisi, " + gagal + " slot belum dapat pasangan."
+  const judulPekan = satu != null ? "Pekan " + JADWAL[satu].label + ".\n" : "";
+  alert("Selesai.\n" + judulPekan + terisi + " slot siswa/asisten terisi, " + gagal + " slot belum dapat pasangan."
     + catatanJeda + catatan);
+}
+
+/* berapa slot siswa/asisten yang masih kosong di satu pekan */
+function slotKosongPekan(wi){
+  const d = JADWAL[wi];
+  if (!d) return { kosong: 0, total: 0 };
+  let kosong = 0, total = 0;
+  d.baris.forEach((b) => {
+    if (!b.nomor || !b.siswa || !/siswa/i.test(b.siswa)) return;
+    const jml = String(b.nilai || "").indexOf("/") >= 0 ? 2 : 1;
+    for (let i = 0; i < jml; i++){
+      total++;
+      const simpan = namaTersimpan("w" + (wi + 1), String(parseInt(b.nomor, 10)), "s" + i);
+      const v = String(simpan != null ? simpan : (String(b.nilai || "").split("/")[i] || "")).trim();
+      if (!v || v === "\u2014" || /^menyusul$/i.test(v)) kosong++;
+    }
+  });
+  return { kosong: kosong, total: total };
+}
+
+/* "Bagi tugas" → pilih dulu pekan mana yang mau diisi */
+function bukaBagiPekan(){
+  const lama = document.querySelector(".modal-tirai.bagi-tirai");
+  if (lama) lama.remove();
+  const tirai = document.createElement("div");
+  tirai.className = "modal-tirai bagi-tirai";
+  const daftar = JADWAL.map((d, wi) => {
+    const sk = slotKosongPekan(wi);
+    const habis = sk.kosong === 0;
+    /* pekan yang perhimpunannya ditiadakan tidak bisa dibagi tugasnya */
+    if (/tidak ada perhimpunan|kebaktian|pertemuan wilayah|cancel|dibatalkan/i.test(d.catatan || "")){
+      return `<div class="bagi-item tutup">`
+        + `<span class="bi-label">${esc(d.label)}</span>`
+        + `<span class="bi-kitab">${esc(d.kitab || "")}</span>`
+        + `<span class="bi-info penuh">tidak ada perhimpunan</span></div>`;
+    }
+    return `<button type="button" class="bagi-item${wi === pekanAktif ? " aktif" : ""}" data-i="${wi}">`
+      + `<span class="bi-label">${esc(d.label)}</span>`
+      + `<span class="bi-kitab">${esc(d.kitab || "")}</span>`
+      + `<span class="bi-info${habis ? " penuh" : ""}">`
+      + (habis ? "sudah lengkap" : sk.kosong + " slot kosong") + `</span></button>`;
+  }).join("");
+  tirai.innerHTML = '<div class="modal-kotak bagi-kotak" role="dialog" aria-modal="true" aria-label="Bagi tugas">'
+    + '<div class="modal-kepala"><span>Bagi tugas &mdash; pilih pekan</span>'
+    + '<button type="button" class="modal-x" title="Tutup">&times;</button></div>'
+    + '<div class="modal-isi"><p class="bagi-petunjuk">Pilih satu pekan. Hanya pekan yang dipilih yang diisi; '
+    + 'pekan lain tidak disentuh.</p><div class="bagi-daftar">' + daftar + '</div></div>'
+    + '<div class="modal-kaki"><span class="kaki-kanan">'
+    + '<button type="button" class="ed-batal">Batal</button></span></div></div>';
+  document.body.appendChild(tirai);
+  tirai.addEventListener("click", (ev) => {
+    const it = ev.target.closest(".bagi-item");
+    if (it){ tirai.remove(); bagiTugas(Number(it.dataset.i)); return; }
+    if (ev.target.closest(".ed-batal") || ev.target.closest(".modal-x") || ev.target === tirai) tirai.remove();
+  });
+  tirai.addEventListener("keydown", (ev) => { if (ev.key === "Escape") tirai.remove(); });
 }
 
 /* ---------- pilihan nama: daftar drop-down + kelola daftar ---------- */
@@ -3013,24 +3111,33 @@ function bagiTugas(){
       const it = peta.get(normNama(o.n));
       if (!it) return '<span class="info-mati">belum masuk hitungan tugas</span>';
       const tugas = it.tugas || 0;
+      /* rincian: peran + pekan, supaya jelas tugasnya yang mana saja */
+      const rinci = (it.rincian || []).slice().sort((a, b) => a.wi - b.wi)
+        .map((r) => esc(r.peran + " " + r.label));
+      let tugasTeks = '<span class="info-tugas">' + tugas + ' tugas</span>';
+      if (tugas && rinci.length){
+        const tampil = rinci.slice(0, 5);
+        tugasTeks = '<span class="info-tugas">' + tugas + ' tugas:</span> '
+          + '<span class="info-rinci">' + tampil.join(" &middot; ")
+          + (rinci.length > 5 ? " &middot; +" + (rinci.length - 5) + " lagi" : "") + '</span>';
+      }
       let status;
       if (it.o.r === 0){
         status = '<span class="info-mati">tidak ikut rotasi</span>';
       } else if (it.o.k === "P" || it.o.k === "HP"){
         const namaKat = it.o.k === "P" ? "Penatua" : "Hamba Pelayanan";
-      status = '<span class="info-kat">khusus ' + esc(namaKat) + ' &middot; tidak untuk siswa/asisten</span>';
+        status = '<span class="info-kat">khusus ' + esc(namaKat) + ' &middot; tidak untuk siswa/asisten</span>';
       } else if (it.terakhir === null){
         status = '<span class="info-siap">belum pernah dapat tugas</span>';
       } else if (it.terakhir > pekanAktif){
-        status = '<span>terjadwal di pekan ' + esc(labelPekan(it.terakhir)) + '</span>';
+        status = '<span>sudah ada tugas mendatang</span>';
       } else {
         const sisa = JEDA_PEKAN - (pekanAktif - it.terakhir);
         status = (sisa > 0
-          ? '<span>sisa ' + sisa + ' pekan lagi</span>'
-          : '<span class="info-siap">siap ditugaskan</span>')
-          + '<span>' + esc(labelPekan(it.terakhir)) + '</span>';
+          ? '<span>jeda ' + sisa + ' pekan</span>'
+          : '<span class="info-siap">siap ditugaskan</span>');
       }
-      return '<span>' + tugas + ' tugas</span>' + status;
+      return tugasTeks + status;
     };
   }
 
@@ -3103,6 +3210,11 @@ function bagiTugas(){
       + '<button type="button" class="ed-batal">Batal</button>'
       + '<button type="button" class="ed-simpan">Simpan</button></span></div></div>';
     (tempat || document.body).appendChild(tirai);
+    /* tandai kalau ada yang diubah tapi belum disimpan */
+    tirai.__kotor = false;
+    const tandaiKotor = () => { tirai.__kotor = true; };
+    tirai.addEventListener("input", tandaiKotor);
+    tirai.addEventListener("change", tandaiKotor);
     const kotak = tirai.querySelector(".ed-daftar");
     const legenda = tirai.querySelector(".ed-legenda");
     let pesan = "";
@@ -3203,6 +3315,8 @@ function bagiTugas(){
         return;
       }
       const hapus = ev.target.closest(".ed-hapus");
+      if (ev.target.closest(".ed-k") || ev.target.closest(".ed-g") || ev.target.closest(".ed-r")
+          || ev.target.closest(".ed-hapus") || ev.target.closest(".ed-tambah-btn")) tandaiKotor();
       if (hapus){
         kerja.splice(Number(hapus.closest(".ed-baris").dataset.i), 1);
         segarkan();
@@ -3242,6 +3356,7 @@ function bagiTugas(){
         simpanDaftarSiswa(bersih);
         const jejak = pasangan.length ? gantiNamaMenyeluruh(pasangan) : { jadwal: 0, slot: 0, nama: [] };
         const tmp = tirai._tempat;
+        tirai.__kotor = false;
         tirai.remove();
         if (tmp) setTimeout(() => bukaEditor(tmp), 60);
         if (typeof tampilkanPekan === "function" && typeof pekanAktif === "number") tampilkanPekan(pekanAktif, false);
@@ -3278,6 +3393,27 @@ function bagiTugas(){
     setTimeout(() => { const i = tirai.querySelector(".baru-nama"); if (i) i.focus(); }, 0);
   }
 
+  /* tombol "← Jadwal" di kepala: jangan sampai isian yang belum disimpan hilang */
+  window.kembaliKeJadwal = async function(){
+    const halaman = document.querySelector(".ed-halaman");
+    if (halaman && halaman.__kotor){
+      const simpanDulu = await pesanKotak({
+        judul: "Belum disimpan",
+        isi: "Ada perubahan di daftar penyiar yang belum disimpan.",
+        ok: "Simpan dulu",
+        batal: "Buang perubahan"
+      });
+      if (simpanDulu){
+        const tb = halaman.querySelector(".ed-simpan");
+        if (tb){ tb.click(); return; }     /* sesudah simpan tetap di halaman ini */
+      }
+    }
+    const tmp = halaman ? halaman._tempat : null;
+    if (halaman) halaman.remove();
+    if (typeof window.pilihTampilan === "function") window.pilihTampilan("jadwal", true);
+    if (tmp && tmp.innerHTML === "") { /* wadah sudah dibersihkan oleh pilihTampilan */ }
+  };
+
   window.bukaDaftarNama = bukaEditor;
 })();
 
@@ -3299,7 +3435,7 @@ document.addEventListener("click", (ev) => {
   }
   if (ev.target.closest && ev.target.closest("#btnTugas")){
     ev.preventDefault();
-    if (typeof bagiTugas === "function") bagiTugas();
+    if (typeof bukaBagiPekan === "function") bukaBagiPekan();
     return;
   }
 });
@@ -4604,6 +4740,8 @@ return { doReset: doReset, confirmReset: confirmReset, cancelReset: cancelReset,
     });
     judul.textContent = (v === 'hadirin') ? 'Hitung Hadirin'
       : (v === 'penyiar') ? 'Daftar Penyiar' : 'Jadwal Tengah Pekan';
+    window.__tampilan = v;
+    if (typeof perbaruiTombol === 'function') perbaruiTombol();
     var tmp = document.getElementById('pyTempat');
     if (v === 'penyiar'){
       if (typeof window.bukaDaftarNama === 'function' && tmp) window.bukaDaftarNama(tmp);
