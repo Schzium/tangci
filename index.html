@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="versi" content="2026-11-23.2">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0d5c7a">
 <meta name="mobile-web-app-capable" content="yes">
@@ -450,14 +451,15 @@
   /* dua kolom nama: siswa | / | asisten (posisi rata antarbaris) */
   .nilai.dua{
     display: grid;
-    grid-template-columns: 54pt 8pt 1fr;
+    grid-template-columns: 54pt 8pt max-content;
     align-items: baseline;
   }
   .nilai.dua .pn-pisah{ text-align: center; margin: 0; }
   /* Pemandu/Pembaca Pem. Alkitab Sidang: selalu inisial, jadi kedua kolom
      dibuat berdekatan (bukan melebar seperti Siswa/Asisten) */
   .nilai.dua.rapat{ grid-template-columns: max-content 9pt 1fr; }
-  .nilai.dua .pilih-nama{ display: inline-block; max-width: 100%; }
+  .nilai.dua .pilih-nama{ display: inline-block; white-space: nowrap; }
+  .pilih-nama{ white-space: nowrap; }
   .pn-pisah{ color: #8a9095; margin: 0 1.5pt; }
   .pn-teks.pn-kosong{ color: #b3b8bc; }
 
@@ -872,6 +874,57 @@
   }
   .pm-item:hover{ background:#f2f5f6; }
   .pm-item.aktif{ background:#e7f1f5; color:var(--biru); font-weight:700; }
+  .pm-item[hidden]{ display:none !important; }
+
+  /* ---------- tampilan 3: daftar penyiar (khusus admin) ---------- */
+  #vPenyiar{ padding: calc(var(--bar) + 12px) 12px 40px; }
+  #vPenyiar[hidden]{ display:none !important; }
+  .py-kepala{ max-width:1120px; margin:0 auto 8px; }
+  .py-atas{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .py-atas h1{ font-size:14pt; color:#26292b; font-weight:700; }
+  .py-sunting{
+    margin-left:auto; font:inherit; font-family:Calibri,"Segoe UI",Arial,sans-serif; font-size:9pt;
+    font-weight:700; padding:5px 11px; border:1px solid #d4d4d4; border-radius:5px;
+    background:#fff; color:#3a4145; cursor:pointer;
+  }
+  .py-sunting:hover{ background:#f2f5f6; }
+  .py-ringkas{ font-size:9.5pt; color:#575A5D; margin-top:2px; }
+  .py-legenda{ font-size:7.8pt; color:#8a9095; margin-top:5px; line-height:1.45; }
+  .py-legenda b{ color:#575A5D; }
+  .py-dua{ max-width:1120px; margin:10px auto 0; column-count:2; column-gap:26px; }
+  .py-grup{
+    break-after:avoid; page-break-after:avoid;
+    margin:12px 0 4px; padding-bottom:3px; border-bottom:1.5px solid #7E0024;
+    font-size:8.6pt; font-weight:800; letter-spacing:.05em; color:#7E0024; text-transform:uppercase;
+  }
+  .py-grup:first-child{ margin-top:0; }
+  .py-baris{
+    break-inside:avoid; page-break-inside:avoid;
+    display:grid; grid-template-columns:minmax(0,1fr) auto auto;
+    gap:8px; align-items:baseline;
+    padding:4.5px 2px; border-bottom:1px dotted #e2e7ea;
+    font-size:9pt; color:#26292b;
+  }
+  .py-nama{ font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .py-ini{ font-weight:700; font-size:7.4pt; color:#8a9095; margin-left:5px; }
+  .py-kat{
+    font-size:7pt; font-weight:800; text-align:center; min-width:20px;
+    padding:1px 5px; border-radius:4px; background:#f1f4f6; color:#8a9095;
+  }
+  .py-kat.kosong{ background:none; min-width:0; padding:0; }
+  .py-kat.p{ background:#fbe9ee; color:#7E0024; }
+  .py-kat.hp{ background:#fdf3df; color:#8a5a00; }
+  .py-meta{ font-size:7.8pt; color:#575A5D; white-space:nowrap; text-align:right; }
+  .py-meta.siap{ color:#1f6b45; font-weight:700; }
+  .py-meta.belum{ color:#8a5a12; font-weight:700; }
+  .py-meta.mati{ color:#a3a9ad; font-style:italic; }
+  .py-meta.kat{ color:#8a5a00; }
+  @media (max-width: 620px){
+    .py-dua{ column-count:2; column-gap:12px; }
+    .py-baris{ grid-template-columns:minmax(0,1fr) auto; gap:0 6px; padding:4px 1px; font-size:8pt; }
+    .py-meta{ grid-column:1 / -1; text-align:left; font-size:7pt; white-space:normal; }
+    .py-legenda{ font-size:7.2pt; }
+  }
   .pm-ikon{ width:15px; height:15px; flex:0 0 auto; }
   .pm-kaki{ margin-top:auto; font-size:7.5pt; color:#a3a9ad; padding:8px 10px; line-height:1.5; }
   /* tombol di kepala: PDF / Sync / Admin */
@@ -903,7 +956,7 @@
   body.tema-hadirin{ background:#0f1117; }
 
   @media print{
-    #barAtas, #panelMenu, #tirai, #vHadirin{ display:none !important; }
+    #barAtas, #panelMenu, #tirai, #vHadirin, #vPenyiar{ display:none !important; }
     #vJadwal, #vJadwal[hidden]{ padding-top:0 !important; display:block !important; }
     body.tema-hadirin{ background:#fff !important; }
   }
@@ -1051,6 +1104,9 @@ body.tema-hadirin{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sa
   <button class="pm-item aktif" type="button" data-view="jadwal">
     <svg class="pm-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><span>Jadwal Tengah Pekan</span>
   </button>
+  <button class="pm-item" type="button" data-view="penyiar" hidden>
+    <svg class="pm-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 11h16M4 16h10"/><circle cx="19" cy="17.5" r="2.5"/></svg><span>Daftar Penyiar</span>
+  </button>
   <button class="pm-item" type="button" data-view="hadirin">
     <svg class="pm-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="15" width="7" height="7" rx="1.5"/><rect x="14" y="15" width="7" height="7" rx="1.5"/></svg><span>Hitung Hadirin</span>
   </button>
@@ -1144,6 +1200,22 @@ body.tema-hadirin{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sa
     </div>
   </div>
 </div>
+</div>
+
+<!-- ================= TAMPILAN 3: DAFTAR PENYIAR (khusus admin) ================= -->
+<div id="vPenyiar" hidden>
+  <div class="py-kepala">
+    <div class="py-atas">
+      <h1>Daftar Penyiar</h1>
+      <button type="button" class="py-sunting" id="pySunting">&#9998; Sunting daftar</button>
+    </div>
+    <p class="py-ringkas" id="pyRingkas"></p>
+    <p class="py-legenda">Urut <b>P</b> (Perintis) &rarr; <b>HP</b> (Hamba Pelayanan) &rarr; <b>Penyiar</b>.
+      Status: <b>siap</b> = boleh ditugaskan sekarang &middot; <b>jeda N pekan</b> = sedang istirahat &middot;
+      tanggal = sudah terjadwal di pekan itu &middot; <b>belum pernah</b> = belum pernah dapat tugas.
+      &times; = jumlah tugas sampai pekan terakhir.</p>
+  </div>
+  <div class="py-dua" id="pyIsi"></div>
 </div>
 
 <script>
@@ -1558,6 +1630,9 @@ function simpanDaftarSiswa(arr){
 function namaSemi(org){
   const kata = org.n.replace(/\s+/g, " ").trim().split(" ");
   if (kata.length === 1) return kata[0];
+  /* nama dua kata yang keduanya pendek (mis. "Lan Ing", "Yu Li") dibiarkan utuh,
+     jangan dipotong jadi "Lan I" */
+  if (kata.length === 2 && kata[1].length <= 3) return kata.join(" ");
   return kata[0] + " " + kata[kata.length - 1][0].toUpperCase();
 }
 /* cari orang dari teks tersimpan (nama lengkap / semi / inisial) */
@@ -2016,6 +2091,13 @@ function perbaruiTombol(){
         ? `<button type="button" class="btn-keluar" id="btnKeluar" title="Keluar dari mode admin">Keluar</button>`
         : `<button type="button" id="btnAdmin" title="Masuk mode admin (PIN)">Admin</button>`);
   }
+  const menuPenyiar = document.querySelector('.pm-item[data-view="penyiar"]');
+  if (menuPenyiar){
+    menuPenyiar.hidden = !admin;
+    if (!admin && menuPenyiar.classList.contains("aktif") && typeof window.pilihTampilan === "function"){
+      window.pilihTampilan("jadwal", true);
+    }
+  }
   /* baris pekan: hanya alat admin */
   if (wadah){
     wadah.innerHTML = admin
@@ -2151,6 +2233,57 @@ function dataHadirin(){
   });
   return Array.from(peta.values());
 }
+
+/* ---------- tampilan 3: tabel semua penyiar (khusus admin) ----------
+   Urut: Perintis (P) → Hamba Pelayanan (HP) → Penyiar, lalu A–Z.
+   Dua kolom kiri-kanan supaya 70+ nama tidak memanjang ke bawah.
+   Tidak ikut tercetak: yang dicetak hanya lembar jadwal. */
+function renderPenyiar(){
+  const wadah = document.getElementById("pyIsi");
+  if (!wadah) return;
+  const kategori = (o) => (o && (o.k === "P" || o.k === "HP")) ? o.k : "";
+  const bobot = { P: 0, HP: 1, "": 2 };
+  const data = dataHadirin().filter((it) => it.o && String(it.o.n || "").trim());
+  data.sort((a, b) => {
+    const ka = bobot[kategori(a.o)], kb = bobot[kategori(b.o)];
+    if (ka !== kb) return ka - kb;
+    return String(a.o.n).localeCompare(String(b.o.n), "id");
+  });
+  const status = (it) => {
+    if (it.o.r === 0) return ["tidak ikut rotasi", "mati"];
+    if (it.terakhir === null) return ["belum pernah", "belum"];
+    if (it.terakhir > pekanAktif) return ["jadwal " + ((JADWAL[it.terakhir] || {}).label || "?"), ""];
+    const sisa = JEDA_PEKAN - (pekanAktif - it.terakhir);
+    if (sisa > 0) return ["jeda " + sisa + " pekan", ""];
+    return ["siap", "siap"];
+  };
+  let html = "", grupLalu = null;
+  const n = { P: 0, HP: 0, "": 0 };
+  data.forEach((it) => {
+    const k = kategori(it.o);
+    n[k] += 1;
+    if (k !== grupLalu){
+      html += '<div class="py-grup">' + (k === "P" ? "Perintis (P)"
+        : k === "HP" ? "Hamba Pelayanan (HP)" : "Penyiar") + '</div>';
+      grupLalu = k;
+    }
+    const st = status(it);
+    html += '<div class="py-baris">'
+      + '<span class="py-nama">' + esc(it.o.n)
+      + (it.o.i ? '<b class="py-ini">' + esc(it.o.i) + '</b>' : '') + '</span>'
+      + '<span class="py-kat ' + (k === "P" ? "p" : k === "HP" ? "hp" : "kosong") + '">' + esc(k) + '</span>'
+      + '<span class="py-meta ' + st[1] + '">'
+      + esc((it.tugas ? it.tugas + "× · " : "") + st[0]) + '</span>'
+      + '</div>';
+  });
+  wadah.innerHTML = html || '<p class="py-ringkas">Daftar penyiar masih kosong.</p>';
+  const ringkas = document.getElementById("pyRingkas");
+  if (ringkas){
+    ringkas.textContent = data.length + " orang · " + n.P + " perintis · "
+      + n.HP + " hamba pelayanan · " + n[""] + " penyiar";
+  }
+}
+window.renderPenyiar = renderPenyiar;
 
 /* nilai antre: makin besar = makin lama tidak dapat tugas (dipakai untuk sortir) */
 function nilaiAntre(it, o){
@@ -4167,14 +4300,19 @@ return { doReset: doReset, confirmReset: confirmReset, cancelReset: cancelReset,
   function tutupMenu(){ panel.classList.remove('buka'); tirai.classList.remove('buka'); btnMenu.setAttribute('aria-expanded','false'); }
 
   function pilih(v, simpan){
-    if (v !== 'hadirin') v = 'jadwal';
+    if (v !== 'hadirin' && v !== 'penyiar') v = 'jadwal';
+    if (v === 'penyiar' && !(typeof modeAdmin === 'function' && modeAdmin())) v = 'jadwal';
     document.getElementById('vJadwal').hidden = (v !== 'jadwal');
     document.getElementById('vHadirin').hidden = (v !== 'hadirin');
+    var vp = document.getElementById('vPenyiar');
+    if (vp) vp.hidden = (v !== 'penyiar');
     body.classList.toggle('tema-hadirin', v === 'hadirin');
     document.querySelectorAll('.pm-item').forEach(function(b){
       b.classList.toggle('aktif', b.dataset.view === v);
     });
-    judul.textContent = (v === 'hadirin') ? 'Hitung Hadirin' : 'Jadwal Tengah Pekan';
+    judul.textContent = (v === 'hadirin') ? 'Hitung Hadirin'
+      : (v === 'penyiar') ? 'Daftar Penyiar' : 'Jadwal Tengah Pekan';
+    if (v === 'penyiar' && typeof window.renderPenyiar === 'function') window.renderPenyiar();
     tutupMenu();
     if (simpan){
       try { localStorage.setItem('jhtp-tampilan', v); } catch(e){}
@@ -4193,6 +4331,10 @@ return { doReset: doReset, confirmReset: confirmReset, cancelReset: cancelReset,
     b.addEventListener('click', function(){ pilih(b.dataset.view, true); });
   });
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') tutupMenu(); });
+  var tombolSunting = document.getElementById('pySunting');
+  if (tombolSunting) tombolSunting.addEventListener('click', function(){
+    if (window.bukaDaftarNama) window.bukaDaftarNama();
+  });
   if (window.matchMedia) {
     var mm = window.matchMedia('print');
     if (mm.addEventListener) mm.addEventListener('change', function(e){ if (e.matches) tutupMenu(); });
@@ -4215,6 +4357,44 @@ return { doReset: doReset, confirmReset: confirmReset, cancelReset: cancelReset,
       });
     });
   }
+
+  /* ---------- muat ulang sendiri kalau ada pembaruan dari repo ----------
+     Supaya penyiar (termasuk yang sudah sepuh) tidak perlu tahu cara
+     me-refresh: begitu ada berkas baru terbit, aplikasi menyegarkan dirinya
+     sendiri — kecuali sedang ada jendela/panel terbuka, supaya isian
+     yang belum disimpan tidak hilang. */
+  (function(){
+    var meta = document.querySelector('meta[name="versi"]');
+    var VERSI = meta ? meta.getAttribute('content') : '';
+    if (!VERSI) return;
+    var tertunda = '';
+    var sibuk = false;
+
+    function adaJendela(){
+      return !!document.querySelector('.modal-tirai, .pn-pop');
+    }
+    function cek(){
+      if (sibuk) return;
+      sibuk = true;
+      fetch('index.html?cek=' + Date.now(), { cache: 'no-store' })
+        .then(function(r){ return r.text(); })
+        .then(function(t){
+          var m = t.match(/<meta name="versi" content="([^"]+)"/);
+          if (m && m[1] && m[1] !== VERSI) tertunda = m[1];
+        })
+        .catch(function(){})
+        .then(function(){ sibuk = false; });
+    }
+    cek();
+    setInterval(cek, 3 * 60 * 1000);          /* periksa tiap 3 menit */
+    document.addEventListener('visibilitychange', function(){ if (!document.hidden) cek(); });
+    window.addEventListener('focus', cek);
+    window.addEventListener('online', cek);
+    setInterval(function(){
+      if (!tertunda || adaJendela()) return;
+      location.reload();
+    }, 2000);
+  })();
 })();
 </script>
 <script>

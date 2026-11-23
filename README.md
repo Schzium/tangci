@@ -65,6 +65,34 @@ Alamatnya jadi `https://tangci.web.app`.
 Buka alamat di atas dengan Chrome → menu ⋮ → **Tambahkan ke layar utama**.
 Sudah ada manifest + service worker, jadi terbuka layar penuh tanpa address bar.
 
+## 6. Halaman "Daftar Penyiar" (khusus admin)
+
+Masuk PIN → menu **☰** → **Daftar Penyiar**. Isinya tabel semua penyiar dalam
+**dua kolom kiri-kanan** (supaya 70+ nama tidak memanjang ke bawah), diurutkan
+**P (Perintis) → HP (Hamba Pelayanan) → Penyiar**, lalu A–Z. Tiap baris:
+nama + inisial, kategori, jumlah tugas (×), dan statusnya (`siap`, `jeda N pekan`,
+`jadwal 23 Des`, `belum pernah`). Tombol **✎ Sunting daftar** membuka panel sunting
+seperti biasa. Halaman ini **tidak ikut tercetak** — saat PDF hanya lembar jadwal
+(halaman 1) yang keluar.
+
+## 7. Aplikasi menyegarkan diri sendiri
+
+Supaya penyiar tidak perlu tahu cara me-refresh, aplikasi memeriksa berkas
+`index.html` di server setiap 3 menit (dan setiap kali dibuka kembali). Kalau ada
+versi baru, halaman **memuat ulang sendiri** — kecuali sedang ada panel/jendela
+terbuka, supaya isian yang belum disimpan tidak hilang.
+
+Cara kerjanya: ada penanda di kepala berkas
+
+```
+<meta name="versi" content="2026-11-23.2">
+```
+
+**Setiap kali `index.html` diubah lalu diunggah, ubah juga angka `content` itu**
+(mis. jadi `2026-11-23.3`). Angka berbeda = semua HP yang sedang membuka aplikasi
+akan menyegarkan dirinya sendiri. Naikkan juga `CACHE` di `sw.js` supaya berkas
+lain ikut diperbarui.
+
 ## Catatan
 
 - Setiap HP menyimpan salinan di `localStorage`; kalau internet mati aplikasi tetap jalan.
