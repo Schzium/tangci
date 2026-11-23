@@ -155,6 +155,31 @@ Contoh: pekan 25 Nov → 4 berkas, yaitu Adriel (bag. 3), Lilis (bag. 4, asisten
 Bile (bag. 5, asisten Anarita), Sumanto (bag. 6). Nama yang dipakai adalah nama
 yang tampil di layar, jadi kalau nama sudah diganti lewat Penyiar, slipnya ikut.
 
+### Rupa dan huruf slip (sejak versi 2026-11-23.20)
+
+Slip dibuat semirip form S-89 aslinya:
+
+- judul **tugas perhimpunan pelayanan dan kehidupan kristen** dua baris, huruf
+  tebal, rata tengah;
+- tiap isian: label tebal di kiri, kotak isian biru muda dengan **garis putus-putus**
+  di bawahnya (seperti kotak isian pada PDF aslinya);
+- isi isian ditulis dengan huruf ketik (monospace) berjarak renggang — meniru isian
+  yang diketik di form kertas;
+- tiga pilihan ruang tetap di posisinya (kotak centang menjorok ke dalam); hanya
+  **kotak centang kecilnya** yang berlatar biru muda — persis seperti kotak centang
+  pada form aslinya — sedangkan barisnya tetap putih. Lalu catatan untuk siswa dengan
+  kalimat S-38 disorot kuning;
+- kaki halaman `S-89-IN   11/23` di kiri bawah.
+
+- tulisan label isian tetap **rata kiri** seperti aslinya; hanya tanda titik dua (:)
+  yang ditaruh di ujung kanan kolom label, jadi keempat titik dua segaris dan
+  menempel pada kotak isian.
+
+Hurufnya **dibundel di dalam berkas** (Open Sans untuk teks tebal/isi, Cousine untuk
+isian) dalam bentuk `@font-face` base64, jadi tampilan slip sama di semua HP — tidak
+bergantung huruf bawaan Android/Samsung/iPhone dan tetap benar saat berkas dipakai
+tanpa internet. Karena hurufnya ikut, ukuran `index.html` bertambah sekitar 55 KB.
+
 ## 7. Aplikasi menyegarkan diri sendiri
 
 Supaya penyiar tidak perlu tahu cara me-refresh, aplikasi memeriksa berkas
