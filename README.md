@@ -321,26 +321,40 @@ Di kepala aplikasi ada tombol **↻ Sync**; baris pekan berisi **dropdown pekan*
 - **Dropdown pekan** — semua pekan ada di satu daftar, **pekan terbaru di paling
   atas** (30 Des → 4 Nov); klik untuk pindah. Baris tab tidak lagi memakan tempat
   (satu baris saja, juga di HP).
-- **⟳ Sync** — aplikasi memeriksa sendiri ke wol.jw.org apakah edisi berikutnya
-  sudah terbit.
-  - Belum terbit → muncul: *"Jadwal baru belum terbit. Jadwal terakhir yang ada:
-    30 Desember. Sudah diperiksa: 2020265, 2020266."*
-  - Sudah terbit → muncul tawaran *"Jadwal baru sudah terbit! … Ambil sekarang?"* →
-    aplikasi mengunduh 9 halaman pelajaran, menyusun jadwalnya, lalu menambahkannya
-    **di ujung daftar**. Pekan lama, nama yang sudah dipilih, daftar penyiar, dan
-    Hitung Hadirin tidak diubah.
+- **⟳ Sync** — jadwal pekan-pekan terbaru **sudah ikut di dalam berkas**
+  (16 pekan Januari–April 2027, diambil dari jw.org). Jadi aplikasi langsung lengkap
+  saat pertama dibuka, tanpa internet dan tanpa menunggu apa pun. Tombol ⟳ Sync
+  memeriksa `wol.json` di folder aplikasi dan simpanan di HP, lalu menambahkan pekan
+  yang belum ada beserta isi ayat + liriknya. Pekan lama, nama yang sudah dipilih,
+  daftar penyiar, dan Hitung Hadirin tidak diubah.
 
-Hasil sync disimpan di HP (localStorage) dan `wol.json` menyimpan isi ayat + lirik,
-jadi tampilan tetap lengkap saat dibuka offline.
+### Sumber jadwal: jw.org (bukan wol.jw.org)
 
-Catatan teknis: wol.jw.org tidak mengizinkan permintaan langsung dari browser (CORS),
-jadi halaman diambil lewat `r.jina.ai` yang meneruskan HTML aslinya (tanpa akun,
-gratis). Kalau pemeriksaan gagal, aplikasi memberi pesan dan tidak mengubah data apa pun.
-
-### Alat bantu di folder yang sama (opsional, untuk memuat ulang isi ayat + lirik)
+Sejak versi 2026-11-23.25 jadwal diambil dari **jw.org**, karena jw.org menerbitkan
+edisi lebih dulu daripada wol.jw.org (wol bisa telat berhari-hari). Halaman yang dipakai:
 
 ```
-ambil-wol.mjs      ← pengambil jadwal dari wol.jw.org → wol.json (Node 20+, jsdom)
+https://www.jw.org/id/perpustakaan/jw-lembar-pelajaran/            ← daftar edisi
+https://www.jw.org/id/perpustakaan/jw-lembar-pelajaran/<edisi>/    ← daftar pekan
+…/Jadwal-Perhimpunan-Pelayanan-dan-Kehidupan-Kristen-untuk-<tgl>-<bulan>-<tahun>/
+```
+
+Dari tiap halaman pekan diambil: tanggal, judul bagian (h3 "1." … "N." + "Bagian
+Penutup"), menit, ayat yang dirujuk, dan tiga nyanyian (pembuka, setelah KEHIDUPAN
+KRISTEN, penutup) → disusun menjadi baris jadwal, lalu ditempel ke `app/index.html`
+sebagai `const PEKAN_JW = [...]` (urut tanggal, karena penambahannya ke daftar
+bersifat *append*). Nama yang sudah dipilih dan daftar penyiar tetap dari Firebase.
+
+**Kenapa tidak otomatis dari browser?** jw.org tidak mengirim izin CORS, dan semua
+perantara gratis yang dicoba gagal (ditolak/diblokir/kuota). Jadi pengambilan
+jadwal baru dilakukan di komputer dengan alat di bawah, hasilnya ditempel/ditulis ke
+berkas. Tombol ⟳ Sync tetap ada untuk membaca `wol.json` dan simpanan HP.
+
+### Alat bantu di folder yang sama (opsional, untuk memuat ulang jadwal / isi ayat + lirik)
+
+```
+ambil-jw.mjs       ← pengambil jadwal dari jw.org → wol.json (Node 20+, jsdom)
+ambil-wol.mjs      ← versi lama (wol.jw.org), tidak dipakai lagi
 package.json
 package-lock.json
 ```
@@ -349,9 +363,14 @@ Semua berkas ada di satu folder supaya gampang diunggah ke GitHub. Jalankan di k
 
 ```
 npm install
-node ambil-wol.mjs 2020264 wol.json
+node ambil-jw.mjs                                 # dua edisi terbaru (bawaan)
+node ambil-jw.mjs mwb-maret-april-2027            # edisi tertentu
+node ambil-jw.mjs --semua                         # semua edisi di halaman indeks
+node ambil-jw.mjs mwb-januari-februari-2027 --tanpa-ref   # tanpa teks rujukan (kecil)
 ```
 
-lalu ganti `wol.json` di folder aplikasi. Ini hanya perlu kalau ingin isi ayat/lirik
-diperbarui; untuk menambah pekan baru cukup tombol ⟳ Sync. Ketiga berkas alat itu
-tidak ikut terbit ke hosting (sudah masuk `ignore` di `firebase.json`).
+Hasilnya `wol.json` (berisi pekan + isi ayat + lirik); ganti `wol.json` di folder
+aplikasi. Tanpa `--tanpa-ref`, tiap rujukan disertai teks lengkapnya sehingga berkas
+bisa membesar (~0,8 MB per 8 pekan) — kalau hanya butuh baris jadwal, pakai
+`--tanpa-ref`. Id rujukan edisi baru otomatis digeser supaya tidak menimpa id lama.
+Berkas alat ini tidak ikut terbit ke hosting (sudah masuk `ignore` di `firebase.json`).
