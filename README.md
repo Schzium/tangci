@@ -314,19 +314,21 @@ pasangan siswa/asisten ditulis mengalir seperti biasa — **"Calvin / Febri"** �
 dua kolom yang saling berjauhan — dan kursi yang belum diisi tidak diberi tanda "—". Lembar PDF (tombol **PDF**) memakai gaya mengalir
 yang sama, sedangkan di layar admin tetap berkolom rapi supaya kedua nama mudah diklik.
 
-## 5. Tombol ↻ Sync (jadwal baru tanpa repot)
+## 5. Menambah jadwal baru (tombol Sync sudah dihapus)
 
-Di kepala aplikasi ada tombol **↻ Sync**; baris pekan berisi **dropdown pekan**.
+Baris pekan berisi **dropdown pekan** — semua pekan ada di satu daftar, **pekan
+terbaru di paling atas** (28 Apr 2027 → 4 Nov 2026); klik untuk pindah. Baris tab
+tidak memakan tempat (satu baris saja, juga di HP).
 
-- **Dropdown pekan** — semua pekan ada di satu daftar, **pekan terbaru di paling
-  atas** (30 Des → 4 Nov); klik untuk pindah. Baris tab tidak lagi memakan tempat
-  (satu baris saja, juga di HP).
-- **⟳ Sync** — jadwal pekan-pekan terbaru **sudah ikut di dalam berkas**
-  (16 pekan Januari–April 2027, diambil dari jw.org). Jadi aplikasi langsung lengkap
-  saat pertama dibuka, tanpa internet dan tanpa menunggu apa pun. Tombol ⟳ Sync
-  memeriksa `wol.json` di folder aplikasi dan simpanan di HP, lalu menambahkan pekan
-  yang belum ada beserta isi ayat + liriknya. Pekan lama, nama yang sudah dipilih,
-  daftar penyiar, dan Hitung Hadirin tidak diubah.
+**Tombol ↻ Sync sudah dihapus** (sejak versi 2026-11-23.26). Alasannya: jw.org
+menerbitkan jadwal lebih dulu daripada wol.jw.org, dan jw.org tidak mengizinkan
+peramban mengambil halamannya langsung (CORS) — jadi tombol itu tidak akan pernah
+bisa menarik edisi baru sendiri. Jadwal yang ada sekarang **sudah ikut di dalam
+berkas** (16 pekan Januari–April 2027) dan dimuat otomatis tiap aplikasi dibuka,
+dilanjutkan `wol.json` lalu simpanan di HP. Tidak ada yang perlu ditekan.
+
+Kalau terbit edisi baru, ikuti **`PANDUAN-UPDATE-JADWAL.md`**: ambil halaman jw.org di
+komputer, tempel hasilnya sebagai `PEKAN_JW`, naikkan nomor versi, unggah.
 
 ### Sumber jadwal: jw.org (bukan wol.jw.org)
 
@@ -353,8 +355,10 @@ berkas. Tombol ⟳ Sync tetap ada untuk membaca `wol.json` dan simpanan HP.
 ### Alat bantu di folder yang sama (opsional, untuk memuat ulang jadwal / isi ayat + lirik)
 
 ```
-ambil-jw.mjs       ← pengambil jadwal dari jw.org → wol.json (Node 20+, jsdom)
-ambil-wol.mjs      ← versi lama (wol.jw.org), tidak dipakai lagi
+ambil-jw.mjs           ← pengambil jadwal dari jw.org → wol.json (Node 20+, jsdom)
+siapkan-pekan-jw.mjs   ← menyalin pekan baru dari wol.json ke const PEKAN_JW
+ambil-wol.mjs          ← versi lama (wol.jw.org), tidak dipakai lagi
+PANDUAN-UPDATE-JADWAL.md ← panduan lengkap untuk menambah jadwal baru
 package.json
 package-lock.json
 ```
@@ -363,7 +367,9 @@ Semua berkas ada di satu folder supaya gampang diunggah ke GitHub. Jalankan di k
 
 ```
 npm install
-node ambil-jw.mjs                                 # dua edisi terbaru (bawaan)
+node ambil-jw.mjs                    # dua edisi terbaru → wol.json (bawaan)
+node siapkan-pekan-jw.mjs            # pratinjau pekan baru untuk PEKAN_JW
+node siapkan-pekan-jw.mjs --tulis    # tulis ke index.html + build mandiri
 node ambil-jw.mjs mwb-maret-april-2027            # edisi tertentu
 node ambil-jw.mjs --semua                         # semua edisi di halaman indeks
 node ambil-jw.mjs mwb-januari-februari-2027 --tanpa-ref   # tanpa teks rujukan (kecil)

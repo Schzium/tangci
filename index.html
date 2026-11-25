@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="versi" content="2026-11-23.25">
+<meta name="versi" content="2026-11-23.26">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0d5c7a">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1051,7 +1051,7 @@
   }
   .pm-ikon{ width:15px; height:15px; flex:0 0 auto; }
   .pm-kaki{ margin-top:auto; font-size:7.5pt; color:#a3a9ad; padding:8px 10px; line-height:1.5; }
-  /* tombol di kepala: PDF / Sync / Admin */
+  /* tombol di kepala: PDF / Penyiar / Admin */
   .bar-aksi{ margin-left:auto; display:flex; align-items:center; gap:5px; flex:0 0 auto; }
   .bar-aksi button{
     font-family: Calibri, "Segoe UI", Arial, sans-serif;
@@ -2476,7 +2476,7 @@ function perbaruiTombol(){
   const atas = document.getElementById("barAksi");
   const admin = modeAdmin();
   const diPenyiar = (window.__tampilan === "penyiar");
-  /* kepala: PDF (semua orang), Sync, dan Admin/Keluar — atau tombol kembali
+  /* kepala: PDF (semua orang), Penyiar, dan Admin/Keluar — atau tombol kembali
      kalau sedang membuka halaman Daftar Penyiar */
   if (atas && diPenyiar){
     atas.innerHTML = `<button type="button" class="btn-balik" id="btnBalikJadwal" title="Kembali ke lembar jadwal">&#8592; Jadwal</button>`;
@@ -2484,7 +2484,6 @@ function perbaruiTombol(){
     atas.innerHTML =
       (admin
         ? `<button type="button" class="btn-pdf" id="btnPdf" title="Simpan lembar jadwal pekan ini sebagai PDF (langsung terunduh)">PDF</button>`
-          + `<button type="button" class="btn-sync" id="btnSync" title="Periksa apakah jadwal baru sudah terbit (jw.org / wol.jw.org)">Sync</button>`
           + `<button type="button" class="btn-tabel" id="btnTabel" title="Daftar penyiar beserta statusnya">Penyiar</button>`
           + `<button type="button" class="btn-keluar" id="btnKeluar" title="Keluar dari mode admin">Keluar</button>`
         : `<button type="button" id="btnAdmin" title="Masuk dengan PIN">Log in</button>`);
@@ -2980,7 +2979,6 @@ function susun(){
         if (typeof window.pilihTampilan === "function") window.pilihTampilan("penyiar", true);
         return;
       }
-      if (b.id === "btnSync"){ ev.preventDefault(); syncWol(); return; }
     });
     document.addEventListener("keydown", (ev) => {
       if (ev.key === "Escape") tutupPanelPekan();
