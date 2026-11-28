@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="versi" content="2026-11-23.26">
+<meta name="versi" content="2026-11-23.28">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0d5c7a">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1204,6 +1204,52 @@ body.tema-hadirin{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sa
 #vHadirin .bottom-nav{ padding: 6px 14px calc(6px + env(safe-area-inset-bottom)); }
 #vHadirin .nav-btn{ padding: 6px 16px; font-size: .78rem; }}
 </style>
+
+<!-- ================= gaya menu TATIB (jadwal operator) ================= -->
+<style>
+  #vTatib{ padding: calc(var(--bar) + 10px) 10px 44px; }
+  #vTatib[hidden]{ display: none !important; }
+  .tt-bungkus{ max-width: 560px; margin: 0 auto; }
+  .tt-judul{ font-weight: 800; font-size: 15px; margin: 0 0 2px; color:#20272a; }
+  .tt-sub{ font-size: 11.5px; color: #637075; margin: 0 0 12px; }
+  .tt-grup{ display: block; }
+  .tt-jenis{ display: block; font-size: 9.5px; font-weight: 800; letter-spacing: .4px;
+    text-transform: uppercase; margin-top: 1px; }
+  .tt-jenis.tengah{ color: #2c6b34; }
+  .tt-jenis.akhir{ color: #17566f; }
+  .tt-tabel tr.tt-r-tengah td{ background: #f6fbf4; }
+  .tt-tabel tr.tt-r-akhir td{ background: #f4fafd; }
+  .tt-tabel tr.tt-r-tengah td.tt-tgl, .tt-tabel tr.tt-r-akhir td.tt-tgl{ background: #eef4ee; }
+  .tt-tabel tr.tt-r-akhir td.tt-tgl{ background: #edf4f8; }
+  .tt-tabel{ width: 100%; border-collapse: collapse; table-layout: fixed;
+    margin: 0 0 16px; font-size: 12.5px; background: #fff; }
+  .tt-tabel th, .tt-tabel td{ border: 1px solid #d7dde0; padding: 5px 3px; text-align: center; }
+  .tt-tabel thead .tt-nama-tabel{ font-weight: 800; font-size: 13px; padding: 7px 4px; }
+  .tt-tabel .tt-nama-tabel{ background: #dbe9dd; border-color: #c3d8c7; color: #1f4a26; }
+  .tt-tabel thead .tt-kepala th{ background: #eef2f4; font-weight: 700; font-size: 11.5px; color: #3b4649; }
+  .tt-tabel td.tt-tgl{ font-weight: 700; background: #f7f9fa; white-space: nowrap; width: 58px; }
+  .tt-tabel tr.tt-bulan td{ background: #e8eef1; font-weight: 800; font-size: 11.5px;
+    text-align: left; padding: 4px 6px; letter-spacing: .3px; }
+  .tt-tabel tr.tt-batal td{ font-style: italic; color: #6b767a; background: #fafafa; font-size: 12px; }
+  .tt-tabel td.tt-sel{ font-weight: 700; color: #12303a; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .tt-tabel td.tt-kosong{ color: #c6cdd1; font-weight: 400; }
+  body.admin .tt-tabel td.tt-sel{ background: #f3fbfe; }
+  body.admin .tt-tabel td.tt-sel:active{ background: #dceef7; }
+  .tt-kotak{ width: min(420px, 92vw); }
+  .tt-cari{ width: 100%; padding: 9px 10px; border: 1px solid #cfd6da; border-radius: 8px;
+    font-size: 14px; margin: 0 0 8px; box-sizing: border-box; }
+  .tt-daftar{ max-height: 46vh; overflow: auto; -webkit-overflow-scrolling: touch; }
+  .tt-orang{ display: flex; gap: 8px; align-items: center; width: 100%; text-align: left;
+    padding: 9px 10px; border: 0; border-bottom: 1px solid #eef1f3; background: #fff; font-size: 13.5px; }
+  .tt-orang b{ min-width: 36px; color: var(--biru); }
+  .tt-orang.aktif{ background: #e7f1f5; }
+  .tt-kosongkan{ color: #8a9498; font-style: italic; }
+  @media (min-width: 780px){
+    .tt-bungkus{ max-width: 640px; }
+  }
+  @media print{ #vTatib{ display: none !important; } }
+</style>
+
 </head>
 <body>
 
@@ -1233,6 +1279,9 @@ body.tema-hadirin{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sa
   </button>
   <button class="pm-item" type="button" data-view="hadirin">
     <svg class="pm-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="15" width="7" height="7" rx="1.5"/><rect x="14" y="15" width="7" height="7" rx="1.5"/></svg><span>Hitung Hadirin</span>
+  </button>
+  <button class="pm-item" type="button" data-view="tatib">
+    <svg class="pm-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 12h4M12 12h8M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="17" cy="17" r="2"/></svg><span>Jadwal Tatib</span>
   </button>
   <div class="pm-kaki"><span id="statusCloud">Menghubungkan ke Firebase&hellip;</span><br>Bisa di-install ke HP</div>
 </aside>
@@ -1328,6 +1377,21 @@ body.tema-hadirin{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sa
 
 <!-- ================= TAMPILAN 2: DAFTAR PENYIAR (khusus admin, bisa disunting) ================= -->
 <div id="vPenyiar" hidden><div id="pyTempat"></div></div>
+
+<!-- ================= TAMPILAN 3: JADWAL TATIB (operator) ================= -->
+<div id="vTatib" hidden>
+  <div class="tt-bungkus">
+    <p class="tt-judul">Jadwal Operator (Tatib)</p>
+    <p class="tt-sub" id="ttKet">Hanya bisa dilihat. Masuk sebagai admin untuk mengganti.</p>
+    <table class="tt-tabel" data-grup="semua">
+      <thead>
+        <tr><th class="tt-nama-tabel" colspan="5">Jadwal Operator</th></tr>
+        <tr class="tt-kepala"><th>Tanggal</th><th>OP 1</th><th>OP 2</th><th>Mic 1</th><th>Mic 2</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
 
 <script>
 
@@ -2487,7 +2551,13 @@ function perbaruiTombol(){
           + `<button type="button" class="btn-tabel" id="btnTabel" title="Daftar penyiar beserta statusnya">Penyiar</button>`
           + `<button type="button" class="btn-keluar" id="btnKeluar" title="Keluar dari mode admin">Keluar</button>`
         : `<button type="button" id="btnAdmin" title="Masuk dengan PIN">Log in</button>`);
+  /* di halaman Tatib tombol PDF jadwal tidak dipakai */
+  if (window.__tampilan === "tatib"){
+    const pPdf = document.getElementById("btnPdf");
+    if (pPdf) pPdf.hidden = true;
+  }
   document.body.classList.toggle("admin", admin);
+  if (window.__tampilan === "tatib" && typeof window.tatibGambar === "function") window.tatibGambar();
   }
   const menuPenyiar = document.querySelector('.pm-item[data-view="penyiar"]');
   if (menuPenyiar){
@@ -5356,18 +5426,21 @@ return { doReset: doReset, confirmReset: confirmReset, cancelReset: cancelReset,
   function tutupMenu(){ panel.classList.remove('buka'); tirai.classList.remove('buka'); btnMenu.setAttribute('aria-expanded','false'); }
 
   function pilih(v, simpan){
-    if (v !== 'hadirin' && v !== 'penyiar') v = 'jadwal';
+    if (v !== 'hadirin' && v !== 'penyiar' && v !== 'tatib') v = 'jadwal';
     if (v === 'penyiar' && !(typeof modeAdmin === 'function' && modeAdmin())) v = 'jadwal';
     document.getElementById('vJadwal').hidden = (v !== 'jadwal');
     document.getElementById('vHadirin').hidden = (v !== 'hadirin');
     var vp = document.getElementById('vPenyiar');
     if (vp) vp.hidden = (v !== 'penyiar');
+    var vt = document.getElementById('vTatib');
+    if (vt) vt.hidden = (v !== 'tatib');
     body.classList.toggle('tema-hadirin', v === 'hadirin');
     document.querySelectorAll('.pm-item').forEach(function(b){
       b.classList.toggle('aktif', b.dataset.view === v);
     });
     judul.textContent = (v === 'hadirin') ? 'Hitung Hadirin'
-      : (v === 'penyiar') ? 'Daftar Penyiar' : 'Jadwal Tengah Pekan';
+      : (v === 'penyiar') ? 'Daftar Penyiar'
+      : (v === 'tatib') ? 'Jadwal Tatib' : 'Jadwal Tengah Pekan';
     window.__tampilan = v;
     if (typeof perbaruiTombol === 'function') perbaruiTombol();
     var tmp = document.getElementById('pyTempat');
@@ -5380,6 +5453,11 @@ return { doReset: doReset, confirmReset: confirmReset, cancelReset: cancelReset,
     if (simpan){
       try { localStorage.setItem('jhtp-tampilan', v); } catch(e){}
       try { history.replaceState(null, '', '#' + v); } catch(e){}
+    }
+    if (v === 'tatib'){
+      var pPdf2 = document.getElementById('btnPdf');
+      if (pPdf2) pPdf2.hidden = true;
+      if (typeof window.tatibGambar === 'function') window.tatibGambar();
     }
     if (v === 'hadirin' && window.TC && window.TC.sesuaikan) setTimeout(window.TC.sesuaikan, 80);
   }
@@ -5606,6 +5684,313 @@ return { doReset: doReset, confirmReset: confirmReset, cancelReset: cancelReset,
     } catch(e){ return; }
     gambarUlang();
   }, function(err){ console.warn('[jhtp] daftar offline', err); });
+})();
+</script>
+
+<script>
+/* =========================================================================
+   JADWAL TATIB — jadwal operator (OP 1, OP 2, Mic 1, Mic 2)
+
+   Satu tabel, urut tanggal: Rabu (tengah pekan) lalu Minggu (akhir pekan)
+   pada pekan yang sama — jadi enak dibaca di HP yang layarnya sempit.
+
+   Daftar nama TATIB terpisah dari daftar penyiar: dibuat sekali dengan
+   menyalin (duplikat) penyiar laki-laki saja, lalu disimpan sendiri
+   (localStorage jhtp-tatib-orang + Firestore jhtp/tatibOrang). Perempuan
+   tidak pernah masuk daftar ini. Daftar penyiar utama tidak diubah.
+
+   Data isian: localStorage "jhtp-tatib:<tanggal>:<slot>" + Firestore
+   jhtp/tatib (satu isian = satu kolom, supaya tidak saling menimpa).
+   ========================================================================= */
+(function(){
+  var SLOT = [["op1", "OP 1"], ["op2", "OP 2"], ["mic1", "Mic 1"], ["mic2", "Mic 2"]];
+  var AWALAN = "jhtp-tatib:";
+  var KUNCI_ORANG = "jhtp-tatib-orang";
+  var BULAN = ["Januari","Februari","Maret","April","Mei","Juni",
+               "Juli","Agustus","September","Oktober","November","Desember"];
+  var SINGKAT = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+  var BMP = /tidak ada perhimpunan|kebaktian|pertemuan wilayah|cancel|dibatalkan/i;
+
+  var refIsi = null, refOrang = null, menunggu = Object.create(null), sedangGambar = false;
+
+  function escT(t){
+    return String(t == null ? "" : t).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function adminSekarang(){ return typeof modeAdmin === "function" && modeAdmin(); }
+  function dua(n){ return (n < 10 ? "0" : "") + n; }
+  function bulanIdx(nama){
+    var n = String(nama || "").toLowerCase().slice(0, 3);
+    for (var i = 0; i < 12; i++) if (BULAN[i].toLowerCase().indexOf(n) === 0) return i;
+    return -1;
+  }
+  function kunciDari(d){ return d.getUTCFullYear() + "-" + dua(d.getUTCMonth() + 1) + "-" + dua(d.getUTCDate()); }
+  function labelDari(d){ return d.getUTCDate() + " " + SINGKAT[d.getUTCMonth()]; }
+  function namaBulan(d){ return BULAN[d.getUTCMonth()] + " " + d.getUTCFullYear(); }
+  function inisial(t){
+    var kata = String(t).replace(/\s+/g, " ").trim().split(" ");
+    var h = kata[0] ? kata[0][0] : "?";
+    return (kata.length > 1 ? h + kata[kata.length - 1][0] : h).toUpperCase();
+  }
+
+  /* ---------- pekan: Rabu dari jadwal, Minggu = Rabu + 4 hari ---------- */
+  function daftarPekan(){
+    var jadwal = (typeof JADWAL !== "undefined" && JADWAL) || [];
+    var th = null, lalu = -1, hasil = [];
+    for (var i = 0; i < jadwal.length; i++){
+      var w = jadwal[i] || {};
+      var m = String(w.tanggal || "").match(/(\d{1,2})\s+([A-Za-z]+)/);
+      if (!m) continue;
+      var b = bulanIdx(m[2]);
+      if (b < 0) continue;
+      var d = parseInt(m[1], 10);
+      if (th === null){
+        th = new Date().getFullYear();
+        if (Date.UTC(th, b, d) < Date.now() - 200 * 864e5) th++;
+      } else if (b < lalu) th++;
+      lalu = b;
+      var tengah = new Date(Date.UTC(th, b, d));
+      hasil.push({ tengah: tengah, akhir: new Date(tengah.getTime() + 4 * 864e5), batal: BMP.test(w.catatan || "") });
+    }
+    return hasil;
+  }
+
+  /* ---------- daftar nama TATIB (salinan laki-laki, terpisah) ---------- */
+  function bacaOrang(){
+    try {
+      var v = JSON.parse(localStorage.getItem(KUNCI_ORANG) || "null");
+      if (Array.isArray(v) && v.length) return v;
+    } catch (e) {}
+    return null;
+  }
+  function simpanOrang(arr){
+    try { localStorage.setItem(KUNCI_ORANG, JSON.stringify(arr)); } catch (e) {}
+  }
+  function salinDariPenyiar(){
+    var arr = (typeof daftarSiswa === "function") ? daftarSiswa() : [];
+    return arr.filter(function(o){ return o && o.g === "L" && o.r !== 0; })
+      .map(function(o){ return { n: String(o.n), i: String(o.i || inisial(o.n)) }; })
+      .sort(function(a, b){ return a.n.localeCompare(b.n, "id"); });
+  }
+  function orangTatib(){
+    var arr = bacaOrang();
+    if (arr) return arr;
+    arr = salinDariPenyiar();          /* duplikat pertama: ambil yang laki-laki saja */
+    simpanOrang(arr);
+    if (refOrang) refOrang.set({ arr: arr, ts: Date.now() }, { merge: true }).catch(function(){});
+    return arr;
+  }
+  function petaOrang(){
+    var peta = Object.create(null);
+    orangTatib().forEach(function(o){ peta[String(o.n).toLowerCase()] = o; });
+    return peta;
+  }
+
+  /* ---------- isian ---------- */
+  function baca(kunci, slot){
+    try { return localStorage.getItem(AWALAN + kunci + ":" + slot) || ""; } catch (e) { return ""; }
+  }
+  function bacaSemua(){
+    var map = {};
+    try {
+      for (var i = 0; i < localStorage.length; i++){
+        var k = localStorage.key(i);
+        if (k && k.indexOf(AWALAN) === 0){
+          var v = localStorage.getItem(k);
+          if (v) map[k.slice(AWALAN.length)] = v;
+        }
+      }
+    } catch (e) {}
+    return map;
+  }
+  function kirim(kunciSlot, nama){
+    if (!refIsi) return;
+    menunggu[kunciSlot] = Date.now();
+    var isi = {}, jalur = "data." + kunciSlot;
+    isi[jalur] = nama ? String(nama) : firebase.firestore.FieldValue.delete();
+    refIsi.update(isi).catch(function(){
+      var obj = {};
+      if (nama) obj[kunciSlot] = String(nama);
+      refIsi.set({ data: obj, ts: Date.now() }, { merge: true }).catch(function(){
+        console.warn("[tatib] gagal menyimpan");
+      });
+    });
+    setTimeout(function(){ delete menunggu[kunciSlot]; }, 3000);
+  }
+  function setel(kunci, slot, nama){
+    try {
+      if (nama) localStorage.setItem(AWALAN + kunci + ":" + slot, nama);
+      else localStorage.removeItem(AWALAN + kunci + ":" + slot);
+    } catch (e) {}
+    kirim(kunci + ":" + slot, nama);
+    gambar();
+    if (typeof showToast === "function") showToast(nama ? "Tersimpan" : "Dikosongkan");
+  }
+
+  /* ---------- gambar tabel ---------- */
+  function selHtml(kunci, slot, peta, namaSlot){
+    var v = baca(kunci, slot);
+    var o = v ? peta[v.toLowerCase()] : null;
+    var teks = o ? o.i : (v ? inisial(v) : "");
+    return '<td class="tt-sel' + (teks ? "" : " tt-kosong") + '" data-k="' + kunci + '" data-s="' + slot + '"'
+      + ' data-slot="' + escT(namaSlot) + '"' + (v ? ' data-nama="' + escT(v) + '"' : "")
+      + '>' + escT(teks) + '</td>';
+  }
+  function tabelHtml(pekan, peta){
+    var html = "", bulanLalu = "";
+    for (var i = 0; i < pekan.length; i++){
+      var wk = pekan[i];
+      /* pekan yang diliburkan: satu baris saja */
+      if (wk.batal){
+        var bl = namaBulan(wk.tengah);
+        if (bl !== bulanLalu){ html += '<tr class="tt-bulan"><td colspan="5">' + escT(bl) + '</td></tr>'; bulanLalu = bl; }
+        html += '<tr class="tt-batal"><td class="tt-tgl">' + escT(labelDari(wk.tengah))
+          + '</td><td colspan="4">Pertemuan Wilayah</td></tr>';
+        continue;
+      }
+      /* urut: Rabu (tengah pekan) lalu Minggu (akhir pekan) */
+      var urut = [["tengah", "Rabu"], ["akhir", "Minggu"]];
+      for (var j = 0; j < urut.length; j++){
+        var jenis = urut[j][0], tgl = wk[jenis], bulan = namaBulan(tgl);
+        if (bulan !== bulanLalu){ html += '<tr class="tt-bulan"><td colspan="5">' + escT(bulan) + '</td></tr>'; bulanLalu = bulan; }
+        var k = kunciDari(tgl);
+        html += '<tr class="tt-r-' + jenis + '"><td class="tt-tgl">' + escT(labelDari(tgl))
+          + '<i class="tt-jenis ' + jenis + '">' + urut[j][1] + '</i></td>';
+        for (var x = 0; x < SLOT.length; x++) html += selHtml(k, SLOT[x][0], peta, SLOT[x][1]);
+        html += '</tr>';
+      }
+    }
+    return html;
+  }
+  function gambar(){
+    if (sedangGambar) return;
+    var tbody = document.querySelector('#vTatib table[data-grup="semua"] tbody');
+    if (!tbody) return;
+    sedangGambar = true;
+    try {
+      tbody.innerHTML = tabelHtml(daftarPekan(), petaOrang());
+      var ket = document.getElementById("ttKet");
+      if (ket) ket.textContent = adminSekarang()
+        ? "Ketuk nama untuk mengganti. Daftar berisi saudara (laki-laki) saja."
+        : "Hanya bisa dilihat. Masuk sebagai admin untuk mengganti.";
+    } finally { sedangGambar = false; }
+  }
+
+  /* ---------- pilih nama ---------- */
+  function bukaPilih(kunci, slot, labelTgl, namaSlot){
+    var daftarOrang = orangTatib();
+    var kini = baca(kunci, slot);
+    var tirai = document.createElement("div");
+    tirai.className = "modal-tirai";
+    tirai.innerHTML = '<div class="modal-kotak tt-kotak" role="dialog" aria-modal="true">'
+      + '<div class="modal-kepala"><span>' + escT(namaSlot) + ' &middot; ' + escT(labelTgl) + '</span>'
+      + '<button type="button" class="modal-x" title="Tutup">&times;</button></div>'
+      + '<div class="modal-isi"><input type="search" class="tt-cari" id="ttCari"'
+      + ' placeholder="Cari nama saudara&hellip;" autocomplete="off"><div class="tt-daftar" id="ttDaftar"></div></div>'
+      + '<div class="modal-kaki"><span class="kaki-kanan">'
+      + '<button type="button" class="ed-batal">Tutup</button></span></div></div>';
+    document.body.appendChild(tirai);
+    var wadah = tirai.querySelector("#ttDaftar");
+
+    function isi(cari){
+      var q = String(cari || "").toLowerCase().trim();
+      var html = '<button type="button" class="tt-orang tt-kosongkan" data-nama="">&mdash; kosongkan &mdash;</button>';
+      for (var i = 0; i < daftarOrang.length; i++){
+        var o = daftarOrang[i];
+        if (q && (o.n + " " + o.i).toLowerCase().indexOf(q) < 0) continue;
+        html += '<button type="button" class="tt-orang' + (kini === o.n ? " aktif" : "")
+          + '" data-nama="' + escT(o.n) + '"><b>' + escT(o.i) + '</b><span>' + escT(o.n) + '</span></button>';
+      }
+      wadah.innerHTML = html;
+    }
+    isi("");
+    var kotakCari = tirai.querySelector("#ttCari");
+    kotakCari.addEventListener("input", function(){ isi(kotakCari.value); });
+
+    function tutup(){ tirai.remove(); }
+    tirai.addEventListener("click", function(ev){
+      var b = ev.target.closest(".tt-orang");
+      if (b){ setel(kunci, slot, b.getAttribute("data-nama")); tutup(); return; }
+      if (ev.target.closest(".modal-x") || ev.target.closest(".ed-batal") || ev.target === tirai) tutup();
+    });
+    setTimeout(function(){ try { kotakCari.focus(); } catch (e) {} }, 40);
+  }
+
+  document.addEventListener("click", function(ev){
+    var td = ev.target.closest ? ev.target.closest("#vTatib td.tt-sel") : null;
+    if (!td) return;
+    var kunci = td.getAttribute("data-k"), slot = td.getAttribute("data-s");
+    var namaSlot = td.getAttribute("data-slot") || "";
+    var selTgl = td.parentNode ? td.parentNode.firstElementChild : null;
+    var labelTgl = selTgl ? String(selTgl.textContent || "").replace(/\s+/g, " ").trim() : "";
+    if (adminSekarang()){ bukaPilih(kunci, slot, labelTgl, namaSlot); return; }
+    var nama = td.getAttribute("data-nama");
+    if (!nama) return;
+    if (typeof pesanKotak === "function"){
+      pesanKotak({ judul: namaSlot + " \u00b7 " + labelTgl, isi: nama, ok: "Tutup" });
+    } else if (typeof showToast === "function") showToast(nama);
+  });
+
+  /* ---------- Firestore ---------- */
+  try {
+    if (typeof firebase !== "undefined" && typeof FIREBASE_CONFIG !== "undefined" && FIREBASE_CONFIG.apiKey){
+      if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      var db = firebase.firestore();
+      refIsi = db.collection("jhtp").doc("tatib");
+      refOrang = db.collection("jhtp").doc("tatibOrang");
+    }
+  } catch (e) { refIsi = null; refOrang = null; }
+
+  orangTatib();     /* pastikan salinan daftar laki-laki sudah ada */
+
+  if (refOrang){
+    refOrang.onSnapshot(function(doc){
+      var d = doc.exists ? (doc.data() || {}) : {};
+      if (Array.isArray(d.arr) && d.arr.length){
+        var lokal = bacaOrang();
+        if (!lokal || lokal.length !== d.arr.length){
+          simpanOrang(d.arr);
+          gambar();
+        }
+      }
+    }, function(){});
+  }
+
+  if (refIsi){
+    refIsi.onSnapshot(function(doc){
+      var d = doc.data() || {};
+      var map = d.data || {};
+      if (!doc.exists){
+        var lokal = bacaSemua();
+        if (Object.keys(lokal).length) refIsi.set({ data: lokal, ts: Date.now() }, { merge: true }).catch(function(){});
+        return;
+      }
+      var lokal0 = bacaSemua();
+      if (!Object.keys(map).length && Object.keys(lokal0).length){
+        refIsi.set({ data: lokal0, ts: Date.now() }, { merge: true }).catch(function(){});
+        return;
+      }
+      var ubah = false;
+      Object.keys(map).forEach(function(k){
+        if (menunggu[k]) return;
+        var v = map[k];
+        try {
+          if (localStorage.getItem(AWALAN + k) !== v){ localStorage.setItem(AWALAN + k, v); ubah = true; }
+        } catch (e) {}
+      });
+      Object.keys(lokal0).forEach(function(k){
+        if (menunggu[k]) return;
+        if (!(k in map)){ try { localStorage.removeItem(AWALAN + k); ubah = true; } catch (e) {} }
+      });
+      if (ubah) gambar();
+    }, function(err){ console.warn("[tatib] data awan tidak tersedia", err); });
+  }
+
+  window.tatibGambar = gambar;
+  window.tatibSet = setel;
+  window.tatibOrang = orangTatib;
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", gambar);
+  else gambar();
 })();
 </script>
 </body>

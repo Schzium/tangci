@@ -205,6 +205,46 @@ Kolom nama lengkap juga ada di jendela **+ Tambah** waktu menambah penyiar baru.
 Nama lengkap yang dibiarkan kosong tidak masalah: slip S-89 memakai nama di jadwal.
 Mengubah nama lengkap **tidak** mengubah jadwal, inisial, atau nama di tabel.
 
+## 6e. Menu **Jadwal Tatib** (jadwal operator)
+
+Menu ketiga di daftar menu (☰ → **Jadwal Tatib**) berisi jadwal operator AV:
+**OP 1, OP 2, Mic 1, Mic 2**.
+
+**Satu tabel, urut tanggal.** Karena aplikasi dipakai di HP (layar sempit), tengah
+pekan dan akhir pekan tidak dipisah jadi dua tabel: tiap pekan muncul **Rabu** dulu
+lalu **Minggu**, berurutan menurut tanggal, dengan penanda kecil di bawah tanggal
+(`RABU` hijau, `MINGGU` biru). Bulannya diberi baris pemisah (November 2026,
+Desember 2026, …).
+
+- **Rabu** memakai tanggal pekan yang sudah ada di jadwal tengah pekan.
+- **Minggu** dihitung otomatis: Rabu + 4 hari, jadi tidak perlu diisi sendiri.
+- Pekan yang diliburkan (mis. Pertemuan Wilayah) muncul sebagai satu baris
+  *Pertemuan Wilayah*.
+
+**Daftar nama khusus tatib (duplikat).** Menu ini **tidak** memakai daftar penyiar
+utama. Saat pertama dibuka, daftar penyiar **disalin** — hanya yang
+**laki-laki** (jenis kelamin L) — menjadi tabel sendiri:
+
+- nama + inisial, urut abjad, disimpan di HP (`localStorage jhtp-tatib-orang`) dan di
+  Firestore dokumen `jhtp/tatibOrang`;
+- **perempuan tidak pernah masuk** daftar ini (disaring dari jenis kelamin, bukan
+  ditebak dari nama);
+- daftar penyiar utama tidak diubah sama sekali, dan mengubah nama di sana tidak
+  mengubah tabel tatib.
+
+Yang tampil di tabel adalah **inisial** (mis. `KS`); nama lengkap muncul saat sel
+diketuk.
+
+**Mode admin:** masuk dengan PIN (tombol **Log in**) → ketuk sel → pilih nama dari
+daftar (ada kotak cari) atau **— kosongkan —**. Tanpa mode admin tabel hanya bisa
+dilihat. Tombol PDF jadwal disembunyikan di halaman ini karena PDF memakai jadwal
+tengah pekan.
+
+**Penyimpanan isian:** `localStorage jhtp-tatib:<tanggal>:<slot>` + Firestore
+dokumen `jhtp/tatib`, satu isian satu kolom — dua HP yang menyunting kolom berbeda
+tidak saling menimpa. Menu ini terpisah dari pembagian tugas jadwal tengah pekan:
+tidak masuk hitungan riwayat/rotasi dan tidak mengubah jadwal.
+
 ## 7. Aplikasi menyegarkan diri sendiri
 
 Supaya penyiar tidak perlu tahu cara me-refresh, aplikasi memeriksa berkas
