@@ -91,6 +91,44 @@ ada di daftar. Mengubah nama di sini ikut mengganti nama itu di seluruh jadwal
 (lihat bagian 5). Halaman ini **tidak ikut tercetak** — saat PDF hanya lembar jadwal
 yang keluar.
 
+### Kategori penyiar (sejak versi 2026-11-23.30)
+
+Di daftar Penyiar ada tombol kecil **KAT** di tiap baris. Satu penyiar punya **satu**
+kategori; tombol itu berputar mengikuti urutan:
+
+```
+– → P → PM → PO → POM → HP → HPM → HPO → HOM → OP → MC → OM → –
+```
+
+| Kode | Arti |
+| --- | --- |
+| `P` | Penatua |
+| `PM` | Penatua + Mic |
+| `PO` | Penatua + Operator |
+| `POM` | Penatua + Operator + Mic |
+| `HP` | Hamba Pelayanan |
+| `HPM` | Hamba Pelayanan + Mic |
+| `HPO` | Hamba Pelayanan + Operator |
+| `HOM` | Hamba Pelayanan + Operator + Mic |
+| `OP` | Operator |
+| `MC` | Mic |
+| `OM` | Operator + Mic |
+
+Lupa artinya? Ada tombol bulat **!** di baris alat (sebelah kotak cari) yang membuka
+daftar arti semua singkatan di atas, lengkap dengan warna tombolnya.
+
+Jadi seorang saudara yang Penatua sekaligus operator/mic cukup diberi **POM**; yang
+Hamba Pelayanan sekaligus operator/mic cukup **HOM**. Tidak perlu dua kategori.
+
+Aturan tugas membaca arti kodenya: pemegang **P** (termasuk `POM`) boleh jadi Ketua
+dan **tidak** dipakai sebagai siswa/asisten; pemegang **HP** (termasuk `HOM`, `HPO`,
+`HPM`) juga tidak dipakai sebagai siswa/asisten; `OM`/`POM`/`HOM`/`HPO` dianggap bisa
+Operator; `OM`/`POM`/`HOM`/`HPM` dianggap bisa Mic.
+
+Urutan daftar mengikuti urutan di atas (P, PM, PO, POM di atas, lalu HP, HPM, HPO,
+HOM, lalu OP/MC/OM), jadi baris tidak melompat-lompat. Data lama tidak berubah: `AV`
+menjadi `OP`, `AM` menjadi `OM`.
+
 ## 6b. Riwayat tugas & antrean yang adil
 
 Jeda tugas tetap **8 pekan sekali**: setelah dapat tugas siswa/asisten, orang itu

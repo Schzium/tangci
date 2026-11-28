@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="versi" content="2026-11-23.28">
+<meta name="versi" content="2026-11-23.31">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0d5c7a">
 <meta name="mobile-web-app-capable" content="yes">
@@ -693,8 +693,9 @@
   }
   .ed-daftar{ overflow-y: auto; min-height: 0; padding-right: 2pt; }
   /* kotak cari + tombol tambah */
-  .ed-alat{ display: grid; grid-template-columns: 1fr auto auto; gap: 4pt; margin-bottom: 6pt; }
-  .ed-cari{ font-size: 9.5pt; }
+  .ed-alat{ display: grid; grid-template-columns: 1fr auto auto auto; gap: 4pt;
+    margin-bottom: 6pt; align-items: center; }
+  .ed-cari{ font-size: 9.5pt; min-width: 0; }
   .ed-baru{
     padding: 3.5pt 10pt; border: .75pt solid #0d5c7a; border-radius: 2pt;
     background: #0d5c7a; color: #fff; font: inherit; font-size: 9pt; font-weight: 700;
@@ -808,12 +809,34 @@
   .ed-g.g-P{ background: #fdeef4; border-color: #e0b3c8; color: #8a2b52; }
   .ed-g.g-x{ color: #b0413e; border-color: #e3b7b5; background: #fdf4f4; }
   .ed-r{ color: #2f7a4f; }
-  .ed-k{ color: #8a9095; font-weight: 700; }
-  .ed-k.k-p{ background: #e8f1f8; border-color: #a9c6dc; color: #14526e; }
-  .ed-k.k-hp{ background: #f3ecf7; border-color: #cfb9de; color: #6b3f86; }
-  .ed-k.k-op{ background: #eaf5ee; border-color: #b3d8c2; color: #2c6b47; }
-  .ed-k.k-mc{ background: #fdf2e3; border-color: #e6c69a; color: #8a5b1c; }
-  .ed-k.k-om{ background: #eef2fb; border-color: #b8c4e2; color: #3a4d8f; }
+  .ed-k{ color: #8a9095; font-weight: 700; padding: 0 3pt; }
+  .ed-k.k-p, .ki-kode.k-p{ background: #e8f1f8; border-color: #a9c6dc; color: #14526e; }
+  .ed-k.k-hp, .ki-kode.k-hp{ background: #f3ecf7; border-color: #cfb9de; color: #6b3f86; }
+  .ed-k.k-op, .ki-kode.k-op{ background: #eaf5ee; border-color: #b3d8c2; color: #2c6b47; }
+  .ed-k.k-mc, .ki-kode.k-mc{ background: #fdf2e3; border-color: #e6c69a; color: #8a5b1c; }
+  .ed-k.k-om, .ki-kode.k-om{ background: #eef2fb; border-color: #b8c4e2; color: #3a4d8f; }
+  .ed-info{
+    flex: 0 0 auto; width: 17pt; height: 17pt; line-height: 1; padding: 0;
+    border: .75pt solid #b9c2c8; border-radius: 50%; background: #fff;
+    color: #0d5c7a; font: inherit; font-size: 9.5pt; font-weight: 800; cursor: pointer;
+  }
+  .ed-info:hover{ background: #eef4f7; border-color: #8fb8cb; }
+  .ki-kode{
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 44px; height: 16pt; padding: 0 4px; box-sizing: border-box;
+    border: .75pt solid #ccd2d6; border-radius: 2pt;
+    font-size: 8.5pt; font-weight: 800; letter-spacing: .02em;
+  }
+  .ki-arti{ margin: 0 0 8px; font-size: 12px; color: #5a6569; }
+  .ki-baris{ display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px solid #eef1f3; }
+  .ki-baris:last-child{ border-bottom: 0; }
+  .ki-teks{ font-size: 13px; color: #33404a; }
+  .ed-k.k-pm, .ki-kode.k-pm{ background: #e7f2fa; border-color: #a8c6de; color: #10425c; }
+  .ed-k.k-po, .ki-kode.k-po{ background: #eaf4ec; border-color: #b0d3ba; color: #1d5940; }
+  .ed-k.k-pom, .ki-kode.k-pom{ background: #e6eff8; border-color: #a3c0da; color: #10425c; }
+  .ed-k.k-hom, .ki-kode.k-hom{ background: #f1ecf8; border-color: #c6b4dd; color: #5c3580; }
+  .ed-k.k-hpo, .ki-kode.k-hpo{ background: #eaf6ef; border-color: #aed6c0; color: #256444; }
+  .ed-k.k-hpm, .ki-kode.k-hpm{ background: #fdf4e6; border-color: #e2c79f; color: #7d531a; }
   .ed-r.mati{ color: #a2a8ac; border-color: #e0e3e5; background: #f7f8f9; }
   .ed-hapus{
     flex: 0 0 auto;
@@ -1824,22 +1847,51 @@ function inisialUnik(nama, dipakai){
   }
   return dasar;
 }
-/* Kategori penyiar. P = Penatua, HP = Hamba Pelayanan,
-   AV = Audio & Video, MC = Mic, AM = AV & Mic (dua-duanya). */
-window.KAT_DAFTAR = ["P", "HP", "OP", "MC", "OM"];
+/* Kategori penyiar (satu penyiar = satu kategori).
+   P   = Penatua
+   HP  = Hamba Pelayanan
+   OP  = Operator
+   MC  = Mic
+   OM  = Operator + Mic
+   PM  = Penatua + Mic                 PO  = Penatua + Operator
+   POM = Penatua + Operator + Mic      HOM = Hamba Pelayanan + Operator + Mic
+   HPO = Hamba Pelayanan + Operator    HPM = Hamba Pelayanan + Mic        */
+window.KAT_DAFTAR = ["P", "PM", "PO", "POM", "HP", "HPM", "HPO", "HOM", "OP", "MC", "OM"];
 window.KAT_NAMA = {
-  P: "Penatua", HP: "Hamba Pelayanan",
-  OP: "Operator", MC: "Mic", OM: "Operator + Mic"
+  P: "Penatua", HP: "Hamba Pelayanan", OP: "Operator", MC: "Mic",
+  OM: "Operator + Mic",
+  PM: "Penatua + Mic", PO: "Penatua + Operator",
+  POM: "Penatua + Operator + Mic", HOM: "Hamba Pelayanan + Operator + Mic",
+  HPO: "Hamba Pelayanan + Operator", HPM: "Hamba Pelayanan + Mic"
+};
+/* peran yang terkandung di tiap kategori (dipakai untuk aturan tugas) */
+const KAT_PERAN = {
+  P: ["P"], HP: ["HP"], OP: ["OP"], MC: ["MC"], OM: ["OP", "MC"],
+  PM: ["P", "MC"], PO: ["P", "OP"],
+  POM: ["P", "OP", "MC"], HOM: ["HP", "OP", "MC"],
+  HPO: ["HP", "OP"], HPM: ["HP", "MC"]
 };
 window.katSah = function (k){
-  if (k === "AV") k = "OP";      /* nama lama, sebelum diganti jadi OP */
-  if (k === "AM") k = "OM";      /* nama lama, sebelum diganti jadi OM */
-  return window.KAT_DAFTAR.indexOf(k) >= 0 ? k : "";
+  let t = String(k == null ? "" : k).trim().toUpperCase().replace(/[\s,;|/]+/g, "");
+  if (t === "AV") t = "OP";        /* nama lama, sebelum diganti jadi OP */
+  if (t === "AM") t = "OM";        /* nama lama, sebelum diganti jadi OM */
+  /* kalau ada data lama berbentuk gabungan, dirapikan ke kode barunya */
+  const peta = { HPOM: "HOM", HPOP: "HPO", HPMC: "HPM", OPMC: "OM", MCOP: "OM",
+                 PMC: "PM", POP: "PO" };
+  if (peta[t]) t = peta[t];
+  return window.KAT_DAFTAR.indexOf(t) >= 0 ? t : "";
 };
+window.katPertama = function (k){ return window.katSah(k); };
+window.katPunya = function (k, kode){
+  const t = window.katSah(k);
+  return !!t && (KAT_PERAN[t] || []).indexOf(kode) >= 0;
+};
+window.katTeks = function (k){ return window.katSah(k); };
+window.katNama = function (k){ return window.KAT_NAMA[window.katSah(k)] || "Penyiar"; };
 function rapikanInisial(arr){
   if (!Array.isArray(arr) || arr.length < 2) return arr;
   const bobot = (o) => {
-    const u = window.KAT_DAFTAR.indexOf(o.k);
+    const u = window.KAT_DAFTAR.indexOf(window.katPertama(o.k));
     return u >= 0 ? u : window.KAT_DAFTAR.length;
   };
   const urut = arr.map((o, i) => ({ o: o, i: i }))
@@ -3162,7 +3214,7 @@ function dataHadirin(){
 /* nilai antre: makin besar = makin lama tidak dapat tugas (dipakai untuk sortir) */
 function nilaiAntre(it, o){
   if (o && o.r === 0) return -30000;                  // dikecualikan → paling bawah
-  if (o && (o.k === "P" || o.k === "HP")) return -25000;   // P/HP: bukan calon siswa/asisten
+  if (o && (window.katPunya(o.k, "P") || window.katPunya(o.k, "HP"))) return -25000;   // P/HP: bukan calon siswa/asisten
   if (!it || it.terakhir == null) return 10000;       // belum pernah → paling atas
   if (it.terakhir > pekanAktif) return -10000 - (it.terakhir - pekanAktif);  // terjadwal → bawah
   return pekanAktif - it.terakhir;                    // makin lama makin besar
@@ -3219,7 +3271,8 @@ function bukaPin(){
 
 /* ---------- bagi tugas siswa/asisten untuk seluruh periode ---------- */
 function bagiTugas(wiPilih){
-  const orang = daftarSiswa().filter((o) => o.r !== 0 && o.k !== "P" && o.k !== "HP");
+  const orang = daftarSiswa().filter((o) => o.r !== 0
+    && !window.katPunya(o.k, "P") && !window.katPunya(o.k, "HP"));
   if (!orang.length){ alert("Daftar nama masih kosong."); return; }
   const satu = (typeof wiPilih === "number" && JADWAL[wiPilih]) ? wiPilih : null;
 
@@ -3447,7 +3500,7 @@ function bukaBagiPekan(){
   let awalAktif = "";        /* nama yang sedang terpasang, selalu ditampilkan */
   const khusus = (nama) => {
     const org = cariOrang(nama);
-    return !!(org && (org.k === "P" || org.k === "HP"));
+    return !!(org && (window.katPunya(org.k, "P") || window.katPunya(org.k, "HP")));
   };
 
   function daftarOpsi(){
@@ -3473,11 +3526,12 @@ function bukaBagiPekan(){
       const org = cariOrang(o.n);
       const g = org && org.g ? org.g : "";
       const kat = org && org.k ? org.k : "";
+      const katPH = window.katPunya(kat, "P") || window.katPunya(kat, "HP");
       const sedangDipakai = (awalAktif && normNama(o.n) === normNama(awalAktif));
       if (aturanAktif){
-        if (aturanAktif.jenis === "PH" && !(kat === "P" || kat === "HP") && !sedangDipakai) return;
+        if (aturanAktif.jenis === "PH" && !katPH && !sedangDipakai) return;
         if (aturanAktif.jenis === "L" && g !== "L" && !sedangDipakai) return;
-        if (aturanAktif.jenis === "PL" && !(kat === "P" || kat === "HP" || g === "L") && !sedangDipakai) return;
+        if (aturanAktif.jenis === "PL" && !(katPH || g === "L") && !sedangDipakai) return;
         /* "bebas": semua nama ditampilkan */
       } else if (modeSemi && khusus(o.n)){
         return;                                 // P / HP hanya untuk tugas selain siswa/asisten
@@ -3678,6 +3732,7 @@ function bukaBagiPekan(){
   function htmlBarisEditor(o, i){
       const g = (o.g === "L" || o.g === "P") ? o.g : "";
       const kategori = window.katSah(o.k);
+      const katSatu = window.katPertama(kategori);
       return `<div class="ed-baris${o.baru ? " baru" : ""}" data-i="${i}"${o.baru ? ' title="Dari jadwal, belum ada di daftar"' : ""}>`
       + `<div class="ed-atas">`
       + `<input class="ed-input ed-nama" type="text" value="${esc(o.n)}" placeholder="Nama" aria-label="Nama ${i + 1}">`
@@ -3685,7 +3740,7 @@ function bukaBagiPekan(){
         ? `<input class="ed-input ed-ini ini-kosong" type="text" value="" placeholder="&ndash;" readonly tabindex="-1" title="Perempuan: tanpa inisial (di jadwal ditulis namanya)" aria-label="Inisial ${i + 1} (tidak dipakai)">`
         : `<input class="ed-input ed-ini" type="text" value="${esc(o.i)}" placeholder="Ini" aria-label="Inisial ${i + 1}">`)
       + `<button type="button" class="ed-g g-${g || "x"}" title="Jenis kelamin (klik untuk ganti): ${g === "L" ? "Laki-laki" : g === "P" ? "Perempuan" : "belum diisi"}">${g || "?"}</button>`
-      + `<button type="button" class="ed-k${kategori ? " k-" + kategori.toLowerCase() : ""}" title="Kategori (klik untuk ganti): ${window.KAT_NAMA[kategori] || "Penyiar"}">${kategori || "&ndash;"}</button>`
+      + `<button type="button" class="ed-k${katSatu ? " k-" + katSatu.toLowerCase() : ""}" title="Kategori (klik untuk berganti): ${esc(window.katNama(kategori))}">${esc(window.katTeks(kategori)) || "&ndash;"}</button>`
       + `<button type="button" class="ed-hapus" title="Hapus nama ini">&times;</button>`
       + `</div></div>`;
   }
@@ -3728,7 +3783,7 @@ function bukaBagiPekan(){
     /* 0 = Penatua, 1 = HP, 2 = penyiar laki-laki, 3 = penyiar perempuan */
     const jumlahKat = window.KAT_DAFTAR.length;
     const bobotOrang = (o) => {
-      const u = window.KAT_DAFTAR.indexOf(o.k);
+      const u = window.KAT_DAFTAR.indexOf(window.katPertama(o.k));
       if (u >= 0) return u;
       return o.g === "L" ? jumlahKat : o.g === "P" ? jumlahKat + 1 : jumlahKat + 2;
     };
@@ -3754,6 +3809,7 @@ function bukaBagiPekan(){
       + '<div class="modal-isi">'
       + '<div class="ed-alat">'
       + '<input class="ed-input ed-cari" type="search" placeholder="Cari nama&hellip;" aria-label="Cari nama penyiar">'
+      + '<button type="button" class="ed-info" title="Arti singkatan kategori">!</button>'
       + '<button type="button" class="ed-lengkap" title="Isi nama lengkap untuk slip S-89">Lengkap</button>'
       + '<button type="button" class="ed-baru" title="Tambah penyiar baru">+ Tambah</button></div>'
       + '<div class="ed-legenda" hidden></div>'
@@ -3794,6 +3850,28 @@ function bukaBagiPekan(){
         .map((x) => htmlBarisEditor(x.o, x.i)).join("");
       kotak.innerHTML = isi || '<div class="ed-kosong">Tidak ada nama yang cocok.</div>';
     };
+    /* arti singkatan kategori (tombol "!") */
+    function bukaArtiKategori(){
+      const tirai = document.createElement("div");
+      tirai.className = "modal-tirai";
+      tirai.innerHTML = '<div class="modal-kotak kk-kotak" role="dialog" aria-modal="true">'
+        + '<div class="modal-kepala"><span>Arti singkatan kategori</span>'
+        + '<button type="button" class="modal-x" title="Tutup">&times;</button></div>'
+        + '<div class="modal-isi"><p class="ki-arti">Ketuk tombol <b>Kat</b> di tiap nama untuk '
+        + 'berganti kategori (satu nama satu kategori).</p>'
+        + window.KAT_DAFTAR.map(function (t){
+            return '<div class="ki-baris"><span class="ki-kode k-' + t.toLowerCase() + '">' + t + '</span>'
+              + '<span class="ki-teks">' + esc(window.KAT_NAMA[t] || t) + '</span></div>';
+          }).join("")
+        + '<p class="ki-arti" style="margin-top:10px">P dan HP tidak dipakai sebagai siswa/asisten '
+        + 'di jadwal tengah pekan; Penatua (P, PM, PO, POM) boleh mengisi Ketua.</p>'
+        + '</div><div class="modal-kaki"><span class="kaki-kanan">'
+        + '<button type="button" class="ed-batal">Tutup</button></span></div></div>';
+      document.body.appendChild(tirai);
+      tirai.addEventListener("click", function (ev){
+        if (ev.target.closest(".modal-x") || ev.target.closest(".ed-batal") || ev.target === tirai) tirai.remove();
+      });
+    }
     /* perbarui SATU baris saja (tombol L/P, kategori, rotasi) — jauh lebih
        ringan daripada menggambar ulang seluruh daftar tiap klik */
     const segarkanBaris = (i) => {
@@ -3962,11 +4040,12 @@ function bukaBagiPekan(){
         segarkanBaris(i);
         return;
       }
+      if (ev.target.closest(".ed-info")){ bukaArtiKategori(); return; }
       const gantiK = ev.target.closest(".ed-k");
       if (gantiK){
         const i = Number(gantiK.closest(".ed-baris").dataset.i);
         const siklus = [""].concat(window.KAT_DAFTAR);
-        kerja[i].k = siklus[(siklus.indexOf(kerja[i].k || "") + 1) % siklus.length];
+        kerja[i].k = siklus[(siklus.indexOf(window.katSah(kerja[i].k)) + 1) % siklus.length];
         segarkanBaris(i);
         return;
       }
